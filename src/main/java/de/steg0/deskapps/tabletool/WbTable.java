@@ -13,16 +13,9 @@ public class WbTable
     
     private JTable table;
     
-    /* 
-     * XXX switch to some more model-oriented approach to make
-     * serialization/deserialization easier
-     */
-    
-    private int maxColUsed,maxRowUsed;
-    
     public WbTable()
     {
-        this.table = new JTable(100,100);
+        this.table = new JTable(new WbTableModel(100,100));
         
 //        this.table.
     }
