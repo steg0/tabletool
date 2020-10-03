@@ -15,8 +15,4 @@
   
   <dependencies>
   </dependencies>
-  
-  <build>
-    <finalName>sun2_scratchbook</finalName>
-  </build>
 </project>
