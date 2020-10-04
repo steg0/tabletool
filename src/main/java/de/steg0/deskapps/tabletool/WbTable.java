@@ -15,7 +15,7 @@ public class WbTable
     
     public WbTable()
     {
-        this.table = new JTable(new WbTableModel(100,100));
+        this.table = new JTable(/*new WbTableModel(100,100)*/);
         
 //        this.table.
     }
