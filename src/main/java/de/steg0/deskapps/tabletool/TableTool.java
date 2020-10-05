@@ -53,10 +53,8 @@ public class TableTool
     public static void main(String[] args)
     throws SQLException
     {
-        
         final TableTool ttool = new TableTool();
         ttool.showJdbcBuffer(args[0],args[1],args[2]);
-        
     }
     
 }
