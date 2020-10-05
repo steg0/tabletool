@@ -30,30 +30,26 @@ public class TableTool
     public void showJdbcBuffer(String connectionString,String user,String pw)
     throws SQLException
     {
-        this.frame = new JFrame("Tabletool");
-        this.frame.getContentPane().setLayout(new BorderLayout());
-        this.frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame = new JFrame("Tabletool");
+        frame.getContentPane().setLayout(new BorderLayout());
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
         Connection connection = DriverManager.getConnection(
                 connectionString,user,pw);
         
         var bufferController = new JdbcBufferController(connection);
 
-        /* 
-         * Maybe introduce tabbed wb's someday that can be dragged between
-         * frames, like Firefox
-         */
-        this.frame.getContentPane().add(bufferController.panel,
+        frame.getContentPane().add(bufferController.panel,
                 BorderLayout.CENTER);
         
-        this.frame.pack();
-        this.frame.setVisible(true);
+        frame.pack();
+        frame.setVisible(true);
     }
     
     public static void main(String[] args)
     throws SQLException
     {
-        final TableTool ttool = new TableTool();
+        TableTool ttool = new TableTool();
         ttool.showJdbcBuffer(args[0],args[1],args[2]);
     }
     
