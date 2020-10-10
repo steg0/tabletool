@@ -16,6 +16,11 @@ import javax.swing.JFrame;
  * </p>
  * 
  * <p>It should also offer table-diff functionality.</p>
+ * 
+ * Start example:
+ * <code>
+ * java -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool jdbc:oracle:thin:@//sun1:1521/pdbs2o.hq.steg0.de rs $DBPW 
+ * </code>
  */
 public class TableTool 
 {
