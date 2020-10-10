@@ -37,9 +37,9 @@ public class TableTool
         Connection connection = DriverManager.getConnection(
                 connectionString,user,pw);
         
-        var bufferController = new JdbcBufferController(connection);
+        var controller = new JdbcNotebookController(connection);
 
-        frame.getContentPane().add(bufferController.panel,
+        frame.getContentPane().add(controller.pane,
                 BorderLayout.CENTER);
         
         frame.pack();
