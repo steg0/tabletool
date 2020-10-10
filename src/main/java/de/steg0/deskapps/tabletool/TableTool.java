@@ -12,15 +12,10 @@ import javax.swing.JFrame;
  * 
  * <p>
  * This aims to be a simple tabular grid that accepts LISP expressions in its
- * cells. I. e. like Excel but without Basic.
+ * cells, can edit CSV fast and has DB connectivity.
  * </p>
  * 
  * <p>It should also offer table-diff functionality.</p>
- * 
- * <p>
- * I plan to add database connectivity later on, if I have a need (which I think
- * I'll have) and the necessary spare time.
- * </p>
  */
 public class TableTool 
 {
