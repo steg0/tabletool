@@ -1,6 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.GridLayout;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,7 +15,7 @@ import javax.swing.JTextArea;
 public class JdbcBufferController
 {
 
-    JPanel panel = new JPanel(new GridLayout(3,1));
+    JPanel panel = new JPanel(new BorderLayout());
     Connection connection;
     JTextArea editor = new JTextArea();
     
@@ -23,9 +23,9 @@ public class JdbcBufferController
     {
         this.connection=connection;
         
-        panel.add(editor);
+        panel.add(editor,BorderLayout.NORTH);
         JButton executeButton = new JButton("Go");
-        panel.add(executeButton);
+        panel.add(executeButton,BorderLayout.CENTER);
         executeButton.addActionListener((ActionEvent e) ->
         { 
             try
@@ -54,7 +54,7 @@ public class JdbcBufferController
                     rsm.update(rs);
                     JTable resultview = new JTable(rsm);
                     if(panel.getComponentCount()==3) panel.remove(2);
-                    panel.add(resultview);
+                    panel.add(resultview,BorderLayout.SOUTH);
                     panel.revalidate();
                 }
             }
