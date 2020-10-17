@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,17 +16,24 @@ import javax.swing.JTextArea;
 public class JdbcBufferController
 {
 
-    JPanel panel = new JPanel(new BorderLayout());
+    JPanel panel = new JPanel(new GridBagLayout());
     Connection connection;
     JTextArea editor = new JTextArea();
     
     JdbcBufferController(Connection connection)
     {
         this.connection=connection;
+
+        var editorConstraints = new GridBagConstraints();
+        editorConstraints.anchor = GridBagConstraints.WEST;
+        editorConstraints.gridy = 0;
+        panel.add(editor,editorConstraints);
         
-        panel.add(editor,BorderLayout.NORTH);
         JButton executeButton = new JButton("Go");
-        panel.add(executeButton,BorderLayout.CENTER);
+        var buttonConstraints = new GridBagConstraints();
+        buttonConstraints.gridy = 1;
+        panel.add(executeButton,buttonConstraints);
+        
         executeButton.addActionListener((ActionEvent e) ->
         { 
             try
@@ -54,7 +62,10 @@ public class JdbcBufferController
                     rsm.update(rs);
                     JTable resultview = new JTable(rsm);
                     if(panel.getComponentCount()==3) panel.remove(2);
-                    panel.add(resultview,BorderLayout.SOUTH);
+                    var resultviewConstraints = new GridBagConstraints();
+                    resultviewConstraints.anchor = GridBagConstraints.WEST;
+                    resultviewConstraints.gridy = 2;
+                    panel.add(resultview,resultviewConstraints);
                     panel.revalidate();
                 }
             }

@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -31,7 +32,7 @@ public class TableTool
     throws SQLException
     {
         frame = new JFrame("Tabletool");
-        frame.getContentPane().setLayout(new BorderLayout());
+        frame.getContentPane().setLayout(new GridBagLayout());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
         Connection connection = DriverManager.getConnection(
@@ -39,8 +40,11 @@ public class TableTool
         
         var controller = new JdbcNotebookController(connection);
 
-        frame.getContentPane().add(controller.pane,
-                BorderLayout.CENTER);
+        var contentPaneConstraints = new GridBagConstraints();
+        contentPaneConstraints.fill = GridBagConstraints.BOTH;
+        contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
+        contentPaneConstraints.weightx = contentPaneConstraints.weighty = 1;
+        frame.getContentPane().add(controller.pane,contentPaneConstraints);
         
         frame.pack();
         frame.setVisible(true);

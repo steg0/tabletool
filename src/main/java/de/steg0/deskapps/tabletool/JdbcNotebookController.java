@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.sql.Connection;
 
 import javax.swing.JPanel;
@@ -9,7 +11,7 @@ public class JdbcNotebookController
 {
 
     Connection connection;
-    JPanel panel = new JPanel();
+    JPanel panel = new JPanel(new GridBagLayout());
     JScrollPane pane = new JScrollPane(panel);
     
     JdbcNotebookController(Connection connection)
@@ -22,7 +24,10 @@ public class JdbcNotebookController
     
     void add(JdbcBufferController c)
     {
-        panel.add(c.panel);
+        var panelConstraints = new GridBagConstraints();
+        panelConstraints.anchor = GridBagConstraints.NORTHWEST;
+        panelConstraints.weighty = panelConstraints.weightx = 1;
+        panel.add(c.panel,panelConstraints);
     }
     
 }
