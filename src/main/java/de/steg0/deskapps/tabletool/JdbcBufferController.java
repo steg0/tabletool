@@ -2,13 +2,13 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -29,22 +29,27 @@ public class JdbcBufferController
         editorConstraints.gridy = 0;
         panel.add(editor,editorConstraints);
         
-        JButton executeButton = new JButton("Go");
-        var buttonConstraints = new GridBagConstraints();
-        buttonConstraints.gridy = 1;
-        panel.add(executeButton,buttonConstraints);
-        
-        executeButton.addActionListener((ActionEvent e) ->
-        { 
-            try
+        editor.addKeyListener(new KeyListener()
+        {
+            @Override public void keyReleased(KeyEvent e)
             {
-                fetch();
+                switch(e.getKeyCode())
+                {
+                case KeyEvent.VK_ENTER:
+                    if(e.isControlDown()) try
+                    {
+                        fetch();
+                    }
+                    catch(SQLException e0)
+                    {
+                        // TODO
+                        e0.printStackTrace();
+                    }
+                }
+                
             }
-            catch(SQLException e0)
-            {
-                // TODO
-                e0.printStackTrace();
-            }
+            @Override public void keyTyped(KeyEvent e) { }
+            @Override public void keyPressed(KeyEvent e) { }
         });
     }
     
@@ -61,10 +66,10 @@ public class JdbcBufferController
                     ResultSetTableModel rsm = new ResultSetTableModel();
                     rsm.update(rs);
                     JTable resultview = new JTable(rsm);
-                    if(panel.getComponentCount()==3) panel.remove(2);
+                    if(panel.getComponentCount()==2) panel.remove(1);
                     var resultviewConstraints = new GridBagConstraints();
                     resultviewConstraints.anchor = GridBagConstraints.WEST;
-                    resultviewConstraints.gridy = 2;
+                    resultviewConstraints.gridy = 1;
                     panel.add(resultview,resultviewConstraints);
                     panel.revalidate();
                 }
