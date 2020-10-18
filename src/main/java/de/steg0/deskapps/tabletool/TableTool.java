@@ -25,9 +25,9 @@ import javax.swing.JOptionPane;
 public class TableTool 
 {
 
-    private JFrame frame;
+    JFrame frame;
     
-    public void showJdbcBuffer()
+    void showJdbcBuffer()
     throws SQLException
     {
         frame = new JFrame("Tabletool");
