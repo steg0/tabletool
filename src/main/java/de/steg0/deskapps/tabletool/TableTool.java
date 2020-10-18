@@ -27,7 +27,7 @@ public class TableTool
 
     private JFrame frame;
     
-    public void showJdbcBuffer(String connectionString,String user,String pw)
+    public void showJdbcBuffer()
     throws SQLException
     {
         frame = new JFrame("Tabletool");
@@ -77,7 +77,7 @@ public class TableTool
     throws SQLException
     {
         TableTool ttool = new TableTool();
-        ttool.showJdbcBuffer(args[0],args[1],args[2]);
+        ttool.showJdbcBuffer();
     }
     
 }
