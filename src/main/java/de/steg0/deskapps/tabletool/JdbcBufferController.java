@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
-public class JdbcBufferController
+class JdbcBufferController
 implements KeyListener
 {
     static final MessageFormat UPDATE_LOG_FORMAT = 

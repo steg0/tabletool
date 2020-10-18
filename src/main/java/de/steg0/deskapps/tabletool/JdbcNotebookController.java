@@ -16,7 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
-public class JdbcNotebookController
+class JdbcNotebookController
 {
 
     ConnectionListModel connections;

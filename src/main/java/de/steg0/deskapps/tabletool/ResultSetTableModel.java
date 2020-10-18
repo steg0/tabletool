@@ -9,7 +9,7 @@ import java.util.List;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-public class ResultSetTableModel
+class ResultSetTableModel
 implements TableModel
 {
 

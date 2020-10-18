@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
-public class ConnectionListModel
+class ConnectionListModel
 implements ComboBoxModel<String>
 {
     PropertyHolder propertyHolder;
