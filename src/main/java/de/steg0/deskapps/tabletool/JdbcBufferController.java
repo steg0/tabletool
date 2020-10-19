@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.function.Consumer;
 
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 
@@ -20,16 +22,20 @@ class JdbcBufferController
 implements KeyListener
 {
     static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} updated\n");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} affected.\n");
+    static final MessageFormat FETCH_LOG_FORMAT = 
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched.\n");
+    static final MessageFormat FETCH_ALL_LOG_FORMAT = 
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched.\n");
 
     JPanel panel = new JPanel(new GridBagLayout());
     Connection connection;
     JTextArea editor = new JTextArea();
-    Consumer<String> updateLog;
+    Consumer<String> log;
     
     JdbcBufferController(Consumer<String> updateLog)
     {
-        this.updateLog = updateLog;
+        this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
@@ -69,18 +75,35 @@ implements KeyListener
                     ResultSetTableModel rsm = new ResultSetTableModel();
                     rsm.update(rs);
                     JTable resultview = new JTable(rsm);
+                    Dimension preferredSize = resultview.getPreferredSize();
+                    resultview.setPreferredScrollableViewportSize(new Dimension(
+                            (int)preferredSize.getWidth(),
+                            (int)Math.min(150,preferredSize.getHeight())));
+                    var resultscrollpane = new JScrollPane(resultview,
+                            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                            JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                     if(panel.getComponentCount()==2) panel.remove(1);
                     var resultviewConstraints = new GridBagConstraints();
                     resultviewConstraints.anchor = GridBagConstraints.WEST;
                     resultviewConstraints.gridy = 1;
-                    panel.add(resultview,resultviewConstraints);
+                    panel.add(resultscrollpane,resultviewConstraints);
                     panel.revalidate();
-                    updateLog.accept("");
+                    if(rsm.getRowCount() < ResultSetTableModel.FETCHSIZE)
+                    {
+                        log.accept(FETCH_ALL_LOG_FORMAT.format(new Object[]{
+                                rsm.getRowCount()}));
+                    }
+                    else
+                    {
+                        log.accept(FETCH_LOG_FORMAT.format(new Object[]{
+                                rsm.getRowCount()}));
+                    }
                 }
             }
             else
             {
-                updateLog.accept(UPDATE_LOG_FORMAT.format(st.getUpdateCount()));
+                log.accept(UPDATE_LOG_FORMAT.format(new Object[]{
+                        st.getUpdateCount()}));
             }
         }
         catch(SQLException e)
@@ -95,7 +118,7 @@ implements KeyListener
                 b.append("SQL State: "+e.getSQLState()+"\n");
                 b.append(e.getMessage()+"\n");
             }
-            updateLog.accept(b.toString());
+            log.accept(b.toString());
         }
         catch(NullPointerException e)
         {
@@ -103,7 +126,7 @@ implements KeyListener
             b.append("No connection available at ");
             b.append(new Date());
             b.append("\n");
-            updateLog.accept(b.toString());
+            log.accept(b.toString());
         }
         return null;
     }

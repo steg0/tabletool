@@ -12,6 +12,7 @@ import javax.swing.table.TableModel;
 class ResultSetTableModel
 implements TableModel
 {
+    static final int FETCHSIZE=300;
 
     ResultSet rs;
     String cols[];
@@ -27,7 +28,7 @@ implements TableModel
     void fill()
     throws SQLException
     {
-        rows = new ArrayList<Object[]>(10);
+        rows = new ArrayList<Object[]>(FETCHSIZE);
         ResultSetMetaData m = rs.getMetaData();
         cols = new String[m.getColumnCount()];
         for(int i=1;i<=cols.length;i++)
@@ -35,7 +36,7 @@ implements TableModel
             cols[i-1] = m.getColumnLabel(i);
         }
         int rowcount=0;
-        while(rs.next() && rowcount<10)
+        while(rs.next() && rowcount<FETCHSIZE)
         {
             Object[] row = new Object[cols.length];
             for(int i=1;i<=cols.length;i++)
