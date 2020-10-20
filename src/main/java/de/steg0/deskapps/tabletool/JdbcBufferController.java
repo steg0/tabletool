@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,6 +29,9 @@ implements KeyListener
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched.\n");
 
+    static final Pattern QUERYPATTERN = Pattern.compile(
+            "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
+    
     JPanel panel = new JPanel(new GridBagLayout());
     Connection connection;
     JTextArea editor = new JTextArea();
@@ -76,9 +80,14 @@ implements KeyListener
     }
 
     /**blocking */
-    ResultSet fetch()
+    void fetch()
     {
-        String text = editor.getText();
+        String text = getCurrentQuery();
+        if(text == null)
+        {
+            log.accept("No query found at "+new Date()+".\n");
+            return;
+        }
         try(Statement st = connection.createStatement())
         {
             if(st.execute(text))
@@ -140,6 +149,23 @@ implements KeyListener
             b.append(new Date());
             b.append("\n");
             log.accept(b.toString());
+        }
+    }
+    
+    String getCurrentQuery()
+    {
+        String text = editor.getText();
+        int currentPosition = editor.getCaretPosition();
+        var m = QUERYPATTERN.matcher(text);
+        while(m.find())
+        {
+            String match = m.group();
+            if(match.trim().isEmpty()) return null;
+            if(match.length() >= currentPosition) return match.endsWith(";")?
+                    match.substring(0,match.length()-1) : match;
+            text = text.substring(match.length());
+            currentPosition -= match.length();
+            m = QUERYPATTERN.matcher(text);
         }
         return null;
     }
