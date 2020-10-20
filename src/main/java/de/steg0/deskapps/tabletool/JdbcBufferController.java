@@ -32,10 +32,14 @@ implements KeyListener
     Connection connection;
     JTextArea editor = new JTextArea();
     Consumer<String> log;
+    JdbcNotebookController.Actions actions;
+    JdbcNotebookController notebook;
     
-    JdbcBufferController(Consumer<String> updateLog)
+    JdbcBufferController(Consumer<String> updateLog,
+            JdbcNotebookController.Actions actions)
     {
         this.log = updateLog;
+        this.actions = actions;
         
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
@@ -51,6 +55,15 @@ implements KeyListener
         {
         case KeyEvent.VK_ENTER:
             if(event.isControlDown()) fetch();
+            break;
+        case KeyEvent.VK_DOWN:
+            if(event.isControlDown() && panel.getComponentCount()>1)
+            {
+                actions.nextBuffer(this);
+            }
+            break;
+        case KeyEvent.VK_UP:
+            if(event.isControlDown()) actions.previousBuffer(this);
         }
     }
     
