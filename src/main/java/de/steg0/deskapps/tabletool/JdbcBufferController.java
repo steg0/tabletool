@@ -82,11 +82,16 @@ implements KeyListener
     /**blocking */
     void fetch()
     {
-        String text = getCurrentQuery();
+        String text = editor.getSelectedText() != null?
+                editor.getSelectedText().trim() : getCurrentQuery();
         if(text == null)
         {
             log.accept("No query found at "+new Date()+".\n");
             return;
+        }
+        else
+        {
+            if(text.endsWith(";")) text = text.substring(0,text.length()-1);
         }
         try(Statement st = connection.createStatement())
         {
@@ -161,8 +166,7 @@ implements KeyListener
         {
             String match = m.group();
             if(match.trim().isEmpty()) return null;
-            if(match.length() >= currentPosition) return match.endsWith(";")?
-                    match.substring(0,match.length()-1) : match;
+            if(match.length() >= currentPosition) return match;
             text = text.substring(match.length());
             currentPosition -= match.length();
             m = QUERYPATTERN.matcher(text);
