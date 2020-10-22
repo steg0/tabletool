@@ -121,7 +121,9 @@ implements KeyListener
     void getResult(String text)
     throws SQLException
     {
-        if(text.startsWith("begin") || text.startsWith("declare"))
+        if(text.startsWith("begin") || 
+           text.startsWith("declare") ||
+           text.startsWith("{"))
         {
             try(CallableStatement st = connection.prepareCall(text))
             {
