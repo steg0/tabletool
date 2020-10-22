@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -57,7 +58,15 @@ class JdbcNotebookController
             @Override
             public void mouseClicked(MouseEvent e)
             {
-                buffers.get(0).focusEditor();
+                Point reference = new Point(0,e.getY());
+                var component = bufferPanel.getComponentAt(reference);
+                for(var buffer : buffers)
+                {
+                    if(buffer.panel == component)
+                    {
+                        buffer.focusEditor();
+                    }
+                }
             }
         });
         logBufferPane.add(bufferPane);
