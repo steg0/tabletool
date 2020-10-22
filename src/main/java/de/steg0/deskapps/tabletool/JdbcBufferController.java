@@ -84,7 +84,7 @@ implements KeyListener
     void fetch()
     {
         String text = editor.getSelectedText() != null?
-                editor.getSelectedText().trim() : getCurrentQuery();
+                editor.getSelectedText().trim() : selectCurrentQuery();
         if(text == null)
         {
             log.accept("No query found at "+new Date()+".\n");
@@ -188,18 +188,23 @@ implements KeyListener
         }
     }
     
-    String getCurrentQuery()
+    String selectCurrentQuery()
     {
         String text = editor.getText();
-        int currentPosition = editor.getCaretPosition();
+        int offset = 0,position = editor.getCaretPosition();
         var m = QUERYPATTERN.matcher(text);
         while(m.find())
         {
             String match = m.group();
             if(match.trim().isEmpty()) return null;
-            if(match.length() >= currentPosition) return match;
+            if(match.length() >= position) 
+            {
+                editor.select(offset + m.start(),offset + m.end());
+                return match;
+            }
             text = text.substring(match.length());
-            currentPosition -= match.length();
+            position -= match.length();
+            offset += match.length();
             m = QUERYPATTERN.matcher(text);
         }
         return null;
