@@ -54,6 +54,7 @@ class JdbcNotebookController
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(.85);
         
+        bufferPanel.setBackground(buffer.editor.getBackground());
         var bufferPane = new JScrollPane(bufferPanel);
         bufferPane.addMouseListener(new MouseAdapter() {
             @Override
