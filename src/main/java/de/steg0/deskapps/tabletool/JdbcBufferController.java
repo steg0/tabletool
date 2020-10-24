@@ -45,6 +45,7 @@ implements KeyListener
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
         panel.add(editor,editorConstraints);
+        panel.setBackground(editor.getBackground());
         
         editor.addKeyListener(this);
     }
