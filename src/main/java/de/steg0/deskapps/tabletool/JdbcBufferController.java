@@ -6,9 +6,6 @@ import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -128,38 +125,7 @@ implements KeyListener
             ResultSetTableModel rsm = new ResultSetTableModel();
             rsm.update(rs);
             JTable resultview = new JTable(rsm);
-            resultview.addMouseListener(new MouseAdapter()
-            {
-                @Override
-                public void mouseClicked(MouseEvent event)
-                {
-                    if(event.getClickCount() == 2)
-                    {
-                        int row = resultview.rowAtPoint(event.getPoint()),
-                            col = resultview.columnAtPoint(event.getPoint());
-                        Object cellcontent = rsm.getValueAt(row,col);
-                        var celldisplay = new CellDisplayController(
-                                parent,cellcontent);
-                        try
-                        {
-                            celldisplay.show();
-                        }
-                        catch(SQLException e)
-                        {
-                            log.accept(SQLExceptionPrinter.toString(e));
-                        }
-                        catch(IOException e)
-                        {
-                            StringBuilder b=new StringBuilder();
-                            b.append("IOException occured at ");
-                            b.append(new Date());
-                            b.append(":\n");
-                            b.append(e.getMessage());
-                            log.accept(b.toString());
-                        }
-                    }               
-                }
-            });
+            new CellDisplayController(parent,resultview,log);
             Dimension preferredSize = resultview.getPreferredSize();
             resultview.setPreferredScrollableViewportSize(new Dimension(
                     (int)preferredSize.getWidth(),
