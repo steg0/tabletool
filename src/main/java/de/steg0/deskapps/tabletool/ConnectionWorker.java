@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -63,18 +62,9 @@ class ConnectionWorker
                 {
                     invokeLater(() -> log.accept(SQLExceptionPrinter.toString(e)));
                 }
-                catch(NullPointerException e)
-                {
-                    StringBuilder b=new StringBuilder();
-                    b.append("No connection available at ");
-                    b.append(new Date());
-                    b.append("\n");
-                    invokeLater(() -> log.accept(b.toString()));
-                }
             }
         }
 
-        /**@throws NullPointerException if the instance's connection is null */
         void getResult(String text)
         throws SQLException
         {

@@ -37,7 +37,7 @@ public class TableTool
         {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             
-            var controller = new JdbcNotebookController(propertyHolder);
+            var controller = new JdbcNotebookController(frame,propertyHolder);
     
             var contentPaneConstraints = new GridBagConstraints();
             contentPaneConstraints.fill = GridBagConstraints.BOTH;

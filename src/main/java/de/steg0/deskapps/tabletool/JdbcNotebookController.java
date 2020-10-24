@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,7 +23,7 @@ import javax.swing.JTextArea;
 
 class JdbcNotebookController
 {
-
+    Window parent;
     ConnectionListModel connections;
     Executor executor = Executors.newCachedThreadPool();
     PropertyHolder propertyHolder;
@@ -39,7 +40,7 @@ class JdbcNotebookController
         log.setEditable(false);
     }
     
-    JdbcNotebookController(PropertyHolder propertyHolder)
+    JdbcNotebookController(Window parent,PropertyHolder propertyHolder)
     {
         this.propertyHolder = propertyHolder;
         connections = new ConnectionListModel(propertyHolder,executor);
@@ -52,7 +53,7 @@ class JdbcNotebookController
         connectionPanelConstraints.anchor = GridBagConstraints.EAST;
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
-        var buffer = new JdbcBufferController(logConsumer,actions);
+        var buffer = new JdbcBufferController(parent,logConsumer,actions);
         add(buffer);
 
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -105,8 +106,8 @@ class JdbcNotebookController
                 {
                     if(buffers.size() <= i+1)
                     {
-                        var newBufferController =
-                                new JdbcBufferController(logConsumer,actions);
+                        var newBufferController = new JdbcBufferController(
+                                parent,logConsumer,actions);
                         newBufferController.connection =
                                 buffers.get(i).connection;
                         add(newBufferController);
