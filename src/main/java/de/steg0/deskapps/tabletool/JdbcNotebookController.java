@@ -1,6 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -11,6 +10,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import javax.swing.JComboBox;
@@ -23,11 +24,14 @@ class JdbcNotebookController
 {
 
     ConnectionListModel connections;
+    Executor executor = Executors.newCachedThreadPool();
     PropertyHolder propertyHolder;
     List<JdbcBufferController> buffers = new ArrayList<>();
     JComboBox<String> connectionsSelector;
     JTextArea log = new JTextArea();
+    
     Consumer<String> logConsumer = (t) -> log.setText(t);
+    
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
@@ -38,7 +42,7 @@ class JdbcNotebookController
     JdbcNotebookController(PropertyHolder propertyHolder)
     {
         this.propertyHolder = propertyHolder;
-        connections = new ConnectionListModel(propertyHolder);
+        connections = new ConnectionListModel(propertyHolder,executor);
     
         var connectionPanel = new JPanel();
         connectionsSelector = new JComboBox<>(connections);

@@ -1,8 +1,8 @@
 package de.steg0.deskapps.tabletool;
 
-import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.Executor;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
@@ -11,19 +11,21 @@ class ConnectionListModel
 implements ComboBoxModel<String>
 {
     PropertyHolder propertyHolder;
+    Executor executor;
     PropertyHolder.ConnectionInfo[] connectionInfo;
-    Connection[] connections;
+    ConnectionWorker[] connections;
     Object selected;
     
-    ConnectionListModel(PropertyHolder propertyHolder)
+    ConnectionListModel(PropertyHolder propertyHolder,Executor executor)
     {
         this.propertyHolder = propertyHolder;
+        this.executor = executor;
         connectionInfo = propertyHolder.getConnections();
-        connections = new Connection[connectionInfo.length];
+        connections = new ConnectionWorker[connectionInfo.length];
     }
     
     /**blocking */
-    Connection getConnection(Object name)
+    ConnectionWorker getConnection(Object name)
     throws SQLException
     {
         for(int i=0;i<connectionInfo.length;i++)
@@ -31,10 +33,13 @@ implements ComboBoxModel<String>
             if(!connectionInfo[i].name.equals(name)) continue;
             if(connections[i] == null)
             {
-                connections[i] = DriverManager.getConnection(
-                        connectionInfo[i].url,
-                        connectionInfo[i].username,
-                        connectionInfo[i].password
+                connections[i] = new ConnectionWorker(
+                        DriverManager.getConnection(
+                                connectionInfo[i].url,
+                                connectionInfo[i].username,
+                                connectionInfo[i].password
+                        ),
+                        executor
                 );
             }
             return connections[i];
