@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -65,8 +66,10 @@ class JdbcNotebookController
                     if(buffer.panel == component)
                     {
                         buffer.focusEditor();
+                        break;
                     }
                 }
+                buffers.get(buffers.size()-1).focusEditor();
             }
         });
         logBufferPane.add(bufferPane);
