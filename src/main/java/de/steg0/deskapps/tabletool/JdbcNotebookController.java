@@ -71,7 +71,7 @@ class JdbcNotebookController
                     if(buffer.panel == component)
                     {
                         buffer.focusEditor();
-                        break;
+                        return;
                     }
                 }
                 buffers.get(buffers.size()-1).focusEditor();
