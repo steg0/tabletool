@@ -35,7 +35,7 @@ public class TableTool
         var propertyHolder = new PropertyHolder();
         if(ensureFrameDefaults(propertyHolder))
         {
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             
             var controller = new JdbcNotebookController(frame,propertyHolder);
     
