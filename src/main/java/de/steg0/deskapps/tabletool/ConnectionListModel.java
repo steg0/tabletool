@@ -33,12 +33,14 @@ implements ComboBoxModel<String>
             if(!connectionInfo[i].name.equals(name)) continue;
             if(connections[i] == null)
             {
+                var jdbcConnection = DriverManager.getConnection(
+                        connectionInfo[i].url,
+                        connectionInfo[i].username,
+                        connectionInfo[i].password
+                );
+                jdbcConnection.setAutoCommit(false);
                 connections[i] = new ConnectionWorker(
-                        DriverManager.getConnection(
-                                connectionInfo[i].url,
-                                connectionInfo[i].username,
-                                connectionInfo[i].password
-                        ),
+                        jdbcConnection,
                         executor
                 );
             }
