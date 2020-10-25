@@ -89,12 +89,12 @@ implements KeyListener
                 editor.getSelectedText().trim() : selectCurrentQuery();
         if(text == null)
         {
-            log.accept("No query found at "+new Date()+".\n");
+            log.accept("No query found at "+new Date());
             return;
         }
         else if(connection == null)
         {
-            log.accept("No connection available at "+new Date()+".\n");
+            log.accept("No connection available at "+new Date());
             return;
         }
         connection.submit(text,resultConsumer,log);
