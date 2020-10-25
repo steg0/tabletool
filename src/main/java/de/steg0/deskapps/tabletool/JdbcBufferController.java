@@ -32,6 +32,7 @@ implements KeyListener
     JFrame parent;
     ConnectionWorker connection;
     JTextArea editor = new JTextArea();
+    int savedCaretPosition;
     Consumer<String> log;
     JdbcNotebookController.Actions actions;
     JdbcNotebookController notebook;
@@ -80,6 +81,7 @@ implements KeyListener
 
     void fetch()
     {
+        savedCaretPosition = editor.getCaretPosition();
         String text = editor.getSelectedText() != null?
                 editor.getSelectedText().trim() : selectCurrentQuery();
         if(text == null)
@@ -119,6 +121,7 @@ implements KeyListener
     
     Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
     {
+        editor.setCaretPosition(savedCaretPosition);
         try(rsm)
         {
             JTable resultview = new JTable(rsm);
