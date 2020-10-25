@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
 
 class JdbcBufferController
 implements KeyListener
@@ -58,19 +59,32 @@ implements KeyListener
     @Override
     public void keyReleased(KeyEvent event)
     {
-        switch(event.getKeyCode())
+        try
         {
-        case KeyEvent.VK_ENTER:
-            if(event.isControlDown()) fetch();
-            break;
-        case KeyEvent.VK_DOWN:
-            if(event.isControlDown() && panel.getComponentCount()>1)
+            switch(event.getKeyCode())
             {
-                actions.nextBuffer(this);
+            case KeyEvent.VK_ENTER:
+                if(event.isControlDown()) fetch();
+                break;
+            case KeyEvent.VK_DOWN:
+                if(editor.getLineOfOffset(editor.getCaretPosition()) == 
+                   editor.getLineCount()-1 &&
+                   panel.getComponentCount()>1)
+                {
+                    actions.nextBuffer(this);
+                }
+                break;
+            case KeyEvent.VK_UP:
+                if(editor.getLineOfOffset(editor.getCaretPosition()) == 0)
+                {
+                    actions.previousBuffer(this);
+                }
+            case KeyEvent.VK_T:
+                if(event.isControlDown()) actions.newTab();
             }
-            break;
-        case KeyEvent.VK_UP:
-            if(event.isControlDown()) actions.previousBuffer(this);
+        }
+        catch(BadLocationException ignored)
+        {
         }
     }
     

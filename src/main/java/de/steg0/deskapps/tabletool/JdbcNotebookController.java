@@ -29,6 +29,7 @@ class JdbcNotebookController
     
     JFrame parent;
     PropertyHolder propertyHolder;
+    TabSetController.Actions tabSetControllerActions;
 
     ConnectionListModel connections;
     Executor executor = Executors.newCachedThreadPool();
@@ -49,9 +50,11 @@ class JdbcNotebookController
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
-    JdbcNotebookController(JFrame parent,PropertyHolder propertyHolder)
+    JdbcNotebookController(JFrame parent,PropertyHolder propertyHolder,
+            TabSetController.Actions tabSetControllerActions)
     {
         this.propertyHolder = propertyHolder;
+        this.tabSetControllerActions = tabSetControllerActions;
         
         var connectionPanel = new JPanel();
         
@@ -128,6 +131,7 @@ class JdbcNotebookController
     {
         void nextBuffer(JdbcBufferController source);
         void previousBuffer(JdbcBufferController source);
+        void newTab();
     }
     
     Actions actions = new Actions()
@@ -165,6 +169,12 @@ class JdbcNotebookController
                     break;
                 }
             }
+        }
+
+        @Override
+        public void newTab()
+        {
+            tabSetControllerActions.add();
         }
     };
     

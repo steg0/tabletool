@@ -37,14 +37,14 @@ public class TableTool
         {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             
-            var controller = new JdbcNotebookController(frame,propertyHolder);
+            var controller = new TabSetController(frame,propertyHolder);
     
             var contentPaneConstraints = new GridBagConstraints();
             contentPaneConstraints.fill = GridBagConstraints.BOTH;
             contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
             contentPaneConstraints.weightx = contentPaneConstraints.weighty = 1;
             frame.getContentPane().add(
-                    controller.notebookPanel,
+                    controller.tabbedPane,
                     contentPaneConstraints
             );
             frame.pack();
