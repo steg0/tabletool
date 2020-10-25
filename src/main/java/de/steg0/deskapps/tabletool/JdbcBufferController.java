@@ -29,7 +29,6 @@ implements KeyListener
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
     JFrame parent;
-    JdbcNotebookController notebook;
     JdbcNotebookController.Actions actions;
     
     JPanel panel = new JPanel(new GridBagLayout());
