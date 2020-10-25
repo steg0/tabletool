@@ -28,14 +28,18 @@ implements KeyListener
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
-    JPanel panel = new JPanel(new GridBagLayout());
     JFrame parent;
+    JdbcNotebookController notebook;
+    JdbcNotebookController.Actions actions;
+    
+    JPanel panel = new JPanel(new GridBagLayout());
+    
     ConnectionWorker connection;
+    
     JTextArea editor = new JTextArea();
     int savedCaretPosition;
+    
     Consumer<String> log;
-    JdbcNotebookController.Actions actions;
-    JdbcNotebookController notebook;
     
     JdbcBufferController(JFrame parent,Consumer<String> updateLog,
             JdbcNotebookController.Actions actions)
