@@ -29,7 +29,6 @@ class JdbcNotebookController
     ConnectionListModel connections;
     Executor executor = Executors.newCachedThreadPool();
     JComboBox<String> connectionsSelector;
-    
 
     JTextArea log = new JTextArea();
     Consumer<String> logConsumer = (t) -> log.setText(t);
