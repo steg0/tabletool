@@ -5,9 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.function.Consumer;
@@ -119,12 +117,10 @@ implements KeyListener
         return null;
     }
     
-    Consumer<Statement> resultConsumer = (statement) ->
+    Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
     {
-        try(statement;ResultSet rs = statement.getResultSet())
+        try(rsm)
         {
-            ResultSetTableModel rsm = new ResultSetTableModel();
-            rsm.update(rs);
             JTable resultview = new JTable(rsm);
             new CellDisplayController(parent,resultview,log);
             Dimension preferredSize = resultview.getPreferredSize();

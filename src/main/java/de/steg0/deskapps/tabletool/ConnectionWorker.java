@@ -33,7 +33,7 @@ class ConnectionWorker
      */
     void submit(
             String sql,
-            Consumer<Statement> resultConsumer,
+            Consumer<ResultSetTableModel> resultConsumer,
             Consumer<String> log
     )
     {
@@ -46,7 +46,7 @@ class ConnectionWorker
     
     class SqlRunnable implements Runnable
     {
-        Consumer<Statement> resultConsumer;
+        Consumer<ResultSetTableModel> resultConsumer;
         Consumer<String> log;
         String sql;
 
@@ -96,8 +96,11 @@ class ConnectionWorker
         }
         
         void reportResult(Statement statement)
+        throws SQLException
         {
-            invokeLater(() -> resultConsumer.accept(statement));
+            var rsm = new ResultSetTableModel();
+            rsm.update(statement);
+            invokeLater(() -> resultConsumer.accept(rsm));
         }
     }
 }

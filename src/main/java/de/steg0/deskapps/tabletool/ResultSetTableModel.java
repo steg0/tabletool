@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,19 +11,23 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
 class ResultSetTableModel
-implements TableModel
+implements TableModel,AutoCloseable
 {
     static final int FETCHSIZE=300;
 
+    Statement st;
     ResultSet rs;
     String cols[];
     List<Object[]> rows;
     
-    /**blocking */
-    void update(ResultSet rs)
+    /**Blockingly retrieves a ResultSet from the Statement.
+     * Neither one is closed; it is expected they have to be closed
+     * externally. For this, the class implements AutoCloseable. */
+    void update(Statement st)
     throws SQLException
     {
-        this.rs = rs;
+        this.st = st;
+        this.rs = st.getResultSet();
         fill();
     }
     
@@ -98,6 +103,19 @@ implements TableModel
     @Override
     public void removeTableModelListener(TableModelListener l)
     {
+    }
+
+    @Override
+    public void close() throws SQLException
+    {
+        try
+        {
+            rs.close();
+        }
+        finally
+        {
+            st.close();
+        }
     }
 
 }
