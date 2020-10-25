@@ -18,6 +18,7 @@ implements TableModel
     String cols[];
     List<Object[]> rows;
     
+    /**blocking */
     void update(ResultSet rs)
     throws SQLException
     {
