@@ -67,6 +67,7 @@ class CellDisplayController
         dialog.getContentPane().setLayout(new BorderLayout());
         
         var textarea = new JTextArea(8,60);
+        textarea.setEditable(false);
         var scrollpane = new JScrollPane(textarea);
         if(value instanceof Clob)
         {
