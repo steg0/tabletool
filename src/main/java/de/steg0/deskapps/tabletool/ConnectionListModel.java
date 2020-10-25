@@ -12,19 +12,22 @@ implements ComboBoxModel<String>
 {
     PropertyHolder propertyHolder;
     Executor executor;
+    boolean autocommitDefault;
     PropertyHolder.ConnectionInfo[] connectionInfo;
     ConnectionWorker[] connections;
     Object selected;
     
-    ConnectionListModel(PropertyHolder propertyHolder,Executor executor)
+    ConnectionListModel(PropertyHolder propertyHolder,Executor executor,
+            boolean autocommitDefault)
     {
         this.propertyHolder = propertyHolder;
         this.executor = executor;
+        this.autocommitDefault = autocommitDefault;
         connectionInfo = propertyHolder.getConnections();
         connections = new ConnectionWorker[connectionInfo.length];
     }
     
-    /**blocking */
+    /**blocking; establishes connection if needed */
     ConnectionWorker getConnection(Object name)
     throws SQLException
     {
@@ -38,12 +41,25 @@ implements ComboBoxModel<String>
                         connectionInfo[i].username,
                         connectionInfo[i].password
                 );
-                jdbcConnection.setAutoCommit(false);
+                jdbcConnection.setAutoCommit(autocommitDefault);
                 connections[i] = new ConnectionWorker(
                         jdbcConnection,
                         executor
                 );
             }
+            return connections[i];
+        }
+        return null;
+    }
+    
+    /**does not try to establish a connection; only returns non-null
+     * result if one is already present. */
+    ConnectionWorker selected()
+    {
+        Object name = getSelectedItem();
+        for(int i=0;i<connectionInfo.length;i++)
+        {
+            if(!connectionInfo[i].name.equals(name)) continue;
             return connections[i];
         }
         return null;

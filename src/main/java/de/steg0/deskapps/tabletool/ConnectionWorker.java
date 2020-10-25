@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -22,6 +23,11 @@ class ConnectionWorker
     {
         this.connection=connection;
         this.executor=executor;
+    }
+    
+    void report(Consumer<String> log,String str)
+    {
+        invokeLater(() -> log.accept(str));
     }
     
     /**
@@ -60,7 +66,7 @@ class ConnectionWorker
                 }
                 catch(SQLException e)
                 {
-                    invokeLater(() -> log.accept(SQLExceptionPrinter.toString(e)));
+                    report(log,SQLExceptionPrinter.toString(e));
                 }
             }
         }
@@ -90,9 +96,7 @@ class ConnectionWorker
         throws SQLException
         {
             Object[] updateCount = {statement.getUpdateCount()};
-            invokeLater(() -> log.accept(
-                    UPDATE_LOG_FORMAT.format(updateCount)
-            ));
+            report(log,UPDATE_LOG_FORMAT.format(updateCount));
         }
         
         void reportResult(Statement statement)
@@ -102,5 +106,62 @@ class ConnectionWorker
             rsm.update(statement);
             invokeLater(() -> resultConsumer.accept(rsm));
         }
+    }
+    
+    void commit(Consumer<String> log)
+    {
+        executor.execute(() ->
+        {
+            synchronized(ConnectionWorker.this)
+            {
+                try
+                {
+                    connection.commit();
+                    report(log,"Commit complete at "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    report(log,SQLExceptionPrinter.toString(e));
+                }
+            }
+        });
+    }
+    
+    void rollback(Consumer<String> log)
+    {
+        executor.execute(() ->
+        {
+            synchronized(ConnectionWorker.this)
+            {
+                try
+                {
+                    connection.rollback();
+                    report(log,"Rollback complete at "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    report(log,SQLExceptionPrinter.toString(e));
+                }
+            }
+        });
+    }
+    
+    void setAutoCommit(boolean enabled,Consumer<String> log)
+    {
+        executor.execute(() ->
+        {
+            synchronized(ConnectionWorker.this)
+            {
+                try
+                {
+                    connection.setAutoCommit(enabled);
+                    report(log,"Autocommit set to "+enabled+" at "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    report(log,SQLExceptionPrinter.toString(e));
+                }
+            }
+        });
     }
 }

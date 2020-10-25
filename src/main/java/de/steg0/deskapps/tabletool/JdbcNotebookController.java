@@ -14,6 +14,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -23,6 +25,8 @@ import javax.swing.JTextArea;
 
 class JdbcNotebookController
 {
+    static final boolean AUTOCOMMIT_DEFAULT=false;
+    
     JFrame parent;
     PropertyHolder propertyHolder;
 
@@ -30,6 +34,10 @@ class JdbcNotebookController
     Executor executor = Executors.newCachedThreadPool();
     JComboBox<String> connectionsSelector;
 
+    JButton commitButton = new JButton("Commit");
+    JButton rollbackButton = new JButton("Rollback");
+    JCheckBox autocommitCb = new JCheckBox("Autocommit",AUTOCOMMIT_DEFAULT);
+    
     JTextArea log = new JTextArea();
     Consumer<String> logConsumer = (t) -> log.setText(t);
     
@@ -44,14 +52,37 @@ class JdbcNotebookController
     JdbcNotebookController(JFrame parent,PropertyHolder propertyHolder)
     {
         this.propertyHolder = propertyHolder;
-    
-        connections = new ConnectionListModel(propertyHolder,executor);
+        
         var connectionPanel = new JPanel();
+        
+        commitButton.addActionListener((e) -> 
+        {
+            onConnection((c) -> c.commit(logConsumer));
+        });
+        connectionPanel.add(commitButton);
+        
+        rollbackButton.addActionListener((e) -> 
+        {
+            onConnection((c) -> c.rollback(logConsumer));
+        });
+        connectionPanel.add(rollbackButton);
+        
+        autocommitCb.addActionListener((e) -> 
+        {
+            onConnection((c) -> c.setAutoCommit(
+                    autocommitCb.isSelected(),logConsumer));
+        });
+        connectionPanel.add(autocommitCb);
+        
+        connections = new ConnectionListModel(propertyHolder,executor,
+                AUTOCOMMIT_DEFAULT);
         connectionsSelector = new JComboBox<>(connections);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
         connectionPanel.add(connectionsSelector);
+        
         var connectionPanelConstraints = new GridBagConstraints();
         connectionPanelConstraints.anchor = GridBagConstraints.EAST;
+        
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
         var buffer = new JdbcBufferController(parent,logConsumer,actions);
@@ -156,26 +187,35 @@ class JdbcNotebookController
         buffers.add(c);
     }
     
+    void onConnection(Consumer<ConnectionWorker> c)
+    {
+        ConnectionWorker selectedConnection = connections.selected();
+        if(selectedConnection != null)
+        {
+            c.accept(selectedConnection);
+        }
+        else
+        {
+            logConsumer.accept("No connection available at "+new Date());
+        };
+    }
+    
     /**blocking */
     void updateConnection(ItemEvent event)
     {
         try
         {
+            var connection = connections.getConnection(event.getItem());
+            connection.setAutoCommit(autocommitCb.isSelected(),logConsumer);
             for(JdbcBufferController buffer : buffers)
             {
-                buffer.connection = connections.getConnection(event.getItem());
+                buffer.connection = connection;
             }
             buffers.get(0).focusEditor();
         }
         catch(SQLException e)
         {
-            log.setText("Error retrieving connection at "+new Date()+"\n");
-            for(;e!=null;e=e.getNextException())
-            {
-                log.append("Error code: "+e.getErrorCode()+"\n");
-                log.append("SQL State: "+e.getSQLState()+"\n");
-                log.append(e.getMessage()+"\n");
-            }
+            logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
     }
     
