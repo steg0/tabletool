@@ -3,7 +3,6 @@ package de.steg0.deskapps.tabletool;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -16,6 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -23,7 +23,7 @@ import javax.swing.JTextArea;
 
 class JdbcNotebookController
 {
-    Window parent;
+    JFrame parent;
     PropertyHolder propertyHolder;
 
     ConnectionListModel connections;
@@ -42,7 +42,7 @@ class JdbcNotebookController
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
-    JdbcNotebookController(Window parent,PropertyHolder propertyHolder)
+    JdbcNotebookController(JFrame parent,PropertyHolder propertyHolder)
     {
         this.propertyHolder = propertyHolder;
     

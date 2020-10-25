@@ -1,7 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
-import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -12,6 +11,7 @@ import java.util.Date;
 import java.util.function.Consumer;
 
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -20,9 +20,9 @@ import javax.swing.JTextArea;
 class CellDisplayController
 {
     JPanel panel = new JPanel(new BorderLayout());
-    Window parent;
+    JFrame parent;
     
-    CellDisplayController(Window parent,JTable source,Consumer<String> log)
+    CellDisplayController(JFrame parent,JTable source,Consumer<String> log)
     {
         this.parent = parent;
         
@@ -61,8 +61,9 @@ class CellDisplayController
     void show(Object value)
     throws SQLException,IOException
     {
-        var dialog = new JDialog(parent,"Cell display");
-        
+        var dialog = new JDialog(parent,"Cell display",true);
+
+        dialog.setLocationRelativeTo(parent.getContentPane());
         dialog.getContentPane().setLayout(new BorderLayout());
         
         var textarea = new JTextArea(8,60);

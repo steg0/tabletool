@@ -3,7 +3,6 @@ package de.steg0.deskapps.tabletool;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.ResultSet;
@@ -14,6 +13,7 @@ import java.util.Date;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -31,16 +31,17 @@ implements KeyListener
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
     JPanel panel = new JPanel(new GridBagLayout());
-    Window parent;
+    JFrame parent;
     ConnectionWorker connection;
     JTextArea editor = new JTextArea();
     Consumer<String> log;
     JdbcNotebookController.Actions actions;
     JdbcNotebookController notebook;
     
-    JdbcBufferController(Window parent,Consumer<String> updateLog,
+    JdbcBufferController(JFrame parent,Consumer<String> updateLog,
             JdbcNotebookController.Actions actions)
     {
+        this.parent = parent;
         this.log = updateLog;
         this.actions = actions;
         
