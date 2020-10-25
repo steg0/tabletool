@@ -24,27 +24,29 @@ import javax.swing.JTextArea;
 class JdbcNotebookController
 {
     Window parent;
+    PropertyHolder propertyHolder;
+
     ConnectionListModel connections;
     Executor executor = Executors.newCachedThreadPool();
-    PropertyHolder propertyHolder;
-    List<JdbcBufferController> buffers = new ArrayList<>();
     JComboBox<String> connectionsSelector;
+    
+
     JTextArea log = new JTextArea();
-    
     Consumer<String> logConsumer = (t) -> log.setText(t);
-    
-    JPanel bufferPanel = new JPanel(new GridBagLayout());
-    JPanel notebookPanel = new JPanel(new GridBagLayout());
     
     {
         log.setEditable(false);
     }
     
+    List<JdbcBufferController> buffers = new ArrayList<>();
+    JPanel bufferPanel = new JPanel(new GridBagLayout());
+    JPanel notebookPanel = new JPanel(new GridBagLayout());
+    
     JdbcNotebookController(Window parent,PropertyHolder propertyHolder)
     {
         this.propertyHolder = propertyHolder;
-        connections = new ConnectionListModel(propertyHolder,executor);
     
+        connections = new ConnectionListModel(propertyHolder,executor);
         var connectionPanel = new JPanel();
         connectionsSelector = new JComboBox<>(connections);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
@@ -61,23 +63,7 @@ class JdbcNotebookController
         
         bufferPanel.setBackground(buffer.editor.getBackground());
         var bufferPane = new JScrollPane(bufferPanel);
-        bufferPane.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e)
-            {
-                Point reference = new Point(0,e.getY());
-                var component = bufferPanel.getComponentAt(reference);
-                for(var buffer : buffers)
-                {
-                    if(buffer.panel == component)
-                    {
-                        buffer.focusEditor();
-                        return;
-                    }
-                }
-                buffers.get(buffers.size()-1).focusEditor();
-            }
-        });
+        bufferPane.addMouseListener(new BufferPaneMouseListener());
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
         logBufferPane.add(logPane);
@@ -87,6 +73,25 @@ class JdbcNotebookController
         bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
+    }
+    
+    class BufferPaneMouseListener extends MouseAdapter
+    {
+        @Override
+        public void mouseClicked(MouseEvent e)
+        {
+            Point reference = new Point(0,e.getY());
+            var component = bufferPanel.getComponentAt(reference);
+            for(var buffer : buffers)
+            {
+                if(buffer.panel == component)
+                {
+                    buffer.focusEditor();
+                    return;
+                }
+            }
+            buffers.get(buffers.size()-1).focusEditor();
+        }
     }
     
     interface Actions
