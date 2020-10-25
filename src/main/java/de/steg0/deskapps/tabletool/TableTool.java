@@ -19,7 +19,7 @@ import javax.swing.JOptionPane;
  * 
  * Start example:
  * <code>
- * java -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
+ * java -XX:+UseSerialGC -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
  * </code>
  */
 public class TableTool 
