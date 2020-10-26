@@ -88,12 +88,12 @@ implements TableModel,AutoCloseable
     
     static String sanitizeForCsv(String strval)
     {
-        if(strval.contains(",") || strval.contains("\n"))
+        boolean comma=strval.contains(","),nl=strval.contains("\n");
+        if(comma||nl)
         {
-            strval = '"' + 
-                    strval.replaceAll("\\\"","\"\"") + 
-                    strval.replaceAll("\n","\n--") +
-                    '"';
+            if(comma) strval = strval.replaceAll("\\\"","\"\"");
+            if(nl) strval = strval.replaceAll("\n","\n--");
+            strval = '"' + strval + '"';
         }
         return strval;
     }
