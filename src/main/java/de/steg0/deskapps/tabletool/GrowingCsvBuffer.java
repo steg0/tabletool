@@ -8,7 +8,6 @@ class GrowingCsvBuffer
     List<Object[]> rows = new ArrayList<>();
     List<Object> row = new ArrayList<>();
     StringBuilder field = new StringBuilder();
-    int length;
     
     enum State { INIT,FIELD,QUOTEDFIELD,QUOTEINQUOTEDFIELD };
     
@@ -36,11 +35,6 @@ class GrowingCsvBuffer
         return rows.subList(1,rows.size());
     }
     
-    int length()
-    {
-        return length;
-    }
-
     void accept(int c)
     {
         field.append((char)c);
@@ -133,7 +127,5 @@ class GrowingCsvBuffer
                 }
             }
         });
-        
-        length += s.length();
     }
 }
