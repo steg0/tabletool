@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -52,6 +54,44 @@ implements TableModel,AutoCloseable
             rows.add(row);
             rowcount++;
         }
+    }
+    
+    void store(Writer w)
+    throws IOException
+    {
+        w.write("--CSV Result\n--");
+        for(int i=0;i<cols.length;i++)
+        {
+            if(i>0) w.write(',');
+            String strval = sanitizeForCsv(cols[i].toString());
+            w.write(strval);
+        }
+        w.write('\n');
+        for(Object[] row : rows)
+        {
+            w.write("--");
+            for(int i=0;i<row.length;i++)
+            {
+                if(i>0) w.write(',');
+                if(row[i] != null)
+                {
+                    String strval = sanitizeForCsv(row[i].toString());
+                    w.write(strval);
+                }
+            }
+            w.write('\n');
+        }
+    }
+    
+    static String sanitizeForCsv(String strval)
+    {
+        if(strval.contains(",") || strval.contains("\n"))
+        {
+            strval = '"' + 
+                    strval.replaceAll("\\\"","\"\"") + 
+                    strval.replaceAll("\n","\n--");
+        }
+        return strval;
     }
     
     @Override

@@ -7,6 +7,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -89,6 +91,8 @@ implements KeyListener,FocusListener
             case KeyEvent.VK_W:
                 if(event.isControlDown()) actions.removeTab();
                 break;
+            case KeyEvent.VK_S:
+                if(event.isControlDown()) actions.store();
             }
         }
         catch(BadLocationException ignored)
@@ -111,6 +115,20 @@ implements KeyListener,FocusListener
         editor.requestFocusInWindow();
     }
 
+    void store(Writer w)
+    throws IOException
+    {
+        w.write(editor.getText());
+        if(panel.getComponentCount()==2)
+        {
+            w.write('\n');
+            JScrollPane tablepane = (JScrollPane)panel.getComponent(1);
+            JTable t = (JTable)tablepane.getViewport().getComponent(0);
+            var model = (ResultSetTableModel)t.getModel();
+            model.store(w);
+        }
+    }
+    
     void fetch()
     {
         savedCaretPosition = editor.getCaretPosition();

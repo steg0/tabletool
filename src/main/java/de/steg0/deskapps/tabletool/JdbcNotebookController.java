@@ -6,6 +6,9 @@ import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,7 +18,9 @@ import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -144,6 +149,7 @@ class JdbcNotebookController
         void previousBuffer(JdbcBufferController source);
         void newTab();
         void removeTab();
+        void store();
     }
     
     Actions actions = new Actions()
@@ -200,6 +206,28 @@ class JdbcNotebookController
         {
             tabSetControllerActions.removeSelected();
         }
+
+        @Override
+        public void store()
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showSaveDialog(bufferPanel);
+            if (returnVal == JFileChooser.APPROVE_OPTION) 
+            {
+                try(Writer w = new FileWriter(filechooser.getSelectedFile()))
+                {
+                    JdbcNotebookController.this.store(w);
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            bufferPanel,
+                            "Error saving: "+e.getMessage(),
+                            "Error saving",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
     };
     
     void add(JdbcBufferController c)
@@ -219,6 +247,16 @@ class JdbcNotebookController
         panelConstraints.gridy=buffers.size();
         bufferPanel.add(c.panel,panelConstraints);
         buffers.add(c);
+    }
+    
+    /**blocking */
+    void store(Writer w)
+    throws IOException
+    {
+        for(JdbcBufferController buffer : buffers)
+        {
+            buffer.store(w);
+        }
     }
     
     void restoreFocus()
