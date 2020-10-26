@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -24,7 +25,8 @@ implements TableModel,AutoCloseable
     
     /**Blockingly retrieves a ResultSet from the Statement.
      * Neither one is closed; it is expected they have to be closed
-     * externally. For this, the class implements AutoCloseable. */
+     * externally. For this and only this, the class implements 
+     * AutoCloseable. */
     void update(Statement st)
     throws SQLException
     {
@@ -83,6 +85,7 @@ implements TableModel,AutoCloseable
         }
     }
     
+    
     static String sanitizeForCsv(String strval)
     {
         if(strval.contains(",") || strval.contains("\n"))
@@ -92,6 +95,38 @@ implements TableModel,AutoCloseable
                     strval.replaceAll("\n","\n--");
         }
         return strval;
+    }
+
+    /**
+     * @return the first line from <code>r</code> which follows the tabular
+     * region, or <code>null</code> if the file ends there.
+     * The value is expected to be processed by the caller.
+     */
+    String load(LineNumberReader r)
+    throws IOException
+    {
+        try
+        {
+            String line,nextline=null;
+            var buffer=new GrowingCsvBuffer();
+            while((line=r.readLine())!=null)
+            {
+                if(!line.startsWith("--"))
+                {
+                    nextline=line;
+                    break;
+                }
+                buffer.append(line.substring(2)+'\n');
+            }
+            cols = buffer.getHeader();
+            rows = buffer.getRows();
+            return nextline;
+        }
+        catch(Exception e)
+        {
+            throw new IOException("Error reading CSV section at line "+
+                    r.getLineNumber()+": "+e.getMessage());
+        }
     }
     
     @Override
@@ -148,6 +183,7 @@ implements TableModel,AutoCloseable
     @Override
     public void close() throws SQLException
     {
+        if(rs==null) return;
         try
         {
             rs.close();

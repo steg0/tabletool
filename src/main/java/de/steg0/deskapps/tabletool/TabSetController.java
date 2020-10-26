@@ -2,12 +2,18 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 class TabSetController
@@ -32,10 +38,10 @@ implements KeyListener
         
         this.tabbedPane.addKeyListener(this);
         
-        add();
+        add(null);
     }
     
-    void add()
+    void add(File f)
     {
         var notebook = new JdbcNotebookController(
                 parent,
@@ -44,8 +50,16 @@ implements KeyListener
                 actions
         );
         notebooks.add(notebook);
-        String newname = "Notebook"+(unnamedNotebookCount++);
-        tabbedPane.add(newname,notebook.notebookPanel);
+        if(f==null)
+        {
+            String newname = "Notebook"+(unnamedNotebookCount++);
+            tabbedPane.add(newname,notebook.notebookPanel);
+        }
+        else
+        {
+            tabbedPane.add(notebook.notebookPanel);
+            actions.setTabTitleFor(f);
+        }
     }
     
     void removeSelected()
@@ -54,11 +68,36 @@ implements KeyListener
         tabbedPane.remove(tabbedPane.getSelectedIndex());
     }
     
+    void load()
+    {
+        var filechooser = new JFileChooser();
+        int returnVal = filechooser.showOpenDialog(tabbedPane);
+        if(returnVal != JFileChooser.APPROVE_OPTION) return;
+        File file=filechooser.getSelectedFile();
+        add(file);
+        try(var r = new LineNumberReader(new FileReader(file)))
+        {
+            JdbcNotebookController notebook = 
+                    notebooks.get(tabbedPane.getSelectedIndex());
+            notebook.load(r);
+            notebook.file = file;
+        }
+        catch(IOException e)
+        {
+            JOptionPane.showMessageDialog(
+                    tabbedPane,
+                    "Error loading: "+e.getMessage(),
+                    "Error loading",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     interface Actions
     {
         void add();
         void removeSelected();
         void reportDisconnect(ConnectionWorker connection);
+        void setTabTitleFor(File f);
     }
 
     Actions actions = new Actions()
@@ -66,7 +105,7 @@ implements KeyListener
         @Override
         public void add()
         {
-            TabSetController.this.add();
+            TabSetController.this.add(null);
         }
         @Override
         public void removeSelected()
@@ -87,6 +126,11 @@ implements KeyListener
              */
             connections.reportDisconnect(connection);
         }
+        @Override
+        public void setTabTitleFor(File f)
+        {
+            tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),f.getName());
+        }
     };
 
     @Override public void keyTyped(KeyEvent e) { }
@@ -101,10 +145,13 @@ implements KeyListener
             notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
             break;
         case KeyEvent.VK_T:
-            if(e.isControlDown()) this.add();
+            if(e.isControlDown()) this.add(null);
             break;
         case KeyEvent.VK_W:
             if(e.isControlDown()) this.removeSelected();
+            break;
+        case KeyEvent.VK_O:
+            if(e.isControlDown()) load();
         }
     }
 }

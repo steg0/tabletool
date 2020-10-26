@@ -6,8 +6,10 @@ import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -32,6 +34,8 @@ class JdbcNotebookController
     PropertyHolder propertyHolder;
     TabSetController.Actions tabSetControllerActions;
 
+    File file;
+    
     ConnectionListModel connections;
     JComboBox<String> connectionsSelector;
 
@@ -210,22 +214,25 @@ class JdbcNotebookController
         @Override
         public void store()
         {
-            var filechooser = new JFileChooser();
-            int returnVal = filechooser.showSaveDialog(bufferPanel);
-            if(returnVal == JFileChooser.APPROVE_OPTION) 
+            if(file==null)
             {
-                try(Writer w = new FileWriter(filechooser.getSelectedFile()))
-                {
-                    JdbcNotebookController.this.store(w);
-                }
-                catch(IOException e)
-                {
-                    JOptionPane.showMessageDialog(
-                            bufferPanel,
-                            "Error saving: "+e.getMessage(),
-                            "Error saving",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+                var filechooser = new JFileChooser();
+                int returnVal = filechooser.showSaveDialog(bufferPanel);
+                if(returnVal != JFileChooser.APPROVE_OPTION) return;
+                file=filechooser.getSelectedFile();
+                tabSetControllerActions.setTabTitleFor(file);
+            }
+            try(Writer w = new FileWriter(file))
+            {
+                JdbcNotebookController.this.store(w);
+            }
+            catch(IOException e)
+            {
+                JOptionPane.showMessageDialog(
+                        bufferPanel,
+                        "Error saving: "+e.getMessage(),
+                        "Error saving",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     };
@@ -257,6 +264,24 @@ class JdbcNotebookController
         {
             buffer.store(w);
         }
+    }
+    
+    /**blocking */
+    void load(LineNumberReader r)
+    throws IOException
+    {
+        assert buffers.size()==1 : "load only supports uninitialized panels";
+        String nextline=buffers.get(0).load(r);
+        while(nextline != null)
+        {
+            var newBufferController = new JdbcBufferController(
+                    parent,logConsumer,actions);
+            newBufferController.appendText(nextline);
+            nextline = newBufferController.load(r);
+            add(newBufferController);
+        }
+        bufferPanel.revalidate();
+        buffers.get(0).focusEditor();
     }
     
     void restoreFocus()
