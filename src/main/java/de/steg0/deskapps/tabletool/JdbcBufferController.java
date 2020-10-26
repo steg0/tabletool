@@ -79,8 +79,6 @@ implements KeyListener
                 {
                     actions.previousBuffer(this);
                 }
-            case KeyEvent.VK_T:
-                if(event.isControlDown()) actions.newTab();
             }
         }
         catch(BadLocationException ignored)

@@ -197,6 +197,11 @@ class JdbcNotebookController
         buffers.add(c);
     }
     
+    void focusFirstBuffer()
+    {
+        buffers.get(0).focusEditor();
+    }
+    
     void onConnection(Consumer<ConnectionWorker> c)
     {
         ConnectionWorker selectedConnection = connections.selected();
@@ -221,7 +226,7 @@ class JdbcNotebookController
             {
                 buffer.connection = connection;
             }
-            buffers.get(0).focusEditor();
+            focusFirstBuffer();
         }
         catch(SQLException e)
         {
