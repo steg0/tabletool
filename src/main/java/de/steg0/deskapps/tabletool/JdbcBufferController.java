@@ -138,7 +138,7 @@ implements KeyListener,FocusListener
     String load(LineNumberReader r)
     throws IOException
     {
-        var newText = new StringBuilder();
+        var newText = new StringBuilder(editor.getText());
         String line,nextline=null;
         while((line=r.readLine())!=null)
         {
