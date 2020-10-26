@@ -17,9 +17,13 @@ import javax.swing.JOptionPane;
  * 
  * <p>It should also offer table-diff functionality.</p>
  * 
- * Start example:
+ * Start example &ndash; Windows L&amp;F:
  * <code>
- * java -XX:+UseSerialGC -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
+ * java -XX:+UseSerialGC -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
+ * </code>
+ * Metal L&amp;F with Steel theme:
+ * <code>
+ * java -XX:+UseSerialGC -Dswing.metalTheme=steel -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
  * </code>
  */
 public class TableTool 
