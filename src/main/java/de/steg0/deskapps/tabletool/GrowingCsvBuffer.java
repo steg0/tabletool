@@ -35,6 +35,23 @@ class GrowingCsvBuffer
         return rows.subList(1,rows.size());
     }
 
+    void accept(int c)
+    {
+        field.append((char)c);
+    }
+    
+    void acceptField()
+    {
+        row.add(field.toString());
+        field.setLength(0);
+    }
+    
+    void acceptLine()
+    {
+        rows.add(row.toArray());
+        row = new ArrayList<>();
+    }
+    
     /**
      * @throws IllegalStateException if a parsing error occurs reading the
      * CSV input
@@ -52,18 +69,15 @@ class GrowingCsvBuffer
                     state = State.QUOTEDFIELD;
                     break;
                 case ',':
-                    row.add(field.toString());
-                    field.setLength(0);
+                    acceptField();
                     break;
                 case '\n':
-                    row.add(field.toString());
-                    field.setLength(0);
-                    rows.add(row.toArray());
-                    row = new ArrayList<>();
+                    acceptField();
+                    acceptLine();
                     break;
                 default:
                     state = State.FIELD;
-                    field.append((char)c);
+                    accept(c);
                 }
                 break;
             case QUOTEDFIELD:
@@ -73,7 +87,7 @@ class GrowingCsvBuffer
                     state = State.QUOTEINQUOTEDFIELD;
                     break;
                 default:
-                    field.append((char)c);
+                    accept(c);
                 }
                 break;
             case QUOTEINQUOTEDFIELD:
@@ -85,15 +99,12 @@ class GrowingCsvBuffer
                     break;
                 case ',':
                     state = State.INIT;
-                    row.add(field.toString());
-                    field.setLength(0);
+                    acceptField();
                     break;
                 case '\n':
                     state = State.INIT;
-                    row.add(field.toString());
-                    field.setLength(0);
-                    rows.add(row.toArray());
-                    row = new ArrayList<>();
+                    acceptField();
+                    acceptLine();
                     break;
                 default:
                     throw new IllegalStateException("'\"' or ',' expected");
@@ -104,18 +115,15 @@ class GrowingCsvBuffer
                 {
                 case ',':
                     state = State.INIT;
-                    row.add(field.toString());
-                    field.setLength(0);
+                    acceptField();
                     break;
                 case '\n':
                     state = State.INIT;
-                    row.add(field.toString());
-                    field.setLength(0);
-                    rows.add(row.toArray());
-                    row = new ArrayList<>();
+                    acceptField();
+                    acceptLine();
                     break;
                 default:
-                    field.append((char)c);
+                    accept(c);
                 }
             }
         });
