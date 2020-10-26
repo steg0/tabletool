@@ -41,7 +41,6 @@ class GrowingCsvBuffer
      */
     void append(String s)
     {
-        StringBuilder field = new StringBuilder();
         s.chars().forEach((c) ->
         {
             switch(state)
@@ -88,6 +87,13 @@ class GrowingCsvBuffer
                     state = State.INIT;
                     row.add(field.toString());
                     field.setLength(0);
+                    break;
+                case '\n':
+                    state = State.INIT;
+                    row.add(field.toString());
+                    field.setLength(0);
+                    rows.add(row.toArray());
+                    row = new ArrayList<>();
                     break;
                 default:
                     throw new IllegalStateException("'\"' or ',' expected");
