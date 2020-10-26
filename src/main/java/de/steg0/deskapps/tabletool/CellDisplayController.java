@@ -1,6 +1,8 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -64,11 +66,12 @@ class CellDisplayController
         var dialog = new JDialog(parent,"Cell display",true);
 
         dialog.setLocationRelativeTo(parent.getContentPane());
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().setLayout(new BorderLayout());
         
         var textarea = new JTextArea(8,60);
         textarea.setEditable(false);
-        var scrollpane = new JScrollPane(textarea);
+        
         if(value instanceof Clob)
         {
             var b = new StringBuilder();
@@ -83,6 +86,26 @@ class CellDisplayController
         {
             textarea.setText(value.toString());
         }
+        
+        textarea.addKeyListener(new KeyListener()
+        {
+            @Override public void keyTyped(KeyEvent e) { }
+            @Override public void keyPressed(KeyEvent e) { }
+
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                switch(e.getKeyCode())
+                {
+                case KeyEvent.VK_ESCAPE:
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                }
+            }
+        });
+        
+        var scrollpane = new JScrollPane(textarea);
+        
         dialog.getContentPane().add(scrollpane);
         
         dialog.pack();
