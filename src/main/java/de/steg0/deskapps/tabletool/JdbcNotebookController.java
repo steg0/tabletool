@@ -47,6 +47,7 @@ class JdbcNotebookController
     }
     
     List<JdbcBufferController> buffers = new ArrayList<>();
+    int lastFocusedBuffer;
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
@@ -129,6 +130,7 @@ class JdbcNotebookController
     
     interface Actions
     {
+        void bufferFocusLost(JdbcBufferController source);
         void nextBuffer(JdbcBufferController source);
         void previousBuffer(JdbcBufferController source);
         void newTab();
@@ -136,6 +138,12 @@ class JdbcNotebookController
     
     Actions actions = new Actions()
     {
+        @Override
+        public void bufferFocusLost(JdbcBufferController source)
+        {
+            lastFocusedBuffer = buffers.indexOf(source);
+        }
+        
         @Override
         public void nextBuffer(JdbcBufferController source)
         {
@@ -197,9 +205,9 @@ class JdbcNotebookController
         buffers.add(c);
     }
     
-    void focusFirstBuffer()
+    void restoreFocus()
     {
-        buffers.get(0).focusEditor();
+        buffers.get(lastFocusedBuffer).focusEditor();
     }
     
     void onConnection(Consumer<ConnectionWorker> c)
@@ -226,7 +234,7 @@ class JdbcNotebookController
             {
                 buffer.connection = connection;
             }
-            focusFirstBuffer();
+            restoreFocus();
         }
         catch(SQLException e)
         {

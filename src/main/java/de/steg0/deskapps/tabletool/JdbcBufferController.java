@@ -3,6 +3,8 @@ package de.steg0.deskapps.tabletool;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.sql.SQLException;
@@ -19,7 +21,7 @@ import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 
 class JdbcBufferController
-implements KeyListener
+implements KeyListener,FocusListener
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched.\n");
@@ -54,6 +56,7 @@ implements KeyListener
         panel.setBackground(editor.getBackground());
         
         editor.addKeyListener(this);
+        editor.addFocusListener(this);
     }
 
     @Override
@@ -79,6 +82,9 @@ implements KeyListener
                 {
                     actions.previousBuffer(this);
                 }
+                break;
+            case KeyEvent.VK_T:
+                if(event.isControlDown()) actions.newTab();
             }
         }
         catch(BadLocationException ignored)
@@ -88,7 +94,14 @@ implements KeyListener
     
     @Override public void keyTyped(KeyEvent e) { }
     @Override public void keyPressed(KeyEvent e) { }
-    
+    @Override public void focusGained(FocusEvent e) { }
+
+    @Override
+    public void focusLost(FocusEvent e)
+    {
+        actions.bufferFocusLost(this);
+    }
+
     void focusEditor()
     {
         editor.requestFocusInWindow();

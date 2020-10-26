@@ -57,7 +57,7 @@ implements KeyListener
         switch(e.getKeyCode())
         {
         case KeyEvent.VK_ENTER:
-            notebooks.get(tabbedPane.getSelectedIndex()).focusFirstBuffer();
+            notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
             break;
         case KeyEvent.VK_T:
             if(e.isControlDown()) this.add();
