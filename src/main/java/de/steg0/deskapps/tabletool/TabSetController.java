@@ -22,7 +22,7 @@ implements KeyListener
     JFrame parent;
     PropertyHolder propertyHolder;
     
-    ConnectionListModel connections;
+    Connections connections;
     Executor executor = Executors.newCachedThreadPool();
 
     JTabbedPane tabbedPane = new JTabbedPane();
@@ -34,7 +34,7 @@ implements KeyListener
         this.parent = parent;
         this.propertyHolder = propertyHolder;
         
-        connections = new ConnectionListModel(propertyHolder,executor);
+        connections = new Connections(propertyHolder,executor);
         
         tabbedPane.addKeyListener(this);
         

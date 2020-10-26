@@ -43,7 +43,7 @@ class JdbcNotebookController
     JButton rollbackButton = new JButton("Rollback");
     JButton disconnectButton = new JButton("Disconnect");
     JCheckBox autocommitCb = new JCheckBox("Autocommit",
-            ConnectionListModel.AUTOCOMMIT_DEFAULT);
+            Connections.AUTOCOMMIT_DEFAULT);
     
     JTextArea log = new JTextArea();
     Consumer<String> logConsumer = (t) -> log.setText(t);
@@ -60,11 +60,11 @@ class JdbcNotebookController
     JdbcNotebookController(
             JFrame parent,
             PropertyHolder propertyHolder,
-            ConnectionListModel connections,
+            Connections connections,
             TabSetController.Actions tabSetControllerActions)
     {
         this.propertyHolder = propertyHolder;
-        this.connections = connections;
+        this.connections = new ConnectionListModel(connections);
         this.tabSetControllerActions = tabSetControllerActions;
         
         var connectionPanel = new JPanel();
@@ -98,7 +98,7 @@ class JdbcNotebookController
         });
         connectionPanel.add(autocommitCb);
         
-        connectionsSelector = new JComboBox<>(connections);
+        connectionsSelector = new JComboBox<>(this.connections);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
         connectionPanel.add(connectionsSelector);
         

@@ -1,8 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.concurrent.Executor;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
@@ -10,81 +8,44 @@ import javax.swing.event.ListDataListener;
 class ConnectionListModel
 implements ComboBoxModel<String>
 {
-    static final boolean AUTOCOMMIT_DEFAULT=false;
 
-    PropertyHolder propertyHolder;
-    Executor executor;
-    boolean autocommitDefault;
-    PropertyHolder.ConnectionInfo[] connectionInfo;
-    ConnectionWorker[] connections;
+    Connections connections;
     Object selected;
     
-    ConnectionListModel(PropertyHolder propertyHolder,Executor executor)
+    ConnectionListModel(Connections connections)
     {
-        this.propertyHolder = propertyHolder;
-        this.executor = executor;
-        this.autocommitDefault = AUTOCOMMIT_DEFAULT;
-        connectionInfo = propertyHolder.getConnections();
-        connections = new ConnectionWorker[connectionInfo.length];
+        this.connections = connections;
     }
-    
+
     /**blocking; establishes connection if needed */
     ConnectionWorker getConnection(Object name)
     throws SQLException
     {
-        for(int i=0;i<connectionInfo.length;i++)
-        {
-            if(!connectionInfo[i].name.equals(name)) continue;
-            if(connections[i] == null)
-            {
-                var jdbcConnection = DriverManager.getConnection(
-                        connectionInfo[i].url,
-                        connectionInfo[i].username,
-                        connectionInfo[i].password
-                );
-                jdbcConnection.setAutoCommit(autocommitDefault);
-                connections[i] = new ConnectionWorker(
-                        jdbcConnection,
-                        executor
-                );
-            }
-            return connections[i];
-        }
-        return null;
+        return connections.getConnection(name);
     }
     
     /**does not try to establish a connection; only returns non-null
      * result if one is already present. */
     ConnectionWorker selected()
     {
-        Object name = getSelectedItem();
-        for(int i=0;i<connectionInfo.length;i++)
-        {
-            if(!connectionInfo[i].name.equals(name)) continue;
-            return connections[i];
-        }
-        return null;
+        return connections.getIfConnected(getSelectedItem());
     }
     
     void reportDisconnect(ConnectionWorker connection)
     {
-        for(int i=0;i<connectionInfo.length;i++)
-        {
-            if(connections[i] != connection) continue;
-            connections[i] = null;
-        }
+        connections.reportDisconnect(connection);
     }
 
     @Override
     public int getSize()
     {
-        return connectionInfo.length;
+        return connections.getSize();
     }
 
     @Override
     public String getElementAt(int index)
     {
-        return connectionInfo[index].name;
+        return connections.getElementAt(index);
     }
 
     @Override
