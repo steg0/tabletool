@@ -3,6 +3,8 @@ package de.steg0.deskapps.tabletool;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -21,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
 
 class JdbcBufferController
@@ -225,18 +228,68 @@ implements KeyListener,FocusListener
     void addResultSetTable(ResultSetTableModel rsm)
     {
         JTable resultview = new JTable(rsm);
+        
         new CellDisplayController(parent,resultview,log);
+        
         Dimension preferredSize = resultview.getPreferredSize();
         resultview.setPreferredScrollableViewportSize(new Dimension(
                 (int)preferredSize.getWidth(),
                 (int)Math.min(150,preferredSize.getHeight())));
+        
+        resultview.addKeyListener(new KeyListener()
+        {
+            @Override public void keyTyped(KeyEvent e) { }
+            @Override public void keyPressed(KeyEvent e) { }
+
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                switch(e.getKeyCode())
+                {
+                case KeyEvent.VK_LEFT:
+                case KeyEvent.VK_RIGHT:
+                case KeyEvent.VK_DOWN:
+                case KeyEvent.VK_UP:
+                case KeyEvent.VK_HOME:
+                case KeyEvent.VK_END:
+                case KeyEvent.VK_PAGE_DOWN:
+                case KeyEvent.VK_PAGE_UP:
+                    Rectangle rect = editor.getBounds();
+                    Rectangle cellRect = resultview.getCellRect(
+                            resultview.getSelectedRow(),
+                            resultview.getSelectedColumn(),
+                            true
+                    );
+                    Rectangle headerBounds = 
+                            resultview.getTableHeader().getBounds();
+                    Point position = ((JViewport)resultview.getParent())
+                        .getViewPosition();
+                    actions.scrollRectToVisible(
+                            JdbcBufferController.this,
+                            new Rectangle(
+                                    (int)cellRect.getX(),
+                                    (int)(rect.getHeight() + 
+                                          cellRect.getY() - 
+                                          position.getY() +
+                                          headerBounds.getHeight()),
+                                    (int)cellRect.getWidth(),
+                                    (int)cellRect.getHeight()
+                            )
+                    ); 
+                }
+            }
+        });
+        
         var resultscrollpane = new JScrollPane(resultview,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
         if(panel.getComponentCount()==2) panel.remove(1);
+        
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
         resultviewConstraints.gridy = 1;
+        
         panel.add(resultscrollpane,resultviewConstraints);
         panel.revalidate();
     }

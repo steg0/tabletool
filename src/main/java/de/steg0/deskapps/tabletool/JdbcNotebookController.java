@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -27,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
 
 class JdbcNotebookController
 {
@@ -44,6 +46,8 @@ class JdbcNotebookController
     JButton disconnectButton = new JButton("Disconnect");
     JCheckBox autocommitCb = new JCheckBox("Autocommit",
             Connections.AUTOCOMMIT_DEFAULT);
+    
+    JScrollPane bufferPane;
     
     JTextArea log = new JTextArea();
     Consumer<String> logConsumer = (t) -> log.setText(t);
@@ -114,7 +118,7 @@ class JdbcNotebookController
         logBufferPane.setResizeWeight(.85);
         
         bufferPanel.setBackground(buffer.editor.getBackground());
-        var bufferPane = new JScrollPane(bufferPanel);
+        bufferPane = new JScrollPane(bufferPanel);
         bufferPane.addMouseListener(new BufferPaneMouseListener());
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
@@ -154,6 +158,7 @@ class JdbcNotebookController
         void newTab();
         void removeTab();
         void store();
+        void scrollRectToVisible(JdbcBufferController source,Rectangle rect);
     }
     
     Actions actions = new Actions()
@@ -234,6 +239,21 @@ class JdbcNotebookController
                         "Error saving",
                         JOptionPane.ERROR_MESSAGE);
             }
+        }
+
+        @Override
+        public void scrollRectToVisible(JdbcBufferController source,
+                Rectangle rect)
+        {
+            Rectangle sourceRect = source.panel.getBounds();
+            JViewport viewport = bufferPane.getViewport();
+            Point position = viewport.getViewPosition();
+            bufferPane.getViewport().scrollRectToVisible(new Rectangle(
+                    (int)(sourceRect.getX() + rect.getX() - position.getX()),
+                    (int)(sourceRect.getY() + rect.getY() - position.getY()),
+                    (int)rect.getWidth(),
+                    (int)rect.getHeight()
+            ));
         }
     };
     
