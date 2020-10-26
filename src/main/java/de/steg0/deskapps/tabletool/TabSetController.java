@@ -36,7 +36,7 @@ implements KeyListener
         
         connections = new ConnectionListModel(propertyHolder,executor);
         
-        this.tabbedPane.addKeyListener(this);
+        tabbedPane.addKeyListener(this);
         
         add(null);
     }
@@ -145,10 +145,10 @@ implements KeyListener
             notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
             break;
         case KeyEvent.VK_T:
-            if(e.isControlDown()) this.add(null);
+            if(e.isControlDown()) add(null);
             break;
         case KeyEvent.VK_W:
-            if(e.isControlDown()) this.removeSelected();
+            if(e.isControlDown()) removeSelected();
             break;
         case KeyEvent.VK_O:
             if(e.isControlDown()) load();
