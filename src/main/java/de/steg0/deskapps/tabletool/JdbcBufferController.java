@@ -85,6 +85,10 @@ implements KeyListener,FocusListener
                 break;
             case KeyEvent.VK_T:
                 if(event.isControlDown()) actions.newTab();
+                break;
+            case KeyEvent.VK_W:
+                if(event.isControlDown()) actions.removeTab();
+                break;
             }
         }
         catch(BadLocationException ignored)

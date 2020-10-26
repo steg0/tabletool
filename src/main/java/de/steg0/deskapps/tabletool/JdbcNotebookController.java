@@ -134,6 +134,7 @@ class JdbcNotebookController
         void nextBuffer(JdbcBufferController source);
         void previousBuffer(JdbcBufferController source);
         void newTab();
+        void removeTab();
     }
     
     Actions actions = new Actions()
@@ -183,6 +184,12 @@ class JdbcNotebookController
         public void newTab()
         {
             tabSetControllerActions.add();
+        }
+
+        @Override
+        public void removeTab()
+        {
+            tabSetControllerActions.removeSelected();
         }
     };
     

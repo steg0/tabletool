@@ -15,6 +15,7 @@ implements KeyListener
     PropertyHolder propertyHolder;
     JTabbedPane tabbedPane = new JTabbedPane();
     List<JdbcNotebookController> notebooks = new ArrayList<>();
+    int unnamedNotebookCount;
     
     TabSetController(JFrame parent,PropertyHolder propertyHolder)
     {
@@ -30,13 +31,32 @@ implements KeyListener
     {
         var notebook = new JdbcNotebookController(parent,propertyHolder,actions);
         notebooks.add(notebook);
-        int count = tabbedPane.getComponentCount();
-        tabbedPane.add("Notebook"+count,notebook.notebookPanel);
+        tabbedPane.add("Notebook"+(unnamedNotebookCount++),notebook.notebookPanel);
+    }
+    
+    void remove(JdbcNotebookController notebook)
+    {
+        notebooks.remove(notebook);
+        for(var c : tabbedPane.getComponents())
+        {
+            if(c==notebook.notebookPanel)
+            {
+                tabbedPane.remove(c);
+                return;
+            }
+        }
+    }
+    
+    void removeSelected()
+    {
+        notebooks.remove(tabbedPane.getSelectedIndex());
+        tabbedPane.remove(tabbedPane.getSelectedIndex());
     }
     
     interface Actions
     {
         void add();
+        void removeSelected();
     }
 
     Actions actions = new Actions()
@@ -45,6 +65,11 @@ implements KeyListener
         public void add()
         {
             TabSetController.this.add();
+        }
+        @Override
+        public void removeSelected()
+        {
+            TabSetController.this.removeSelected();
         }
     };
 
@@ -61,6 +86,9 @@ implements KeyListener
             break;
         case KeyEvent.VK_T:
             if(e.isControlDown()) this.add();
+            break;
+        case KeyEvent.VK_W:
+            if(e.isControlDown()) this.removeSelected();
         }
     }
 }
