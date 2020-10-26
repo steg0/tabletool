@@ -212,7 +212,7 @@ class JdbcNotebookController
         {
             var filechooser = new JFileChooser();
             int returnVal = filechooser.showSaveDialog(bufferPanel);
-            if (returnVal == JFileChooser.APPROVE_OPTION) 
+            if(returnVal == JFileChooser.APPROVE_OPTION) 
             {
                 try(Writer w = new FileWriter(filechooser.getSelectedFile()))
                 {
