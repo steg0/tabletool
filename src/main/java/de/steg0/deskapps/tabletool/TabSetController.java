@@ -48,19 +48,6 @@ implements KeyListener
         tabbedPane.add(newname,notebook.notebookPanel);
     }
     
-    void remove(JdbcNotebookController notebook)
-    {
-        notebooks.remove(notebook);
-        for(var c : tabbedPane.getComponents())
-        {
-            if(c==notebook.notebookPanel)
-            {
-                tabbedPane.remove(c);
-                return;
-            }
-        }
-    }
-    
     void removeSelected()
     {
         notebooks.remove(tabbedPane.getSelectedIndex());
