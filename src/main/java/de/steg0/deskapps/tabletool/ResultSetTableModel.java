@@ -92,7 +92,8 @@ implements TableModel,AutoCloseable
         {
             strval = '"' + 
                     strval.replaceAll("\\\"","\"\"") + 
-                    strval.replaceAll("\n","\n--");
+                    strval.replaceAll("\n","\n--") +
+                    '"';
         }
         return strval;
     }
