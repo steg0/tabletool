@@ -54,10 +54,12 @@ implements KeyListener
         {
             String newname = "Notebook"+(unnamedNotebookCount++);
             tabbedPane.add(newname,notebook.notebookPanel);
+            tabbedPane.setSelectedIndex(tabbedPane.getComponentCount()-1);
         }
         else
         {
             tabbedPane.add(notebook.notebookPanel);
+            tabbedPane.setSelectedIndex(tabbedPane.getComponentCount()-1);
             actions.setTabTitleFor(f);
         }
     }

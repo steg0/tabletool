@@ -138,6 +138,7 @@ implements KeyListener,FocusListener
     String load(LineNumberReader r)
     throws IOException
     {
+        var newText = new StringBuilder();
         String line,nextline=null;
         while((line=r.readLine())!=null)
         {
@@ -150,10 +151,11 @@ implements KeyListener,FocusListener
             }
             else
             {
-                editor.append(line);
-                editor.append("\n");
+                if(newText.length()>0) newText.append("\n");
+                newText.append(line);
             }
         }
+        editor.setText(newText.toString());
         return nextline;
     }
     
