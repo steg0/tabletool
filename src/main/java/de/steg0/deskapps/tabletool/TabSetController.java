@@ -68,6 +68,7 @@ implements KeyListener
     {
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
+        if(notebooks.size()==0) add(null);
     }
     
     void load()
