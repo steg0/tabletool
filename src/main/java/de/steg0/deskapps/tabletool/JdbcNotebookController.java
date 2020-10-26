@@ -10,8 +10,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import javax.swing.JButton;
@@ -25,19 +23,18 @@ import javax.swing.JTextArea;
 
 class JdbcNotebookController
 {
-    static final boolean AUTOCOMMIT_DEFAULT=false;
-    
     JFrame parent;
     PropertyHolder propertyHolder;
     TabSetController.Actions tabSetControllerActions;
 
     ConnectionListModel connections;
-    Executor executor = Executors.newCachedThreadPool();
     JComboBox<String> connectionsSelector;
 
     JButton commitButton = new JButton("Commit");
     JButton rollbackButton = new JButton("Rollback");
-    JCheckBox autocommitCb = new JCheckBox("Autocommit",AUTOCOMMIT_DEFAULT);
+    JButton disconnectButton = new JButton("Disconnect");
+    JCheckBox autocommitCb = new JCheckBox("Autocommit",
+            ConnectionListModel.AUTOCOMMIT_DEFAULT);
     
     JTextArea log = new JTextArea();
     Consumer<String> logConsumer = (t) -> log.setText(t);
@@ -51,10 +48,14 @@ class JdbcNotebookController
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
-    JdbcNotebookController(JFrame parent,PropertyHolder propertyHolder,
+    JdbcNotebookController(
+            JFrame parent,
+            PropertyHolder propertyHolder,
+            ConnectionListModel connections,
             TabSetController.Actions tabSetControllerActions)
     {
         this.propertyHolder = propertyHolder;
+        this.connections = connections;
         this.tabSetControllerActions = tabSetControllerActions;
         
         var connectionPanel = new JPanel();
@@ -71,6 +72,16 @@ class JdbcNotebookController
         });
         connectionPanel.add(rollbackButton);
         
+        disconnectButton.addActionListener((e) ->
+        {
+            onConnection((c) -> 
+            {
+                c.disconnect(logConsumer);
+                tabSetControllerActions.reportDisconnect(c);
+            });
+        });
+        connectionPanel.add(disconnectButton);
+        
         autocommitCb.addActionListener((e) -> 
         {
             onConnection((c) -> c.setAutoCommit(
@@ -78,8 +89,6 @@ class JdbcNotebookController
         });
         connectionPanel.add(autocommitCb);
         
-        connections = new ConnectionListModel(propertyHolder,executor,
-                AUTOCOMMIT_DEFAULT);
         connectionsSelector = new JComboBox<>(connections);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
         connectionPanel.add(connectionsSelector);
@@ -236,6 +245,11 @@ class JdbcNotebookController
         try
         {
             var connection = connections.getConnection(event.getItem());
+            /* 
+             * If the update was due to a Disconnect action, the connection
+             * is closed but not yet cleaned up.
+             */
+            if(connection.isClosed()) return;
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer);
             for(JdbcBufferController buffer : buffers)
             {
@@ -247,6 +261,16 @@ class JdbcNotebookController
         {
             logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
+    }
+    
+    void reportDisconnect(ConnectionWorker connection)
+    {
+        for(JdbcBufferController buffer : buffers)
+        {
+            if(buffer.connection == connection) buffer.connection = null;
+        }
+        connectionsSelector.setSelectedIndex(-1);
+        connectionsSelector.repaint();
     }
     
 }

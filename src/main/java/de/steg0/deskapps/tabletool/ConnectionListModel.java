@@ -10,6 +10,8 @@ import javax.swing.event.ListDataListener;
 class ConnectionListModel
 implements ComboBoxModel<String>
 {
+    static final boolean AUTOCOMMIT_DEFAULT=false;
+
     PropertyHolder propertyHolder;
     Executor executor;
     boolean autocommitDefault;
@@ -17,12 +19,11 @@ implements ComboBoxModel<String>
     ConnectionWorker[] connections;
     Object selected;
     
-    ConnectionListModel(PropertyHolder propertyHolder,Executor executor,
-            boolean autocommitDefault)
+    ConnectionListModel(PropertyHolder propertyHolder,Executor executor)
     {
         this.propertyHolder = propertyHolder;
         this.executor = executor;
-        this.autocommitDefault = autocommitDefault;
+        this.autocommitDefault = AUTOCOMMIT_DEFAULT;
         connectionInfo = propertyHolder.getConnections();
         connections = new ConnectionWorker[connectionInfo.length];
     }
@@ -63,6 +64,15 @@ implements ComboBoxModel<String>
             return connections[i];
         }
         return null;
+    }
+    
+    void reportDisconnect(ConnectionWorker connection)
+    {
+        for(int i=0;i<connectionInfo.length;i++)
+        {
+            if(connections[i] != connection) continue;
+            connections[i] = null;
+        }
     }
 
     @Override

@@ -108,6 +108,12 @@ class ConnectionWorker
         }
     }
     
+    boolean isClosed()
+    throws SQLException
+    {
+        return connection.isClosed();
+    }
+    
     void commit(Consumer<String> log)
     {
         executor.execute(() ->
@@ -137,6 +143,25 @@ class ConnectionWorker
                 {
                     connection.rollback();
                     report(log,"Rollback complete at "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    report(log,SQLExceptionPrinter.toString(e));
+                }
+            }
+        });
+    }
+    
+    void disconnect(Consumer<String> log)
+    {
+        executor.execute(() ->
+        {
+            synchronized(ConnectionWorker.this)
+            {
+                try
+                {
+                    connection.close();
+                    report(log,"Disconnected at "+new Date());
                 }
                 catch(SQLException e)
                 {

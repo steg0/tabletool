@@ -4,6 +4,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
@@ -13,6 +15,10 @@ implements KeyListener
 {
     JFrame parent;
     PropertyHolder propertyHolder;
+    
+    ConnectionListModel connections;
+    Executor executor = Executors.newCachedThreadPool();
+
     JTabbedPane tabbedPane = new JTabbedPane();
     List<JdbcNotebookController> notebooks = new ArrayList<>();
     int unnamedNotebookCount;
@@ -22,6 +28,8 @@ implements KeyListener
         this.parent = parent;
         this.propertyHolder = propertyHolder;
         
+        connections = new ConnectionListModel(propertyHolder,executor);
+        
         this.tabbedPane.addKeyListener(this);
         
         add();
@@ -29,9 +37,15 @@ implements KeyListener
     
     void add()
     {
-        var notebook = new JdbcNotebookController(parent,propertyHolder,actions);
+        var notebook = new JdbcNotebookController(
+                parent,
+                propertyHolder,
+                connections,
+                actions
+        );
         notebooks.add(notebook);
-        tabbedPane.add("Notebook"+(unnamedNotebookCount++),notebook.notebookPanel);
+        String newname = "Notebook"+(unnamedNotebookCount++);
+        tabbedPane.add(newname,notebook.notebookPanel);
     }
     
     void remove(JdbcNotebookController notebook)
@@ -57,6 +71,7 @@ implements KeyListener
     {
         void add();
         void removeSelected();
+        void reportDisconnect(ConnectionWorker connection);
     }
 
     Actions actions = new Actions()
@@ -70,6 +85,20 @@ implements KeyListener
         public void removeSelected()
         {
             TabSetController.this.removeSelected();
+        }
+        @Override
+        public void reportDisconnect(ConnectionWorker connection)
+        {
+            for(var notebook : notebooks)
+            {
+                notebook.reportDisconnect(connection);
+            }
+            /* 
+             * Now set connection in the model to null. If we had
+             * done it above, the notebooks would have reconnected
+             * in their ItemListener.
+             */
+            connections.reportDisconnect(connection);
         }
     };
 
