@@ -10,7 +10,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -51,7 +50,6 @@ extends WindowAdapter
     }
     
     void showJdbcBuffer()
-    throws SQLException
     {
         frame = new JFrame("Tabletool");
         frame.getContentPane().setLayout(new GridBagLayout());
@@ -183,7 +181,6 @@ extends WindowAdapter
     }
 
     public static void main(String[] args)
-    throws SQLException
     {
         String workspacefile=null;
         if(args.length>0) workspacefile=args[0];
