@@ -212,15 +212,14 @@ implements FocusListener
         try(rsm)
         {
             addResultSetTable(rsm);
+            Object[] rowcount = {rsm.getRowCount()};
             if(rsm.getRowCount() < ResultSetTableModel.FETCHSIZE)
             {
-                log.accept(FETCH_ALL_LOG_FORMAT.format(new Object[]{
-                        rsm.getRowCount()}));
+                log.accept(FETCH_ALL_LOG_FORMAT.format(rowcount));
             }
             else
             {
-                log.accept(FETCH_LOG_FORMAT.format(new Object[]{
-                        rsm.getRowCount()}));
+                log.accept(FETCH_LOG_FORMAT.format(rowcount));
             }
         }
         catch(SQLException e)
