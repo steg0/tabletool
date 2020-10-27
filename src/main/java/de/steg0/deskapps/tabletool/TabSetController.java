@@ -44,7 +44,7 @@ implements KeyListener
         add(null);
     }
     
-    void add(File f)
+    JdbcNotebookController add(File f)
     {
         var notebook = new JdbcNotebookController(
                 parent,
@@ -66,6 +66,7 @@ implements KeyListener
             tabbedPane.setSelectedIndex(newIndex);
             tabbedPane.setTitleAt(newIndex,f.getName());
         }
+        return notebook;
     }
     
     void removeSelected()
@@ -81,11 +82,10 @@ implements KeyListener
         int returnVal = filechooser.showOpenDialog(tabbedPane);
         if(returnVal != JFileChooser.APPROVE_OPTION) return;
         File file=filechooser.getSelectedFile();
-        add(file);
+        
         try(var r = new LineNumberReader(new FileReader(file)))
         {
-            JdbcNotebookController notebook = 
-                    notebooks.get(tabbedPane.getSelectedIndex());
+            JdbcNotebookController notebook = add(file);
             notebook.load(r);
             notebook.file = file;
         }
