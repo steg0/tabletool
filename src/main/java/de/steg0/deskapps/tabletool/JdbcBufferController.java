@@ -14,6 +14,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.EventListener;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 
 class JdbcBufferController
@@ -35,24 +37,25 @@ class JdbcBufferController
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
-    JFrame parent;
-    JdbcNotebookController.Actions actions;
+    interface Listener extends EventListener
+    {
+        void exitedNorth(JdbcBufferController source);
+        void exitedSouth(JdbcBufferController source);
+        void selectedRectChanged(JdbcBufferController source,Rectangle rect);
+    }
     
+    JFrame parent;
+
     JPanel panel = new JPanel(new GridBagLayout());
     
-    ConnectionWorker connection;
-    
     JTextArea editor = new JTextArea();
-    int savedCaretPosition;
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame parent,Consumer<String> updateLog,
-            JdbcNotebookController.Actions actions)
+    JdbcBufferController(JFrame parent,Consumer<String> updateLog)
     {
         this.parent = parent;
         this.log = updateLog;
-        this.actions = actions;
         
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
@@ -79,13 +82,19 @@ class JdbcBufferController
                        editor.getLineCount()-1 &&
                        panel.getComponentCount()>1)
                     {
-                        actions.nextBuffer(JdbcBufferController.this);
+                        for(Listener l : listeners.getListeners(Listener.class))
+                        {
+                            l.exitedSouth(JdbcBufferController.this);
+                        }
                     }
                     break;
                 case KeyEvent.VK_UP:
                     if(editor.getLineOfOffset(editor.getCaretPosition()) == 0)
                     {
-                        actions.previousBuffer(JdbcBufferController.this);
+                        for(Listener l : listeners.getListeners(Listener.class))
+                        {
+                            l.exitedNorth(JdbcBufferController.this);
+                        }
                     }
                 }
             }
@@ -98,6 +107,13 @@ class JdbcBufferController
         @Override public void keyPressed(KeyEvent e) { }
     };
     
+    EventListenerList listeners = new EventListenerList();
+    
+    void addListener(Listener l)
+    {
+        listeners.add(Listener.class,l);
+    }
+
     void addEditorFocusListener(FocusListener f)
     {
         editor.addFocusListener(f);
@@ -150,6 +166,10 @@ class JdbcBufferController
         editor.setText(newText.toString());
         return nextline;
     }
+    
+    int savedCaretPosition;
+
+    ConnectionWorker connection;
     
     void fetch()
     {
@@ -256,18 +276,21 @@ class JdbcBufferController
                     resultview.getTableHeader().getBounds();
             Point position = ((JViewport)resultview.getParent())
                 .getViewPosition();
-            actions.scrollRectToVisible(
-                    JdbcBufferController.this,
-                    new Rectangle(
-                            (int)cellRect.getX(),
-                            (int)(rect.getHeight() + 
-                                  cellRect.getY() - 
-                                  position.getY() +
-                                  headerBounds.getHeight()),
-                            (int)cellRect.getWidth(),
-                            (int)cellRect.getHeight()
-                    )
-            ); 
+            for(Listener l : listeners.getListeners(Listener.class))
+            {
+                l.selectedRectChanged(
+                        JdbcBufferController.this,
+                        new Rectangle(
+                                (int)cellRect.getX(),
+                                (int)(rect.getHeight() + 
+                                      cellRect.getY() - 
+                                      position.getY() +
+                                      headerBounds.getHeight()),
+                                (int)cellRect.getWidth(),
+                                (int)cellRect.getHeight()
+                        )
+                );
+            }
         }
         
         @Override public void keyTyped(KeyEvent e) { }

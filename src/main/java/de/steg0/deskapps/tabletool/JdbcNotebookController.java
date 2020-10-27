@@ -113,7 +113,7 @@ class JdbcNotebookController
         
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
-        var buffer = new JdbcBufferController(parent,logConsumer,actions);
+        var buffer = new JdbcBufferController(parent,logConsumer);
         add(buffer);
 
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -152,17 +152,11 @@ class JdbcNotebookController
         }
     }
     
-    interface Actions
-    {
-        void nextBuffer(JdbcBufferController source);
-        void previousBuffer(JdbcBufferController source);
-        void scrollRectToVisible(JdbcBufferController source,Rectangle rect);
-    }
-    
-    Actions actions = new Actions()
+    JdbcBufferController.Listener bufferListener = 
+            new JdbcBufferController.Listener()
     {
         @Override
-        public void nextBuffer(JdbcBufferController source)
+        public void exitedSouth(JdbcBufferController source)
         {
             for(int i=0;i<buffers.size();i++)
             {
@@ -171,7 +165,7 @@ class JdbcNotebookController
                     if(buffers.size() <= i+1)
                     {
                         var newBufferController = new JdbcBufferController(
-                                parent,logConsumer,actions);
+                                parent,logConsumer);
                         newBufferController.connection =
                                 buffers.get(i).connection;
                         add(newBufferController);
@@ -184,7 +178,7 @@ class JdbcNotebookController
         }
 
         @Override
-        public void previousBuffer(JdbcBufferController source)
+        public void exitedNorth(JdbcBufferController source)
         {
             for(int i=0;i<buffers.size();i++)
             {
@@ -197,7 +191,7 @@ class JdbcNotebookController
         }
 
         @Override
-        public void scrollRectToVisible(JdbcBufferController source,
+        public void selectedRectChanged(JdbcBufferController source,
                 Rectangle rect)
         {
             Rectangle sourceRect = source.panel.getBounds();
@@ -212,8 +206,10 @@ class JdbcNotebookController
         }
     };
     
+    /**Adds a buffer to the panel and wires listeners. */
     void add(JdbcBufferController c)
     {
+        c.addListener(bufferListener);
         c.addEditorFocusListener(new FocusListener()
         {
             @Override 
@@ -284,7 +280,7 @@ class JdbcNotebookController
         while(nextline != null)
         {
             var newBufferController = new JdbcBufferController(
-                    parent,logConsumer,actions);
+                    parent,logConsumer);
             newBufferController.appendText(nextline);
             nextline = newBufferController.load(r);
             add(newBufferController);
