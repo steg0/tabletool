@@ -232,7 +232,7 @@ implements FocusListener
     
     void addResultSetTable(ResultSetTableModel rsm)
     {
-        JTable resultview = new JTable(rsm);
+        resultview = new JTable(rsm);
         
         new CellDisplayController(parent,resultview,log);
         
