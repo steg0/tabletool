@@ -6,6 +6,10 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.swing.JFrame;
@@ -33,10 +37,18 @@ import javax.swing.JOptionPane;
  * java -XX:+UseSerialGC -Dswing.metalTheme=steel -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
  * </code>
  */
-public class TableTool 
+public class TableTool
+extends WindowAdapter
 {
 
     JFrame frame;
+    File workspace;
+    TabSetController controller;
+    
+    TableTool(String workspacefile)
+    {
+        if(workspacefile!=null) workspace = new File(workspacefile);
+    }
     
     void showJdbcBuffer()
     throws SQLException
@@ -46,24 +58,28 @@ public class TableTool
         var propertyHolder = new PropertyHolder();
         if(ensureFrameDefaults(propertyHolder))
         {
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.addWindowListener(this);
             
-            var controller = new TabSetController(frame,propertyHolder);
-    
-            var contentPaneConstraints = new GridBagConstraints();
-            contentPaneConstraints.fill = GridBagConstraints.BOTH;
-            contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
-            contentPaneConstraints.weightx = contentPaneConstraints.weighty = 1;
-            frame.getContentPane().add(
-                    controller.tabbedPane,
-                    contentPaneConstraints
-            );
+            controller = new TabSetController(frame,propertyHolder);
             
-            JMenuBar menubar = getMenuBar(controller);
-            frame.setJMenuBar(menubar);
-            
-            frame.pack();
-            frame.setVisible(true);
+            if(ensureWorkspace())
+            {
+                var contentPaneConstraints = new GridBagConstraints();
+                contentPaneConstraints.fill = GridBagConstraints.BOTH;
+                contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
+                contentPaneConstraints.weightx = contentPaneConstraints.weighty = 1;
+                frame.getContentPane().add(
+                        controller.tabbedPane,
+                        contentPaneConstraints
+                );
+                
+                JMenuBar menubar = getMenuBar(controller);
+                frame.setJMenuBar(menubar);
+                
+                frame.pack();
+                frame.setVisible(true);
+            }
         }
     }
     
@@ -122,10 +138,55 @@ public class TableTool
         return false;
     }
     
+    boolean ensureWorkspace()
+    {
+        if(workspace==null || !workspace.exists()) controller.add(null);
+        else try
+        {
+            controller.restoreWorkspace(workspace);
+        }
+        catch(IOException e)
+        {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Error loading workspace: "+e.getMessage(),
+                    "Error loading workspace",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
+    public void windowClosing(WindowEvent event)
+    {
+        if(workspace==null) return;
+        try
+        {
+            controller.saveWorkspace(workspace);
+        }
+        catch(IOException e)
+        {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Error saving workspace: "+e.getMessage(),
+                    "Error saving workspace",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    @Override
+    public void windowClosed(WindowEvent e)
+    {
+        System.exit(0);
+    }
+
     public static void main(String[] args)
     throws SQLException
     {
-        TableTool ttool = new TableTool();
+        String workspacefile=null;
+        if(args.length>0) workspacefile=args[0];
+        TableTool ttool = new TableTool(workspacefile);
         ttool.showJdbcBuffer();
     }
     

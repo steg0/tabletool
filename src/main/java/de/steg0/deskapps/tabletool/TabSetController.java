@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -40,8 +41,6 @@ implements KeyListener
         connections = new Connections(propertyHolder,executor);
         
         tabbedPane.addKeyListener(this);
-        
-        add(null);
     }
     
     JdbcNotebookController add(File f)
@@ -133,6 +132,36 @@ implements KeyListener
             }
         };
     
+    void restoreWorkspace(File f)
+    throws IOException
+    {
+        Workspace w = new Workspaces().load(f);
+        if(w.getFiles().length==0) add(null);
+        for(String fn : w.getFiles())
+        {
+            File sqlFile = new File(fn);
+            try(var r = new LineNumberReader(new FileReader(sqlFile)))
+            {
+                JdbcNotebookController notebook = add(sqlFile);
+                notebook.load(r);
+                notebook.file = sqlFile;
+            }
+        }
+    }
+    
+    void saveWorkspace(File file)
+    throws IOException
+    {
+        Workspace w = new Workspace();
+        w.setFiles(notebooks
+            .stream()
+            .map((n) -> n.file)
+            .filter(Objects::nonNull)
+            .map((f) -> f.getPath())
+            .toArray(String[]::new));
+        new Workspaces().store(w,file);
+    }
+        
     JdbcNotebookController.Listener notebookListener = 
             new JdbcNotebookController.Listener()
     {
