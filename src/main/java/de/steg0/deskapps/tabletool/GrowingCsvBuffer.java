@@ -95,7 +95,7 @@ class GrowingCsvBuffer
                 {
                 case '"':
                     state = State.QUOTEDFIELD;
-                    field.append((char)c);
+                    accept(c);
                     break;
                 case ',':
                     state = State.INIT;
