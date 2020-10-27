@@ -68,7 +68,8 @@ extends WindowAdapter
                 var contentPaneConstraints = new GridBagConstraints();
                 contentPaneConstraints.fill = GridBagConstraints.BOTH;
                 contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
-                contentPaneConstraints.weightx = contentPaneConstraints.weighty = 1;
+                contentPaneConstraints.weightx = 
+                        contentPaneConstraints.weighty = 1;
                 frame.getContentPane().add(
                         controller.tabbedPane,
                         contentPaneConstraints
