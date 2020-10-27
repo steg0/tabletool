@@ -27,7 +27,7 @@ import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
 
 class JdbcBufferController
-implements KeyListener,FocusListener
+implements FocusListener
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched.\n");
@@ -61,51 +61,55 @@ implements KeyListener,FocusListener
         panel.add(editor,editorConstraints);
         panel.setBackground(editor.getBackground());
         
-        editor.addKeyListener(this);
+        editor.addKeyListener(editorKeyListener);
         editor.addFocusListener(this);
     }
 
-    @Override
-    public void keyReleased(KeyEvent event)
+    KeyListener editorKeyListener = new KeyListener()
     {
-        try
+        @Override
+        public void keyReleased(KeyEvent event)
         {
-            switch(event.getKeyCode())
+            try
             {
-            case KeyEvent.VK_ENTER:
-                if(event.isControlDown()) fetch();
-                break;
-            case KeyEvent.VK_DOWN:
-                if(editor.getLineOfOffset(editor.getCaretPosition()) == 
-                   editor.getLineCount()-1 &&
-                   panel.getComponentCount()>1)
+                switch(event.getKeyCode())
                 {
-                    actions.nextBuffer(this);
+                case KeyEvent.VK_ENTER:
+                    if(event.isControlDown()) fetch();
+                    break;
+                case KeyEvent.VK_DOWN:
+                    if(editor.getLineOfOffset(editor.getCaretPosition()) == 
+                       editor.getLineCount()-1 &&
+                       panel.getComponentCount()>1)
+                    {
+                        actions.nextBuffer(JdbcBufferController.this);
+                    }
+                    break;
+                case KeyEvent.VK_UP:
+                    if(editor.getLineOfOffset(editor.getCaretPosition()) == 0)
+                    {
+                        actions.previousBuffer(JdbcBufferController.this);
+                    }
+                    break;
+                case KeyEvent.VK_T:
+                    if(event.isControlDown()) actions.newTab();
+                    break;
+                case KeyEvent.VK_W:
+                    if(event.isControlDown()) actions.removeTab();
+                    break;
+                case KeyEvent.VK_S:
+                    if(event.isControlDown()) actions.store();
                 }
-                break;
-            case KeyEvent.VK_UP:
-                if(editor.getLineOfOffset(editor.getCaretPosition()) == 0)
-                {
-                    actions.previousBuffer(this);
-                }
-                break;
-            case KeyEvent.VK_T:
-                if(event.isControlDown()) actions.newTab();
-                break;
-            case KeyEvent.VK_W:
-                if(event.isControlDown()) actions.removeTab();
-                break;
-            case KeyEvent.VK_S:
-                if(event.isControlDown()) actions.store();
+            }
+            catch(BadLocationException ignored)
+            {
             }
         }
-        catch(BadLocationException ignored)
-        {
-        }
-    }
+        
+        @Override public void keyTyped(KeyEvent e) { }
+        @Override public void keyPressed(KeyEvent e) { }
+    };
     
-    @Override public void keyTyped(KeyEvent e) { }
-    @Override public void keyPressed(KeyEvent e) { }
     @Override public void focusGained(FocusEvent e) { }
 
     @Override
@@ -201,7 +205,7 @@ implements KeyListener,FocusListener
         }
         return null;
     }
-    
+
     Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
     {
         editor.setCaretPosition(savedCaretPosition);
@@ -225,6 +229,8 @@ implements KeyListener,FocusListener
         }
     };
     
+    JTable resultview;
+    
     void addResultSetTable(ResultSetTableModel rsm)
     {
         JTable resultview = new JTable(rsm);
@@ -236,49 +242,7 @@ implements KeyListener,FocusListener
                 (int)preferredSize.getWidth(),
                 (int)Math.min(150,preferredSize.getHeight())));
         
-        resultview.addKeyListener(new KeyListener()
-        {
-            @Override public void keyTyped(KeyEvent e) { }
-            @Override public void keyPressed(KeyEvent e) { }
-
-            @Override
-            public void keyReleased(KeyEvent e)
-            {
-                switch(e.getKeyCode())
-                {
-                case KeyEvent.VK_LEFT:
-                case KeyEvent.VK_RIGHT:
-                case KeyEvent.VK_DOWN:
-                case KeyEvent.VK_UP:
-                case KeyEvent.VK_HOME:
-                case KeyEvent.VK_END:
-                case KeyEvent.VK_PAGE_DOWN:
-                case KeyEvent.VK_PAGE_UP:
-                    Rectangle rect = editor.getBounds();
-                    Rectangle cellRect = resultview.getCellRect(
-                            resultview.getSelectedRow(),
-                            resultview.getSelectedColumn(),
-                            true
-                    );
-                    Rectangle headerBounds = 
-                            resultview.getTableHeader().getBounds();
-                    Point position = ((JViewport)resultview.getParent())
-                        .getViewPosition();
-                    actions.scrollRectToVisible(
-                            JdbcBufferController.this,
-                            new Rectangle(
-                                    (int)cellRect.getX(),
-                                    (int)(rect.getHeight() + 
-                                          cellRect.getY() - 
-                                          position.getY() +
-                                          headerBounds.getHeight()),
-                                    (int)cellRect.getWidth(),
-                                    (int)cellRect.getHeight()
-                            )
-                    ); 
-                }
-            }
-        });
+        resultview.addKeyListener(resultsetKeyListener);
         
         var resultscrollpane = new JScrollPane(resultview,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -293,4 +257,48 @@ implements KeyListener,FocusListener
         panel.add(resultscrollpane,resultviewConstraints);
         panel.revalidate();
     }
+    
+    KeyListener resultsetKeyListener = new KeyListener()
+    {
+        @Override public void keyTyped(KeyEvent e) { }
+        @Override public void keyPressed(KeyEvent e) { }
+
+        @Override
+        public void keyReleased(KeyEvent e)
+        {
+            switch(e.getKeyCode())
+            {
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_HOME:
+            case KeyEvent.VK_END:
+            case KeyEvent.VK_PAGE_DOWN:
+            case KeyEvent.VK_PAGE_UP:
+                Rectangle rect = editor.getBounds();
+                Rectangle cellRect = resultview.getCellRect(
+                        resultview.getSelectedRow(),
+                        resultview.getSelectedColumn(),
+                        true
+                );
+                Rectangle headerBounds = 
+                        resultview.getTableHeader().getBounds();
+                Point position = ((JViewport)resultview.getParent())
+                    .getViewPosition();
+                actions.scrollRectToVisible(
+                        JdbcBufferController.this,
+                        new Rectangle(
+                                (int)cellRect.getX(),
+                                (int)(rect.getHeight() + 
+                                      cellRect.getY() - 
+                                      position.getY() +
+                                      headerBounds.getHeight()),
+                                (int)cellRect.getWidth(),
+                                (int)cellRect.getHeight()
+                        )
+                ); 
+            }
+        }
+    };
 }
