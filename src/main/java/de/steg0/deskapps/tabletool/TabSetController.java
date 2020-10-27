@@ -131,24 +131,12 @@ implements KeyListener
     
     interface Actions
     {
-        void add();
-        void removeSelected();
         void reportDisconnect(ConnectionWorker connection);
         void setTabTitleFor(File f);
     }
 
     Actions actions = new Actions()
     {
-        @Override
-        public void add()
-        {
-            TabSetController.this.add(null);
-        }
-        @Override
-        public void removeSelected()
-        {
-            TabSetController.this.removeSelected();
-        }
         @Override
         public void reportDisconnect(ConnectionWorker connection)
         {

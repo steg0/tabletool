@@ -5,7 +5,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -27,7 +26,6 @@ import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
 
 class JdbcBufferController
-implements FocusListener
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched.\n");
@@ -62,7 +60,6 @@ implements FocusListener
         panel.setBackground(editor.getBackground());
         
         editor.addKeyListener(editorKeyListener);
-        editor.addFocusListener(this);
     }
 
     KeyListener editorKeyListener = new KeyListener()
@@ -101,14 +98,11 @@ implements FocusListener
         @Override public void keyPressed(KeyEvent e) { }
     };
     
-    @Override public void focusGained(FocusEvent e) { }
-
-    @Override
-    public void focusLost(FocusEvent e)
+    void addEditorFocusListener(FocusListener f)
     {
-        actions.bufferFocusLost(this);
+        editor.addFocusListener(f);
     }
-
+    
     void focusEditor()
     {
         editor.requestFocusInWindow();

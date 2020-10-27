@@ -4,6 +4,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -152,7 +154,6 @@ class JdbcNotebookController
     
     interface Actions
     {
-        void bufferFocusLost(JdbcBufferController source);
         void nextBuffer(JdbcBufferController source);
         void previousBuffer(JdbcBufferController source);
         void scrollRectToVisible(JdbcBufferController source,Rectangle rect);
@@ -160,12 +161,6 @@ class JdbcNotebookController
     
     Actions actions = new Actions()
     {
-        @Override
-        public void bufferFocusLost(JdbcBufferController source)
-        {
-            lastFocusedBuffer = buffers.indexOf(source);
-        }
-        
         @Override
         public void nextBuffer(JdbcBufferController source)
         {
@@ -219,6 +214,17 @@ class JdbcNotebookController
     
     void add(JdbcBufferController c)
     {
+        c.addEditorFocusListener(new FocusListener()
+        {
+            @Override 
+            public void focusLost(FocusEvent e)
+            {
+                lastFocusedBuffer = buffers.indexOf(c);
+            }
+            @Override 
+            public void focusGained(FocusEvent e) { }
+        });
+
         bufferPanel.removeAll();
         for(int i=0;i<buffers.size();i++)
         {
