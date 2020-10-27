@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
@@ -11,6 +12,8 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -95,6 +98,37 @@ implements KeyListener
         }
     }
     
+    @SuppressWarnings("serial")
+    Action
+        addAction = new AbstractAction("New")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                add(null);
+            }
+        },
+        loadAction = new AbstractAction("Load")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                load();
+            }
+        },
+        saveAction = new AbstractAction("Save")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                notebooks.get(tabbedPane.getSelectedIndex()).store();
+            }
+        },
+        closeAction = new AbstractAction("Close")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                removeSelected();
+            }
+        };
+    
     interface Actions
     {
         void add();
@@ -147,14 +181,6 @@ implements KeyListener
         case KeyEvent.VK_ENTER:
             notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
             break;
-        case KeyEvent.VK_T:
-            if(e.isControlDown()) add(null);
-            break;
-        case KeyEvent.VK_W:
-            if(e.isControlDown()) removeSelected();
-            break;
-        case KeyEvent.VK_O:
-            if(e.isControlDown()) load();
         }
     }
 }

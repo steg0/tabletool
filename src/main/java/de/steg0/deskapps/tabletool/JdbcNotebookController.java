@@ -155,9 +155,6 @@ class JdbcNotebookController
         void bufferFocusLost(JdbcBufferController source);
         void nextBuffer(JdbcBufferController source);
         void previousBuffer(JdbcBufferController source);
-        void newTab();
-        void removeTab();
-        void store();
         void scrollRectToVisible(JdbcBufferController source,Rectangle rect);
     }
     
@@ -205,43 +202,6 @@ class JdbcNotebookController
         }
 
         @Override
-        public void newTab()
-        {
-            tabSetControllerActions.add();
-        }
-
-        @Override
-        public void removeTab()
-        {
-            tabSetControllerActions.removeSelected();
-        }
-
-        @Override
-        public void store()
-        {
-            if(file==null)
-            {
-                var filechooser = new JFileChooser();
-                int returnVal = filechooser.showSaveDialog(bufferPanel);
-                if(returnVal != JFileChooser.APPROVE_OPTION) return;
-                file=filechooser.getSelectedFile();
-                tabSetControllerActions.setTabTitleFor(file);
-            }
-            try(Writer w = new FileWriter(file))
-            {
-                JdbcNotebookController.this.store(w);
-            }
-            catch(IOException e)
-            {
-                JOptionPane.showMessageDialog(
-                        bufferPanel,
-                        "Error saving: "+e.getMessage(),
-                        "Error saving",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
-
-        @Override
         public void scrollRectToVisible(JdbcBufferController source,
                 Rectangle rect)
         {
@@ -276,6 +236,30 @@ class JdbcNotebookController
         buffers.add(c);
     }
     
+    public void store()
+    {
+        if(file==null)
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showSaveDialog(bufferPanel);
+            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            file=filechooser.getSelectedFile();
+            tabSetControllerActions.setTabTitleFor(file);
+        }
+        try(Writer w = new FileWriter(file))
+        {
+            store(w);
+        }
+        catch(IOException e)
+        {
+            JOptionPane.showMessageDialog(
+                    bufferPanel,
+                    "Error saving: "+e.getMessage(),
+                    "Error saving",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     /**blocking */
     void store(Writer w)
     throws IOException

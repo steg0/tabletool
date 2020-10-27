@@ -1,10 +1,17 @@
 package de.steg0.deskapps.tabletool;
 
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 /**
@@ -51,9 +58,47 @@ public class TableTool
                     controller.tabbedPane,
                     contentPaneConstraints
             );
+            
+            JMenuBar menubar = getMenuBar(controller);
+            frame.setJMenuBar(menubar);
+            
             frame.pack();
             frame.setVisible(true);
         }
+    }
+    
+    JMenuBar getMenuBar(TabSetController controller)
+    {
+        var menubar = new JMenuBar();
+        
+        var filemenu = new JMenu("File");
+        filemenu.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem item;
+
+        item = new JMenuItem(controller.addAction);
+        item.setMnemonic(KeyEvent.VK_N);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,ActionEvent.CTRL_MASK));
+        filemenu.add(item);
+        
+        item = new JMenuItem(controller.loadAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_O);
+        filemenu.add(item);
+
+        item = new JMenuItem(controller.saveAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_S);
+        filemenu.add(item);
+
+        item = new JMenuItem(controller.closeAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_C);
+        filemenu.add(item);
+
+        menubar.add(filemenu);
+        
+        return menubar;
     }
     
     boolean ensureFrameDefaults(PropertyHolder propertyHolder)

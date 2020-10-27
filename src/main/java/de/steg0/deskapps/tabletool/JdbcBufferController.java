@@ -90,15 +90,6 @@ implements FocusListener
                     {
                         actions.previousBuffer(JdbcBufferController.this);
                     }
-                    break;
-                case KeyEvent.VK_T:
-                    if(event.isControlDown()) actions.newTab();
-                    break;
-                case KeyEvent.VK_W:
-                    if(event.isControlDown()) actions.removeTab();
-                    break;
-                case KeyEvent.VK_S:
-                    if(event.isControlDown()) actions.store();
                 }
             }
             catch(BadLocationException ignored)
