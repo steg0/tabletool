@@ -53,17 +53,18 @@ implements KeyListener
                 actions
         );
         notebooks.add(notebook);
+        int newIndex = tabbedPane.getComponentCount();
         if(f==null)
         {
             String newname = "Notebook"+(unnamedNotebookCount++);
             tabbedPane.add(newname,notebook.notebookPanel);
-            tabbedPane.setSelectedIndex(tabbedPane.getComponentCount()-1);
+            tabbedPane.setSelectedIndex(newIndex);
         }
         else
         {
             tabbedPane.add(notebook.notebookPanel);
-            tabbedPane.setSelectedIndex(tabbedPane.getComponentCount()-1);
-            actions.setTabTitleFor(f);
+            tabbedPane.setSelectedIndex(newIndex);
+            tabbedPane.setTitleAt(newIndex,f.getName());
         }
     }
     
@@ -118,7 +119,10 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                notebooks.get(tabbedPane.getSelectedIndex()).store();
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                notebook.store();
+                tabbedPane.setTitleAt(index,notebook.file.getName());
             }
         },
         closeAction = new AbstractAction("Close")
@@ -132,7 +136,6 @@ implements KeyListener
     interface Actions
     {
         void reportDisconnect(ConnectionWorker connection);
-        void setTabTitleFor(File f);
     }
 
     Actions actions = new Actions()
@@ -150,11 +153,6 @@ implements KeyListener
              * in their ItemListener.
              */
             connections.reportDisconnect(connection);
-        }
-        @Override
-        public void setTabTitleFor(File f)
-        {
-            tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),f.getName());
         }
     };
 

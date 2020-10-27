@@ -250,7 +250,6 @@ class JdbcNotebookController
             int returnVal = filechooser.showSaveDialog(bufferPanel);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
-            tabSetControllerActions.setTabTitleFor(file);
         }
         try(Writer w = new FileWriter(file))
         {
