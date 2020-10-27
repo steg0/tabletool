@@ -17,6 +17,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EventListener;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,13 +32,22 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.event.EventListenerList;
 
+/**
+ * Represents a "notebook", i. e. a series of text field/result table pairs that
+ * operate on a selectable {@link ConnectionWorker}.
+ */
 class JdbcNotebookController
 {
+    interface Listener extends EventListener
+    {
+        void disconnected(ConnectionWorker connection);
+    }
+    
     JFrame parent;
     PropertyHolder propertyHolder;
-    TabSetController.Actions tabSetControllerActions;
-
+    
     File file;
     
     ConnectionListModel connections;
@@ -66,12 +76,10 @@ class JdbcNotebookController
     JdbcNotebookController(
             JFrame parent,
             PropertyHolder propertyHolder,
-            Connections connections,
-            TabSetController.Actions tabSetControllerActions)
+            Connections connections)
     {
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
-        this.tabSetControllerActions = tabSetControllerActions;
         
         var connectionPanel = new JPanel();
         
@@ -92,7 +100,10 @@ class JdbcNotebookController
             onConnection((c) -> 
             {
                 c.disconnect(logConsumer);
-                tabSetControllerActions.reportDisconnect(c);
+                for(Listener l : listeners.getListeners(Listener.class))
+                {
+                    l.disconnected(c);
+                }
             });
         });
         connectionPanel.add(disconnectButton);
@@ -133,6 +144,13 @@ class JdbcNotebookController
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
     }
     
+    EventListenerList listeners = new EventListenerList();
+    
+    void addListener(Listener l)
+    {
+        listeners.add(Listener.class,l);
+    }
+
     class BufferPaneMouseListener extends MouseAdapter
     {
         @Override

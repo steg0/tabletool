@@ -49,9 +49,9 @@ implements KeyListener
         var notebook = new JdbcNotebookController(
                 parent,
                 propertyHolder,
-                connections,
-                actions
+                connections
         );
+        notebook.addListener(notebookListener);
         notebooks.add(notebook);
         int newIndex = tabbedPane.getComponentCount();
         if(f==null)
@@ -133,15 +133,11 @@ implements KeyListener
             }
         };
     
-    interface Actions
-    {
-        void reportDisconnect(ConnectionWorker connection);
-    }
-
-    Actions actions = new Actions()
+    JdbcNotebookController.Listener notebookListener = 
+            new JdbcNotebookController.Listener()
     {
         @Override
-        public void reportDisconnect(ConnectionWorker connection)
+        public void disconnected(ConnectionWorker connection)
         {
             for(var notebook : notebooks)
             {
