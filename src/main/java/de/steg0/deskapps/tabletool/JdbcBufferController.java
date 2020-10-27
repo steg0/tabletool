@@ -259,8 +259,43 @@ implements FocusListener
     
     KeyListener resultsetKeyListener = new KeyListener()
     {
+        void scrollToView()
+        {
+            Rectangle rect = editor.getBounds();
+            Rectangle cellRect = resultview.getCellRect(
+                    resultview.getSelectedRow(),
+                    resultview.getSelectedColumn(),
+                    true
+            );
+            Rectangle headerBounds = 
+                    resultview.getTableHeader().getBounds();
+            Point position = ((JViewport)resultview.getParent())
+                .getViewPosition();
+            actions.scrollRectToVisible(
+                    JdbcBufferController.this,
+                    new Rectangle(
+                            (int)cellRect.getX(),
+                            (int)(rect.getHeight() + 
+                                  cellRect.getY() - 
+                                  position.getY() +
+                                  headerBounds.getHeight()),
+                            (int)cellRect.getWidth(),
+                            (int)cellRect.getHeight()
+                    )
+            ); 
+        }
+        
         @Override public void keyTyped(KeyEvent e) { }
-        @Override public void keyPressed(KeyEvent e) { }
+        
+        @Override public void keyPressed(KeyEvent e)
+        {
+            switch(e.getKeyCode())
+            {
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+                scrollToView();
+            }
+        }
 
         @Override
         public void keyReleased(KeyEvent e)
@@ -275,28 +310,7 @@ implements FocusListener
             case KeyEvent.VK_END:
             case KeyEvent.VK_PAGE_DOWN:
             case KeyEvent.VK_PAGE_UP:
-                Rectangle rect = editor.getBounds();
-                Rectangle cellRect = resultview.getCellRect(
-                        resultview.getSelectedRow(),
-                        resultview.getSelectedColumn(),
-                        true
-                );
-                Rectangle headerBounds = 
-                        resultview.getTableHeader().getBounds();
-                Point position = ((JViewport)resultview.getParent())
-                    .getViewPosition();
-                actions.scrollRectToVisible(
-                        JdbcBufferController.this,
-                        new Rectangle(
-                                (int)cellRect.getX(),
-                                (int)(rect.getHeight() + 
-                                      cellRect.getY() - 
-                                      position.getY() +
-                                      headerBounds.getHeight()),
-                                (int)cellRect.getWidth(),
-                                (int)cellRect.getHeight()
-                        )
-                ); 
+                scrollToView();
             }
         }
     };
