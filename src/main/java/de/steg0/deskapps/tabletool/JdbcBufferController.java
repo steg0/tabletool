@@ -214,22 +214,17 @@ class JdbcBufferController
     Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
     {
         editor.setCaretPosition(savedCaretPosition);
-        try(rsm)
+
+        addResultSetTable(rsm);
+        
+        Object[] rowcount = {rsm.getRowCount()};
+        if(rsm.getRowCount() < ResultSetTableModel.FETCHSIZE)
         {
-            addResultSetTable(rsm);
-            Object[] rowcount = {rsm.getRowCount()};
-            if(rsm.getRowCount() < ResultSetTableModel.FETCHSIZE)
-            {
-                log.accept(FETCH_ALL_LOG_FORMAT.format(rowcount));
-            }
-            else
-            {
-                log.accept(FETCH_LOG_FORMAT.format(rowcount));
-            }
+            log.accept(FETCH_ALL_LOG_FORMAT.format(rowcount));
         }
-        catch(SQLException e)
+        else
         {
-            log.accept(SQLExceptionPrinter.toString(e));
+            log.accept(FETCH_LOG_FORMAT.format(rowcount));
         }
     };
     
@@ -237,6 +232,21 @@ class JdbcBufferController
     
     void addResultSetTable(ResultSetTableModel rsm)
     {
+        if(panel.getComponentCount()==2) try
+        {
+            JScrollPane tablepane = (JScrollPane)panel.getComponent(1);
+            JTable current = (JTable)tablepane.getViewport().getComponent(0);
+            var currentRsm = (ResultSetTableModel)current.getModel();
+            currentRsm.close();
+            log.accept("ResultSet closed at "+new Date());
+         
+            panel.remove(1);
+        }
+        catch(SQLException e)
+        {
+            log.accept(SQLExceptionPrinter.toString(e));
+        }
+
         resultview = new JTable(rsm);
         
         new CellDisplayController(parent,resultview,log);
@@ -252,7 +262,6 @@ class JdbcBufferController
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         
-        if(panel.getComponentCount()==2) panel.remove(1);
         
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
