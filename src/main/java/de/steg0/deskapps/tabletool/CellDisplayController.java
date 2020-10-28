@@ -1,22 +1,30 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
+import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.function.Consumer;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -147,8 +155,48 @@ class CellDisplayController
         });
         
         var scrollpane = new JScrollPane(textarea);
-        
+
         dialog.getContentPane().add(scrollpane);
+        
+        var buttonPanel = new JPanel(new FlowLayout());
+        var saveButton = new JButton("Export");
+        saveButton.addActionListener((event) ->
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showSaveDialog(parent);
+            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            File file=filechooser.getSelectedFile();
+            try(InputStream is = ((Blob)value).getBinaryStream();
+                OutputStream os = new BufferedOutputStream(
+                        new FileOutputStream(file)))
+            {
+                byte[] buf=new byte[0x4000];
+                int len;
+                while((len=is.read(buf))!=-1)
+                {
+                    os.write(buf,0,len);
+                }
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error saving: "+SQLExceptionPrinter.toString(e),
+                        "Error saving",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            catch(IOException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error saving: "+e.getMessage(),
+                        "Error saving",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        buttonPanel.add(saveButton);
+        
+        dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
         
         dialog.pack();
         dialog.setVisible(true);
