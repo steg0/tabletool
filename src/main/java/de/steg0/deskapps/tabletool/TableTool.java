@@ -22,15 +22,20 @@ import javax.swing.JOptionPane;
 
 /**
  * This aims to be a simple tabular grid that has DB connectivity.
- * 
- * Start example &ndash; Windows L&amp;F:
+ * <p>
+ * Start example from packaged JAR with Windows L&amp;F and Oracle as well
+ * as DB2 drivers:
+ * <p>
  * <code>
- * java -XX:+UseSerialGC -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
+ * java -jar tabletool-0.1-SNAPSHOT.jar 
+ *      -XX:+UseSerialGC
+ *      -Dfile.encoding=Cp1252 
+ *      -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel 
+ *      -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;$HOME/.m2/repository/com/ibm/db2/jcc/11.1.4.4/jcc-11.1.4.4.jar\;$APPDATA/tabletool 
  * </code>
- * Metal L&amp;F with Steel theme:
- * <code>
- * java -XX:+UseSerialGC -Dswing.metalTheme=steel -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;target/classes de.steg0.deskapps.tabletool.TableTool 
- * </code>
+ * <p>
+ * Note that $APPDATA/tabletool is added to the classpath above so that
+ * <code>tabletool.properties</code> might be found there.
  */
 public class TableTool
 extends WindowAdapter
