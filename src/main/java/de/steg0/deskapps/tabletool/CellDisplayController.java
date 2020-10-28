@@ -7,8 +7,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -195,6 +197,40 @@ class CellDisplayController
             }
         });
         buttonPanel.add(saveButton);
+        
+        var loadButton = new JButton("Import");
+        loadButton.addActionListener((event) ->
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showOpenDialog(parent);
+            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            File file=filechooser.getSelectedFile();
+            
+            try(var is = new BufferedInputStream(new FileInputStream(file));
+                OutputStream os = ((Blob)value).setBinaryStream(0))
+            {
+                byte[] buf=new byte[0x4000];
+                int len;
+                while((len=is.read(buf))!=-1) os.write(buf,0,len);
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error importing: "+SQLExceptionPrinter.toString(e),
+                        "Error importing",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            catch(IOException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error importing: "+e.getMessage(),
+                        "Error importing",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        buttonPanel.add(loadButton);
         
         dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
         
