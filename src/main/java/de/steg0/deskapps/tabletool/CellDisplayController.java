@@ -20,6 +20,7 @@ import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.function.Consumer;
@@ -52,10 +53,11 @@ class CellDisplayController
                 {
                     int row = source.rowAtPoint(event.getPoint()),
                         col = source.columnAtPoint(event.getPoint());
+                    var rsm = (ResultSetTableModel)source.getModel();
                     Object cellcontent = source.getValueAt(row,col);
                     try
                     {
-                        show(cellcontent);
+                        show(rsm.rs,cellcontent);
                     }
                     catch(SQLException e)
                     {
@@ -76,7 +78,7 @@ class CellDisplayController
     }
     
     /**blocking*/
-    void show(Object value)
+    void show(ResultSet resultset,Object value)
     throws SQLException,IOException
     {
         var textarea = new JTextArea(10,72);
@@ -110,6 +112,7 @@ class CellDisplayController
             var loadButton = new JButton("Import");
             var importAction = new BlobImportAction();
             importAction.blob = blob;
+            importAction.resultset = resultset;
             loadButton.addActionListener(importAction);
             buttonPanel.add(loadButton);
 
@@ -241,6 +244,7 @@ class CellDisplayController
     class BlobImportAction implements ActionListener
     {
         Blob blob;
+        ResultSet resultset;
         
         /**blocking */
         @Override
@@ -262,6 +266,8 @@ class CellDisplayController
                     int len;
                     while((len=is.read(buf))!=-1) os.write(buf,0,len);
                 }
+                
+                resultset.updateRow();
             }
             catch(SQLException e)
             {
