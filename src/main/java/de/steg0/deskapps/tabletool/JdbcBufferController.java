@@ -30,9 +30,9 @@ import javax.swing.text.BadLocationException;
 class JdbcBufferController
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched.\n");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched at {1}\n");
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched.\n");
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched at {1}\n");
 
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -243,7 +243,7 @@ class JdbcBufferController
 
         addResultSetTable(rsm);
         
-        Object[] rowcount = {rsm.getRowCount()};
+        Object[] rowcount = {rsm.getRowCount(),new Date()};
         if(rsm.getRowCount() < ResultSetTableModel.FETCHSIZE)
         {
             log.accept(FETCH_ALL_LOG_FORMAT.format(rowcount));

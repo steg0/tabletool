@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 class ConnectionWorker
 {
     static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected.\n");
+            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected at {1}\n");
 
     Connection connection;
     Executor executor;
@@ -99,7 +99,7 @@ class ConnectionWorker
         void displayUpdateCount(Statement statement)
         throws SQLException
         {
-            Object[] updateCount = {statement.getUpdateCount()};
+            Object[] updateCount = {statement.getUpdateCount(),new Date()};
             report(log,UPDATE_LOG_FORMAT.format(updateCount));
         }
         
