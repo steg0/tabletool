@@ -25,8 +25,7 @@ implements TableModel,AutoCloseable
     
     /**Blockingly retrieves a ResultSet from the Statement.
      * Neither one is closed; it is expected they have to be closed
-     * externally. For this and only this, the class implements 
-     * AutoCloseable. */
+     * externally. */
     void update(Statement st)
     throws SQLException
     {
