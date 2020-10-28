@@ -179,16 +179,16 @@ class CellDisplayController
             {
                 JOptionPane.showMessageDialog(
                         parent,
-                        "Error saving: "+SQLExceptionPrinter.toString(e),
-                        "Error saving",
+                        "Error exporting: "+SQLExceptionPrinter.toString(e),
+                        "Error exporting",
                         JOptionPane.ERROR_MESSAGE);
             }
             catch(IOException e)
             {
                 JOptionPane.showMessageDialog(
                         parent,
-                        "Error saving: "+e.getMessage(),
-                        "Error saving",
+                        "Error exporting: "+e.getMessage(),
+                        "Error exporting",
                         JOptionPane.ERROR_MESSAGE);
             }
         });
