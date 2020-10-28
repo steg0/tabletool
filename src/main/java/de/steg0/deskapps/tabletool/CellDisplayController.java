@@ -163,7 +163,7 @@ class CellDisplayController
         dialog.setVisible(true);
     }
 
-    static class HexDump 
+    static class HexDump
     {
         String dump;
         int length;
