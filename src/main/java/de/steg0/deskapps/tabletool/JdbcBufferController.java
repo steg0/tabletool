@@ -34,8 +34,6 @@ class JdbcBufferController
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched at {1}\n");
 
-    static final int FETCH_MAX=300;
-    
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
@@ -170,6 +168,7 @@ class JdbcBufferController
     int savedCaretPosition;
 
     ConnectionWorker connection;
+    int fetchsize;
     
     void fetch()
     {
@@ -189,7 +188,6 @@ class JdbcBufferController
         
         closeCurrentResultSet();
         
-        int fetchsize = FETCH_MAX;
         connection.submit(text,fetchsize,resultConsumer,log);
     }
 

@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -9,6 +10,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventListener;
@@ -26,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -34,6 +38,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.event.EventListenerList;
+import javax.swing.text.NumberFormatter;
 
 /**
  * Represents a "notebook", i. e. a series of text field/result table pairs that
@@ -41,6 +46,8 @@ import javax.swing.event.EventListenerList;
  */
 class JdbcNotebookController
 {
+    static final int DEFAULT_FETCH_SIZE = 300;
+    
     interface Listener extends EventListener
     {
         void disconnected(ConnectionWorker connection);
@@ -54,6 +61,8 @@ class JdbcNotebookController
     final ConnectionListModel connections;
     JComboBox<String> connectionsSelector;
 
+    JFormattedTextField fetchsizeField;
+    
     JButton commitButton = new JButton("Commit");
     JButton rollbackButton = new JButton("Rollback");
     JButton disconnectButton = new JButton("Disconnect");
@@ -83,7 +92,16 @@ class JdbcNotebookController
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         
-        var connectionPanel = new JPanel();
+        var connectionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        NumberFormat format = NumberFormat.getIntegerInstance();
+        NumberFormatter numberFormatter = new NumberFormatter(format);
+        numberFormatter.setAllowsInvalid(false); 
+        fetchsizeField = new JFormattedTextField(numberFormatter);
+        fetchsizeField.setColumns(6);
+        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
+        fetchsizeField.addPropertyChangeListener(updateFetchSizeListener);
+        connectionPanel.add(fetchsizeField);
         
         commitButton.addActionListener((e) -> 
         {
@@ -228,6 +246,7 @@ class JdbcNotebookController
             @Override 
             public void focusGained(FocusEvent e) { }
         });
+        c.fetchsize = Integer.parseInt(fetchsizeField.getText());
 
         bufferPanel.removeAll();
         for(int i=0;i<buffers.size();i++)
@@ -302,6 +321,18 @@ class JdbcNotebookController
         buffers.get(lastFocusedBuffer).focusEditor();
     }
     
+    PropertyChangeListener updateFetchSizeListener = (e) ->
+    {
+        if("value".equals(e.getPropertyName()))
+        {
+            int  fetchsize = Integer.parseInt(fetchsizeField.getText());
+            for(JdbcBufferController buffer : buffers)
+            {
+                buffer.fetchsize = fetchsize;
+            }
+        }
+    };
+
     void onConnection(Consumer<ConnectionWorker> c)
     {
         ConnectionWorker selectedConnection = connections.selected();
@@ -338,6 +369,7 @@ class JdbcNotebookController
             logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
     }
+
     
     void reportDisconnect(ConnectionWorker connection)
     {
