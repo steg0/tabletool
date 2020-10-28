@@ -66,6 +66,7 @@ class PropertyHolder
                     ConnectionInfo.PROPERTY_PREFIX))
             .collect(groupingBy(PropertyHolder::getConnectionNameKey))
             .keySet().stream()
+            .sorted()
             .map(ConnectionInfo::new)
             .toArray(ConnectionInfo[]::new);
     }
