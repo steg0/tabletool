@@ -15,7 +15,7 @@ class PropertyHolder
     throws IOException
     {
         try(var propertyStream = getClass().getResourceAsStream(
-                "/tabletool.properties"))
+                "/myriad.properties"))
         {
             if(propertyStream != null) properties.load(propertyStream);
         }
@@ -23,8 +23,8 @@ class PropertyHolder
     
     Dimension getDefaultFrameSize()
     {
-        String wstr = properties.getOrDefault("frame.w","400").toString();
-        String hstr = properties.getOrDefault("frame.h","250").toString();
+        String wstr = properties.getOrDefault("frame.w","550").toString();
+        String hstr = properties.getOrDefault("frame.h","300").toString();
         return new Dimension(
                 Integer.parseInt(wstr),
                 Integer.parseInt(hstr)

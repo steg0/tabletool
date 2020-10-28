@@ -27,17 +27,18 @@ import javax.swing.JOptionPane;
  * as DB2 drivers:
  * <p>
  * <code>
- * java -jar tabletool-0.1-SNAPSHOT.jar 
+ * java -jar myriad-0.1-SNAPSHOT.jar 
  *      -XX:+UseSerialGC
  *      -Dfile.encoding=Cp1252 
  *      -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel 
- *      -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;$HOME/.m2/repository/com/ibm/db2/jcc/11.1.4.4/jcc-11.1.4.4.jar\;$APPDATA/tabletool 
+ *      -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;$HOME/.m2/repository/com/ibm/db2/jcc/11.1.4.4/jcc-11.1.4.4.jar\;$APPDATA/myriad
+ *      $HOME/Documents/workspace.myr.xml
  * </code>
  * <p>
- * Note that $APPDATA/tabletool is added to the classpath above so that
- * <code>tabletool.properties</code> might be found there.
+ * Note that $APPDATA/myriad is added to the classpath above so that
+ * <code>myriad.properties</code> might be found there.
  */
-public class TableTool
+public class Myriad
 extends WindowAdapter
 {
 
@@ -45,7 +46,7 @@ extends WindowAdapter
     File workspace;
     TabSetController controller;
     
-    TableTool(String workspacefile)
+    Myriad(String workspacefile)
     {
         if(workspacefile!=null) workspace = new File(workspacefile);
     }
@@ -53,7 +54,7 @@ extends WindowAdapter
     void showJdbcBuffer()
     {
         String title = (workspace!=null? workspace.getName()+" - " : "") + 
-                "Tabletool";
+                "Myriad";
         frame = new JFrame(title);
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
@@ -196,7 +197,7 @@ extends WindowAdapter
     {
         String workspacefile=null;
         if(args.length>0) workspacefile=args[0];
-        TableTool ttool = new TableTool(workspacefile);
+        Myriad ttool = new Myriad(workspacefile);
         ttool.showJdbcBuffer();
     }
     
