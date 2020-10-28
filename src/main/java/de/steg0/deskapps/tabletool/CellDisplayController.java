@@ -251,12 +251,17 @@ class CellDisplayController
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
             
-            try(var is = new BufferedInputStream(new FileInputStream(file));
-                OutputStream os = blob.setBinaryStream(0))
+            try
             {
-                byte[] buf=new byte[0x4000];
-                int len;
-                while((len=is.read(buf))!=-1) os.write(buf,0,len);
+                blob.truncate(0);
+                
+                try(var is = new BufferedInputStream(new FileInputStream(file));
+                        OutputStream os = blob.setBinaryStream(1))
+                {
+                    byte[] buf=new byte[0x4000];
+                    int len;
+                    while((len=is.read(buf))!=-1) os.write(buf,0,len);
+                }
             }
             catch(SQLException e)
             {
