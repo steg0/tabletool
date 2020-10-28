@@ -40,6 +40,7 @@ class CellDisplayController
     final JFrame parent;
 
     JPanel panel = new JPanel(new BorderLayout());
+    JDialog dialog;
     
     CellDisplayController(JFrame parent,JTable source,Consumer<String> log)
     {
@@ -131,7 +132,7 @@ class CellDisplayController
             dialogtitle = "Scalar value display";
         }
         
-        var dialog = new JDialog(parent,dialogtitle,true);
+        dialog = new JDialog(parent,dialogtitle,true);
 
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().setLayout(new BorderLayout());
@@ -269,6 +270,8 @@ class CellDisplayController
                 }
                 
                 resultset.updateRow();
+                
+                dialog.dispose();
             }
             catch(SQLException e)
             {
