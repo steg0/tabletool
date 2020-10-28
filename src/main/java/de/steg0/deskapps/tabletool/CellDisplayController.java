@@ -3,6 +3,8 @@ package de.steg0.deskapps.tabletool;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -80,6 +82,8 @@ class CellDisplayController
         var textarea = new JTextArea(10,72);
         textarea.setEditable(false);
         
+        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
         String dialogtitle;
         
         if(value instanceof Clob)
@@ -96,6 +100,19 @@ class CellDisplayController
         else if(value instanceof Blob)
         {
             var blob = (Blob)value;
+            
+            var saveButton = new JButton("Export");
+            var exportAction = new BlobExportAction();
+            exportAction.blob = blob;
+            saveButton.addActionListener(exportAction);
+            buttonPanel.add(saveButton);
+            
+            var loadButton = new JButton("Import");
+            var importAction = new BlobImportAction();
+            importAction.blob = blob;
+            loadButton.addActionListener(importAction);
+            buttonPanel.add(loadButton);
+
             var dump = new HexDump(blob,16*0x100);
             textarea.setFont(new Font(
                     Font.MONOSPACED,
@@ -136,75 +153,6 @@ class CellDisplayController
         var scrollpane = new JScrollPane(textarea);
 
         dialog.getContentPane().add(scrollpane);
-        
-        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        
-        var saveButton = new JButton("Export");
-        saveButton.addActionListener((event) ->
-        {
-            var filechooser = new JFileChooser();
-            int returnVal = filechooser.showSaveDialog(parent);
-            if(returnVal != JFileChooser.APPROVE_OPTION) return;
-            File file=filechooser.getSelectedFile();
-            try(var is = ((Blob)value).getBinaryStream();
-                var os = new BufferedOutputStream(new FileOutputStream(file)))
-            {
-                byte[] buf=new byte[0x4000];
-                int len;
-                while((len=is.read(buf))!=-1) os.write(buf,0,len);
-            }
-            catch(SQLException e)
-            {
-                JOptionPane.showMessageDialog(
-                        parent,
-                        "Error exporting: "+SQLExceptionPrinter.toString(e),
-                        "Error exporting",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-            catch(IOException e)
-            {
-                JOptionPane.showMessageDialog(
-                        parent,
-                        "Error exporting: "+e.getMessage(),
-                        "Error exporting",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        buttonPanel.add(saveButton);
-        
-        var loadButton = new JButton("Import");
-        loadButton.addActionListener((event) ->
-        {
-            var filechooser = new JFileChooser();
-            int returnVal = filechooser.showOpenDialog(parent);
-            if(returnVal != JFileChooser.APPROVE_OPTION) return;
-            File file=filechooser.getSelectedFile();
-            
-            try(var is = new BufferedInputStream(new FileInputStream(file));
-                OutputStream os = ((Blob)value).setBinaryStream(0))
-            {
-                byte[] buf=new byte[0x4000];
-                int len;
-                while((len=is.read(buf))!=-1) os.write(buf,0,len);
-            }
-            catch(SQLException e)
-            {
-                JOptionPane.showMessageDialog(
-                        parent,
-                        "Error importing: "+SQLExceptionPrinter.toString(e),
-                        "Error importing",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-            catch(IOException e)
-            {
-                JOptionPane.showMessageDialog(
-                        parent,
-                        "Error importing: "+e.getMessage(),
-                        "Error importing",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        buttonPanel.add(loadButton);
         
         var closeButton = new JButton("Close");
         closeButton.addActionListener((e) -> 
@@ -257,6 +205,81 @@ class CellDisplayController
         }
     }
     
-    class
+    class BlobExportAction implements ActionListener
+    {
+        Blob blob;
+        
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showSaveDialog(parent);
+            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            File file=filechooser.getSelectedFile();
+            try(InputStream is = blob.getBinaryStream();
+                var os = new BufferedOutputStream(new FileOutputStream(file)))
+            {
+                byte[] buf=new byte[0x4000];
+                int len;
+                while((len=is.read(buf))!=-1) os.write(buf,0,len);
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error exporting: "+SQLExceptionPrinter.toString(e),
+                        "Error exporting",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            catch(IOException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error exporting: "+e.getMessage(),
+                        "Error exporting",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
+    class BlobImportAction implements ActionListener
+    {
+        Blob blob;
+        
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showOpenDialog(parent);
+            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            File file=filechooser.getSelectedFile();
+            
+            try(var is = new BufferedInputStream(new FileInputStream(file));
+                OutputStream os = blob.setBinaryStream(0))
+            {
+                byte[] buf=new byte[0x4000];
+                int len;
+                while((len=is.read(buf))!=-1) os.write(buf,0,len);
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error importing: "+SQLExceptionPrinter.toString(e),
+                        "Error importing",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            catch(IOException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error importing: "+e.getMessage(),
+                        "Error importing",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
     
 }
