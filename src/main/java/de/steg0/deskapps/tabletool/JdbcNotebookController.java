@@ -31,6 +31,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -94,11 +95,13 @@ class JdbcNotebookController
         
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
+        connectionPanel.add(new JLabel("Fetch:"));
+        
         NumberFormat format = NumberFormat.getIntegerInstance();
         NumberFormatter numberFormatter = new NumberFormatter(format);
         numberFormatter.setAllowsInvalid(false); 
         fetchsizeField = new JFormattedTextField(numberFormatter);
-        fetchsizeField.setColumns(6);
+        fetchsizeField.setColumns(4);
         fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         fetchsizeField.addPropertyChangeListener(updateFetchSizeListener);
         connectionPanel.add(fetchsizeField);
