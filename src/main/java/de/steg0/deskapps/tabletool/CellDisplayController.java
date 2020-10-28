@@ -96,36 +96,13 @@ class CellDisplayController
         else if(value instanceof Blob)
         {
             var blob = (Blob)value;
-            try(InputStream is = blob.getBinaryStream())
-            {
-                var hex=new StringBuilder();
-                var plain=new StringBuilder();
-                int i=0;
-                for(;i<16*0x100;i++)
-                {
-                    int b=is.read();
-                    if(b==-1)
-                    {
-                        for(int j=0;j<16-i%16;j++) hex.append("   ");
-                        hex.append(plain);
-                        break;
-                    }
-                    if(i%16==0)
-                    {
-                        if(i>0) hex.append(plain).append('\n');
-                        plain.setLength(0);
-                        hex.append(String.format("%04x ",i));
-                    }
-                    hex.append(String.format("%02x ",b));
-                    plain.append(b>=0&&b<32?'.':(char)b);
-                }
-                textarea.setFont(new Font(
-                        Font.MONOSPACED,
-                        Font.PLAIN,
-                        textarea.getFont().getSize()));
-                textarea.setText(hex.toString());
-                dialogtitle = "BLOB bytes 0 to "+i+" of "+blob.length();
-            }
+            var dump = new HexDump(blob,16*0x100);
+            textarea.setFont(new Font(
+                    Font.MONOSPACED,
+                    Font.PLAIN,
+                    textarea.getFont().getSize()));
+            textarea.setText(dump.dump);
+            dialogtitle = "BLOB bytes 0 to "+dump.length+" of "+blob.length();
         }
         else
         {
@@ -238,4 +215,42 @@ class CellDisplayController
         dialog.pack();
         dialog.setVisible(true);
     }
+
+    static class HexDump 
+    {
+        String dump;
+        int length;
+        
+        HexDump(Blob blob,int maxlength)
+        throws SQLException,IOException
+        {
+            try(InputStream is = blob.getBinaryStream())
+            {
+                var hex=new StringBuilder();
+                var plain=new StringBuilder();
+                int i=0;
+                for(;i<maxlength;i++)
+                {
+                    int b=is.read();
+                    if(b==-1)
+                    {
+                        for(int j=0;j<16-i%16;j++) hex.append("   ");
+                        hex.append(plain);
+                        break;
+                    }
+                    if(i%16==0)
+                    {
+                        if(i>0) hex.append(plain).append('\n');
+                        plain.setLength(0);
+                        hex.append(String.format("%04x ",i));
+                    }
+                    hex.append(String.format("%02x ",b));
+                    plain.append(b>=0&&b<32?'.':(char)b);
+                }
+                dump=hex.toString();
+                length=i;
+            }
+        }
+    }
+    
 }
