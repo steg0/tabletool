@@ -51,7 +51,9 @@ extends WindowAdapter
     
     void showJdbcBuffer()
     {
-        frame = new JFrame("Tabletool");
+        String title = (workspace!=null? workspace.getName()+" - " : "") + 
+                "Tabletool";
+        frame = new JFrame(title);
         frame.getContentPane().setLayout(new GridBagLayout());
         var propertyHolder = new PropertyHolder();
         if(ensureFrameDefaults(propertyHolder))
