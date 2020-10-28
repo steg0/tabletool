@@ -275,7 +275,6 @@ class JdbcBufferController
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         
-        
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
         resultviewConstraints.gridy = 1;
