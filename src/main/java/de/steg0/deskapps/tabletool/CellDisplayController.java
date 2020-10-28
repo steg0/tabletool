@@ -207,7 +207,11 @@ class CellDisplayController
         buttonPanel.add(loadButton);
         
         var closeButton = new JButton("Close");
-        closeButton.addActionListener((e) -> dialog.setVisible(false));
+        closeButton.addActionListener((e) -> 
+        {
+            dialog.setVisible(false);
+            dialog.dispose();
+        });
         buttonPanel.add(closeButton);
         
         dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
@@ -252,5 +256,7 @@ class CellDisplayController
             }
         }
     }
+    
+    class
     
 }
