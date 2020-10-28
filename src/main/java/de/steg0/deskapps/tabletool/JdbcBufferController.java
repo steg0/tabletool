@@ -244,14 +244,14 @@ class JdbcBufferController
 
         addResultSetTable(rsm);
         
-        Object[] rowcount = {rsm.getRowCount(),new Date()};
+        Object[] count = {rsm.getRowCount(),new Date().toString()};
         if(rsm.getRowCount() < rsm.fetchsize)
         {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(rowcount));
+            log.accept(FETCH_ALL_LOG_FORMAT.format(count));
         }
         else
         {
-            log.accept(FETCH_LOG_FORMAT.format(rowcount));
+            log.accept(FETCH_LOG_FORMAT.format(count));
         }
         if(rsm.resultSetClosed) log.accept("Note: ResultSet closed " +
                 "automatically at "+new Date());

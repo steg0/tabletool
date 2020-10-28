@@ -102,8 +102,8 @@ class ConnectionWorker
         void displayUpdateCount(Statement statement)
         throws SQLException
         {
-            Object[] updateCount = {statement.getUpdateCount(),new Date()};
-            report(log,UPDATE_LOG_FORMAT.format(updateCount));
+            Object[] count = {statement.getUpdateCount(),new Date().toString()};
+            report(log,UPDATE_LOG_FORMAT.format(count));
         }
         
         void reportResult(Statement statement)
