@@ -133,13 +133,11 @@ class JdbcBufferController
     throws IOException
     {
         w.write(editor.getText());
-        if(panel.getComponentCount()==2)
+        var rsm = getResultSetTableModel();
+        if(rsm != null)
         {
             w.write('\n');
-            JScrollPane tablepane = (JScrollPane)panel.getComponent(1);
-            JTable t = (JTable)tablepane.getViewport().getComponent(0);
-            var model = (ResultSetTableModel)t.getModel();
-            model.store(w);
+            rsm.store(w);
         }
     }
     
@@ -186,7 +184,35 @@ class JdbcBufferController
             log.accept("No connection available at "+new Date());
             return;
         }
+        
+        closeCurrentResultSet();
+        
         connection.submit(text,resultConsumer,log);
+    }
+
+    void closeCurrentResultSet()
+    {
+        var currentRsm = getResultSetTableModel();
+        if(currentRsm!=null) try
+        {
+            currentRsm.close();
+            log.accept("ResultSet closed at "+new Date());
+        }
+        catch(SQLException e)
+        {
+            log.accept(SQLExceptionPrinter.toString(e));
+        }
+    }
+
+    ResultSetTableModel getResultSetTableModel()
+    {
+        if(panel.getComponentCount()==2)
+        {
+            JScrollPane tablepane = (JScrollPane)panel.getComponent(1);
+            JTable t = (JTable)tablepane.getViewport().getComponent(0);
+            return (ResultSetTableModel)t.getModel();
+        }
+        return null;
     }
     
     String selectCurrentQuery()
@@ -232,20 +258,7 @@ class JdbcBufferController
     
     void addResultSetTable(ResultSetTableModel rsm)
     {
-        if(panel.getComponentCount()==2) try
-        {
-            JScrollPane tablepane = (JScrollPane)panel.getComponent(1);
-            JTable current = (JTable)tablepane.getViewport().getComponent(0);
-            var currentRsm = (ResultSetTableModel)current.getModel();
-            currentRsm.close();
-            log.accept("ResultSet closed at "+new Date());
-         
-            panel.remove(1);
-        }
-        catch(SQLException e)
-        {
-            log.accept(SQLExceptionPrinter.toString(e));
-        }
+        if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
         
