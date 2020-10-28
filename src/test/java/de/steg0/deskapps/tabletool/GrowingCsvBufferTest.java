@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
-class GrowingCsvBufferTest
+public class GrowingCsvBufferTest
 {
 
     @Test
-    void multilinefield()
+    public void multilinefield()
     {
         String input = "a,\"b\nc\",d\n";
         var g = new GrowingCsvBuffer();
@@ -20,7 +20,7 @@ class GrowingCsvBufferTest
     }
 
     @Test
-    void quoteinfield()
+    public void quoteinfield()
     {
         String input = "a,\"b\"\"c\",d\n";
         var g = new GrowingCsvBuffer();
@@ -32,7 +32,7 @@ class GrowingCsvBufferTest
     }
 
     @Test
-    void quoteinunquotedfield()
+    public void quoteinunquotedfield()
     {
         String input = "a,b\"c,d\n";
         var g = new GrowingCsvBuffer();
@@ -44,7 +44,7 @@ class GrowingCsvBufferTest
     }
 
     @Test
-    void illegalquoteinfield()
+    public void illegalquoteinfield()
     {
         String input = "a,\"b\"c\",d\n";
         var g = new GrowingCsvBuffer();
