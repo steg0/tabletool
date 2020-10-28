@@ -9,6 +9,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -265,7 +266,7 @@ class JdbcNotebookController
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
         }
-        try(Writer w = new FileWriter(file))
+        try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
         }
