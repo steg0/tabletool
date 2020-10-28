@@ -4,13 +4,16 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -47,6 +50,7 @@ extends WindowAdapter
         String title = (workspace!=null? workspace.getName()+" - " : "") + 
                 "Tabletool";
         frame = new JFrame(title);
+        frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
         var propertyHolder = new PropertyHolder();
         if(ensureFrameDefaults(propertyHolder))
@@ -75,6 +79,14 @@ extends WindowAdapter
                 frame.setVisible(true);
             }
         }
+    }
+    
+    List<Image> getIcons()
+    {
+        var icon16 = new ImageIcon(getClass().getResource("icon16.png"));
+        var icon32 = new ImageIcon(getClass().getResource("icon32.png"));
+        var icon = new ImageIcon(getClass().getResource("icon.png"));
+        return List.of(icon16.getImage(),icon32.getImage(),icon.getImage());
     }
     
     JMenuBar getMenuBar(TabSetController controller)
