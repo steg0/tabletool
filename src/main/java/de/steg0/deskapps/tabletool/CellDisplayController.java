@@ -63,6 +63,7 @@ class CellDisplayController
         });
     }
     
+    /**blocking*/
     void show(Object value)
     throws SQLException,IOException
     {
