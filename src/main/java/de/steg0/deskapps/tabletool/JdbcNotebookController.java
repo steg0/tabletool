@@ -46,12 +46,12 @@ class JdbcNotebookController
         void disconnected(ConnectionWorker connection);
     }
     
-    JFrame parent;
-    PropertyHolder propertyHolder;
+    final JFrame parent;
+    final PropertyHolder propertyHolder;
     
     File file;
     
-    ConnectionListModel connections;
+    final ConnectionListModel connections;
     JComboBox<String> connectionsSelector;
 
     JButton commitButton = new JButton("Commit");
@@ -79,6 +79,7 @@ class JdbcNotebookController
             PropertyHolder propertyHolder,
             Connections connections)
     {
+        this.parent = parent;
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         
@@ -177,36 +178,24 @@ class JdbcNotebookController
         @Override
         public void exitedSouth(JdbcBufferController source)
         {
-            for(int i=0;i<buffers.size();i++)
+            int i=buffers.indexOf(source);
+            if(buffers.size() <= i+1)
             {
-                if(buffers.get(i) == source)
-                {
-                    if(buffers.size() <= i+1)
-                    {
-                        var newBufferController = new JdbcBufferController(
-                                parent,logConsumer);
-                        newBufferController.connection =
-                                buffers.get(i).connection;
-                        add(newBufferController);
-                    }
-                    bufferPanel.revalidate();
-                    buffers.get(i+1).focusEditor();
-                    break;
-                }
+                var newBufferController = new JdbcBufferController(
+                        parent,logConsumer);
+                newBufferController.connection =
+                        buffers.get(i).connection;
+                add(newBufferController);
+                bufferPanel.revalidate();
             }
+            buffers.get(i+1).focusEditor();
         }
 
         @Override
         public void exitedNorth(JdbcBufferController source)
         {
-            for(int i=0;i<buffers.size();i++)
-            {
-                if(buffers.get(i) == source && i > 0)
-                {
-                    buffers.get(i-1).focusEditor();
-                    break;
-                }
-            }
+            int i=buffers.indexOf(source);
+            if(i > 0) buffers.get(i-1).focusEditor();
         }
 
         @Override

@@ -37,8 +37,9 @@ import javax.swing.JTextArea;
 
 class CellDisplayController
 {
+    final JFrame parent;
+
     JPanel panel = new JPanel(new BorderLayout());
-    JFrame parent;
     
     CellDisplayController(JFrame parent,JTable source,Consumer<String> log)
     {

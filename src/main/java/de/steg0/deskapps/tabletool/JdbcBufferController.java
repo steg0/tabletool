@@ -44,7 +44,7 @@ class JdbcBufferController
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
     }
     
-    JFrame parent;
+    final JFrame parent;
 
     JPanel panel = new JPanel(new GridBagLayout());
     

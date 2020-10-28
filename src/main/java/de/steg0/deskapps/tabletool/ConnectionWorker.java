@@ -17,8 +17,8 @@ class ConnectionWorker
     static final MessageFormat UPDATE_LOG_FORMAT = 
             new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected at {1}\n");
 
-    Connection connection;
-    Executor executor;
+    final Connection connection;
+    final Executor executor;
     
     ConnectionWorker(Connection connection,Executor executor)
     {
