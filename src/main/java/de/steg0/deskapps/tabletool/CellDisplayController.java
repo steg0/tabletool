@@ -160,7 +160,8 @@ class CellDisplayController
 
         dialog.getContentPane().add(scrollpane);
         
-        var buttonPanel = new JPanel(new FlowLayout());
+        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
         var saveButton = new JButton("Export");
         saveButton.addActionListener((event) ->
         {
@@ -227,6 +228,10 @@ class CellDisplayController
             }
         });
         buttonPanel.add(loadButton);
+        
+        var closeButton = new JButton("Close");
+        closeButton.addActionListener((e) -> dialog.setVisible(false));
+        buttonPanel.add(closeButton);
         
         dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
         
