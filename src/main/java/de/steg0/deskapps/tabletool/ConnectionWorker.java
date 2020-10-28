@@ -40,12 +40,14 @@ class ConnectionWorker
      */
     void submit(
             String sql,
+            int fetchsize,
             Consumer<ResultSetTableModel> resultConsumer,
             Consumer<String> log
     )
     {
         var sqlRunnable = new SqlRunnable();
         sqlRunnable.resultConsumer = resultConsumer;
+        sqlRunnable.fetchsize = fetchsize;
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
         executor.execute(sqlRunnable);
@@ -56,6 +58,7 @@ class ConnectionWorker
         Consumer<ResultSetTableModel> resultConsumer;
         Consumer<String> log;
         String sql;
+        int fetchsize;
 
         public void run()
         {
@@ -107,7 +110,7 @@ class ConnectionWorker
         throws SQLException
         {
             var rsm = new ResultSetTableModel();
-            rsm.update(statement);
+            rsm.update(statement,fetchsize);
             invokeLater(() -> resultConsumer.accept(rsm));
         }
     }

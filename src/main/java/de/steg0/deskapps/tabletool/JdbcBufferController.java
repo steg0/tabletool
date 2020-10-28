@@ -34,6 +34,8 @@ class JdbcBufferController
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched at {1}\n");
 
+    static final int FETCH_MAX=300;
+    
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
@@ -187,7 +189,8 @@ class JdbcBufferController
         
         closeCurrentResultSet();
         
-        connection.submit(text,resultConsumer,log);
+        int fetchsize = FETCH_MAX;
+        connection.submit(text,fetchsize,resultConsumer,log);
     }
 
     void closeCurrentResultSet()
@@ -196,7 +199,7 @@ class JdbcBufferController
         if(currentRsm!=null) try
         {
             currentRsm.close();
-            log.accept("ResultSet closed at "+new Date());
+            log.accept("Statement closed at "+new Date());
         }
         catch(SQLException e)
         {
@@ -244,7 +247,7 @@ class JdbcBufferController
         addResultSetTable(rsm);
         
         Object[] rowcount = {rsm.getRowCount(),new Date()};
-        if(rsm.getRowCount() < ResultSetTableModel.FETCHSIZE)
+        if(rsm.getRowCount() < rsm.fetchsize)
         {
             log.accept(FETCH_ALL_LOG_FORMAT.format(rowcount));
         }
@@ -252,6 +255,8 @@ class JdbcBufferController
         {
             log.accept(FETCH_LOG_FORMAT.format(rowcount));
         }
+        if(rsm.resultSetClosed) log.accept("Note: ResultSet closed " +
+                "automatically at "+new Date());
     };
     
     JTable resultview;

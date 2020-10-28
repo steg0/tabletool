@@ -16,28 +16,29 @@ import javax.swing.table.TableModel;
 class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
-    static final int FETCHSIZE=1;
-
     Statement st;
     ResultSet rs;
     String cols[];
     List<Object[]> rows;
+    int fetchsize;
+    boolean resultSetClosed;
     
     /**Blockingly retrieves a ResultSet from the Statement.
      * Neither one is closed; it is expected they have to be closed
      * externally. */
-    void update(Statement st)
+    void update(Statement st,int fetchsize)
     throws SQLException
     {
         this.st = st;
         this.rs = st.getResultSet();
+        this.fetchsize = fetchsize;
         fill();
     }
     
     void fill()
     throws SQLException
     {
-        rows = new ArrayList<Object[]>(FETCHSIZE);
+        rows = new ArrayList<Object[]>(fetchsize);
         ResultSetMetaData m = rs.getMetaData();
         cols = new String[m.getColumnCount()];
         for(int i=1;i<=cols.length;i++)
@@ -45,7 +46,7 @@ implements TableModel,AutoCloseable
             cols[i-1] = m.getColumnLabel(i);
         }
         int rowcount=0;
-        while(rowcount<FETCHSIZE && rs.next())
+        while(rowcount<fetchsize && rs.next())
         {
             Object[] row = new Object[cols.length];
             for(int i=1;i<=cols.length;i++)
@@ -55,6 +56,7 @@ implements TableModel,AutoCloseable
             rows.add(row);
             rowcount++;
         }
+        resultSetClosed = rs.isClosed();
     }
     
     void store(Writer w)
