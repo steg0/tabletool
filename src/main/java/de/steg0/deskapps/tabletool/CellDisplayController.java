@@ -129,7 +129,6 @@ class CellDisplayController
         
         var dialog = new JDialog(parent,dialogtitle,true);
 
-        dialog.setLocationRelativeTo(parent.getContentPane());
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().setLayout(new BorderLayout());
         
@@ -160,6 +159,7 @@ class CellDisplayController
         dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
         
         dialog.pack();
+        dialog.setLocationRelativeTo(parent.getContentPane());
         dialog.setVisible(true);
     }
 
