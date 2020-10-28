@@ -18,14 +18,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 /**
- * The steg0 Tabletool.
- * 
- * <p>
- * This aims to be a simple tabular grid that accepts LISP expressions in its
- * cells, can edit CSV fast and has DB connectivity.
- * </p>
- * 
- * <p>It should also offer table-diff functionality.</p>
+ * This aims to be a simple tabular grid that has DB connectivity.
  * 
  * Start example &ndash; Windows L&amp;F:
  * <code>
