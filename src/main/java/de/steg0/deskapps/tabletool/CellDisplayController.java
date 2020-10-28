@@ -144,7 +144,6 @@ class CellDisplayController
                 switch(e.getKeyCode())
                 {
                 case KeyEvent.VK_ESCAPE:
-                    dialog.setVisible(false);
                     dialog.dispose();
                 }
             }
@@ -155,11 +154,7 @@ class CellDisplayController
         dialog.getContentPane().add(scrollpane);
         
         var closeButton = new JButton("Close");
-        closeButton.addActionListener((e) -> 
-        {
-            dialog.setVisible(false);
-            dialog.dispose();
-        });
+        closeButton.addActionListener((e) -> dialog.dispose());
         buttonPanel.add(closeButton);
         
         dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
