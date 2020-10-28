@@ -168,9 +168,8 @@ class CellDisplayController
             int returnVal = filechooser.showSaveDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
-            try(InputStream is = ((Blob)value).getBinaryStream();
-                OutputStream os = new BufferedOutputStream(
-                        new FileOutputStream(file)))
+            try(var is = ((Blob)value).getBinaryStream();
+                var os = new BufferedOutputStream(new FileOutputStream(file)))
             {
                 byte[] buf=new byte[0x4000];
                 int len;
