@@ -173,10 +173,7 @@ class CellDisplayController
             {
                 byte[] buf=new byte[0x4000];
                 int len;
-                while((len=is.read(buf))!=-1)
-                {
-                    os.write(buf,0,len);
-                }
+                while((len=is.read(buf))!=-1) os.write(buf,0,len);
             }
             catch(SQLException e)
             {
