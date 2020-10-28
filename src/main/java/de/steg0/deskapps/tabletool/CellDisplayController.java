@@ -59,7 +59,7 @@ class CellDisplayController
                     Object cellcontent = source.getValueAt(row,col);
                     try
                     {
-                        show(rsm.rs,cellcontent);
+                        show(rsm.rs,cellcontent,col+1);
                     }
                     catch(SQLException e)
                     {
@@ -80,7 +80,7 @@ class CellDisplayController
     }
     
     /**blocking*/
-    void show(ResultSet resultset,Object value)
+    void show(ResultSet resultset,Object value,int column)
     throws SQLException,IOException
     {
         var textarea = new JTextArea(10,72);
@@ -115,6 +115,7 @@ class CellDisplayController
             var importAction = new BlobImportAction();
             importAction.blob = blob;
             importAction.resultset = resultset;
+            importAction.column = column;
             loadButton.addActionListener(importAction);
             buttonPanel.add(loadButton);
 
@@ -247,6 +248,7 @@ class CellDisplayController
     {
         Blob blob;
         ResultSet resultset;
+        int column;
         
         /**blocking */
         @Override
@@ -269,6 +271,7 @@ class CellDisplayController
                     while((len=is.read(buf))!=-1) os.write(buf,0,len);
                 }
                 
+                resultset.updateBlob(column,blob);
                 resultset.updateRow();
                 
                 dialog.dispose();

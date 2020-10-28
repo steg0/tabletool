@@ -16,7 +16,7 @@ import javax.swing.table.TableModel;
 class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
-    static final int FETCHSIZE=300;
+    static final int FETCHSIZE=1;
 
     Statement st;
     ResultSet rs;
@@ -45,7 +45,7 @@ implements TableModel,AutoCloseable
             cols[i-1] = m.getColumnLabel(i);
         }
         int rowcount=0;
-        while(rs.next() && rowcount<FETCHSIZE)
+        while(rowcount<FETCHSIZE && rs.next())
         {
             Object[] row = new Object[cols.length];
             for(int i=1;i<=cols.length;i++)
