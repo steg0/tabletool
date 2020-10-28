@@ -4,6 +4,7 @@ import static javax.swing.SwingUtilities.invokeLater;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.MessageFormat;
@@ -85,7 +86,10 @@ class ConnectionWorker
             }
             else
             {
-                Statement st = connection.createStatement();
+                Statement st = connection.createStatement(
+                        ResultSet.TYPE_FORWARD_ONLY,
+                        ResultSet.CONCUR_UPDATABLE
+                );
                 if(text.endsWith(";")) text = text.substring(0,text.length()-1);
                 if(st.execute(text)) reportResult(st);
                 else displayUpdateCount(st);
