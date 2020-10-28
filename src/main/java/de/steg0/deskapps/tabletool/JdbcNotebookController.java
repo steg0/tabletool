@@ -60,7 +60,7 @@ class JdbcNotebookController
     File file;
     
     final ConnectionListModel connections;
-    JComboBox<String> connectionsSelector;
+    JComboBox<Connections.ConnectionState> connectionsSelector;
 
     JFormattedTextField fetchsizeField;
     

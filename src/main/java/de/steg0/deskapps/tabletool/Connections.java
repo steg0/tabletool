@@ -8,6 +8,19 @@ class Connections
 {
     static final boolean AUTOCOMMIT_DEFAULT=false;
 
+    class ConnectionState
+    {
+        int connectionIndex;
+        
+        public String toString()
+        {
+            /* connected ones get a star in front */
+            return (connections[connectionIndex] != null? "*" : "") +
+                    connectionInfo[connectionIndex].name;
+        }
+    }
+
+    ConnectionState[] connectionState;
     PropertyHolder.ConnectionInfo[] connectionInfo;
     ConnectionWorker[] connections;
     Executor executor;
@@ -17,41 +30,40 @@ class Connections
         connectionInfo = propertyHolder.getConnections();
         this.executor = executor;
         connections = new ConnectionWorker[connectionInfo.length];
+        connectionState = new ConnectionState[connectionInfo.length];
+
+        for(int i=0;i<connectionInfo.length;i++)
+        {
+            var state = new ConnectionState();
+            state.connectionIndex = i;
+            connectionState[i] = state;
+        }
     }
     
     /**blocking; establishes connection if needed */
-    ConnectionWorker getConnection(Object name)
+    ConnectionWorker getConnection(Object connection)
     throws SQLException
     {
-        for(int i=0;i<connectionInfo.length;i++)
+        int i = ((ConnectionState)connection).connectionIndex;
+        if(connections[i] == null)
         {
-            if(!connectionInfo[i].name.equals(name)) continue;
-            if(connections[i] == null)
-            {
-                var jdbcConnection = DriverManager.getConnection(
-                        connectionInfo[i].url,
-                        connectionInfo[i].username,
-                        connectionInfo[i].password
-                );
-                jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
-                connections[i] = new ConnectionWorker(
-                        jdbcConnection,
-                        executor
-                );
-            }
-            return connections[i];
+            var jdbcConnection = DriverManager.getConnection(
+                    connectionInfo[i].url,
+                    connectionInfo[i].username,
+                    connectionInfo[i].password
+            );
+            jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
+            connections[i] = new ConnectionWorker(
+                    jdbcConnection,
+                    executor
+            );
         }
-        return null;
+        return connections[i];
     }
     
-    ConnectionWorker getIfConnected(Object name)
+    ConnectionWorker getIfConnected(Object connection)
     {
-        for(int i=0;i<connectionInfo.length;i++)
-        {
-            if(!connectionInfo[i].name.equals(name)) continue;
-            return connections[i];
-        }
-        return null;
+        return connections[((ConnectionState)connection).connectionIndex];
     }
     
     void reportDisconnect(ConnectionWorker connection)
@@ -63,13 +75,13 @@ class Connections
         }
     }
 
-    public int getSize()
+    int getSize()
     {
         return connectionInfo.length;
     }
 
-    public String getElementAt(int index)
+    ConnectionState getElementAt(int index)
     {
-        return connectionInfo[index].name;
+        return connectionState[index];
     }
 }

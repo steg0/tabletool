@@ -6,7 +6,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
 class ConnectionListModel
-implements ComboBoxModel<String>
+implements ComboBoxModel<Connections.ConnectionState>
 {
 
     Connections connections;
@@ -18,10 +18,10 @@ implements ComboBoxModel<String>
     }
 
     /**blocking; establishes connection if needed */
-    ConnectionWorker getConnection(Object name)
+    ConnectionWorker getConnection(Object connection)
     throws SQLException
     {
-        return connections.getConnection(name);
+        return connections.getConnection(connection);
     }
     
     /**does not try to establish a connection; only returns non-null
@@ -43,7 +43,7 @@ implements ComboBoxModel<String>
     }
 
     @Override
-    public String getElementAt(int index)
+    public Connections.ConnectionState getElementAt(int index)
     {
         return connections.getElementAt(index);
     }
