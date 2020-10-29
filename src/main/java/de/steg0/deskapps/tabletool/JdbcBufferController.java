@@ -30,9 +30,9 @@ import javax.swing.text.BadLocationException;
 class JdbcBufferController
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched at {1}\n");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched and ResultSet {1} at {2}\n");
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched at {1}\n");
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched and ResultSet {1} at {2}\n");
 
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -244,17 +244,19 @@ class JdbcBufferController
 
         addResultSetTable(rsm);
         
-        Object[] count = {rsm.getRowCount(),new Date().toString()};
+        Object[] logargs = {
+                rsm.getRowCount(),
+                rsm.resultSetClosed? "closed" : "open",
+                new Date().toString()
+        };
         if(rsm.getRowCount() < rsm.fetchsize)
         {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(count));
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
         }
         else
         {
-            log.accept(FETCH_LOG_FORMAT.format(count));
+            log.accept(FETCH_LOG_FORMAT.format(logargs));
         }
-        if(rsm.resultSetClosed) log.accept("Note: ResultSet closed " +
-                "automatically at "+new Date());
     };
     
     JTable resultview;
