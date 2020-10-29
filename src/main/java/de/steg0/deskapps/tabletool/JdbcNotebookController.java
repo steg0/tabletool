@@ -378,6 +378,7 @@ class JdbcNotebookController
     {
         for(JdbcBufferController buffer : buffers)
         {
+            buffer.closeCurrentResultSet();
             if(buffer.connection == connection) buffer.connection = null;
         }
         connectionsSelector.setSelectedIndex(-1);
