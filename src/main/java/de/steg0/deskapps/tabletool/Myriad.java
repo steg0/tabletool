@@ -60,7 +60,7 @@ extends WindowAdapter
         var propertyHolder = new PropertyHolder(properties);
         if(ensureFrameDefaults(propertyHolder))
         {
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             frame.addWindowListener(this);
             
             controller = new TabSetController(frame,propertyHolder);
@@ -171,6 +171,21 @@ extends WindowAdapter
     @Override
     public void windowClosing(WindowEvent event)
     {
+        if(controller.isUnsaved())
+        {
+            int option = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Unsaved buffers exist. Exit?",
+                    "Unsaved buffer warning",
+                    JOptionPane.YES_NO_OPTION);
+            if(option!=JOptionPane.YES_OPTION)
+            {
+                return;
+            }
+        }
+
+        frame.dispose();
+        
         if(workspace==null) return;
         try
         {

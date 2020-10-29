@@ -101,6 +101,11 @@ implements KeyListener
         }
     }
     
+    boolean isUnsaved()
+    {
+        return !notebooks.stream().noneMatch((n) -> n.unsaved); 
+    }
+    
     @SuppressWarnings("serial")
     Action
         addAction = new AbstractAction("New")

@@ -38,6 +38,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.NumberFormatter;
 
@@ -58,6 +60,7 @@ class JdbcNotebookController
     final PropertyHolder propertyHolder;
     
     File file;
+    boolean unsaved;
     
     final ConnectionListModel connections;
     JComboBox<Connections.ConnectionState> connectionsSelector;
@@ -103,7 +106,7 @@ class JdbcNotebookController
         fetchsizeField = new JFormattedTextField(numberFormatter);
         fetchsizeField.setColumns(4);
         fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
-        fetchsizeField.addPropertyChangeListener(updateFetchSizeListener);
+        fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
         connectionPanel.add(fetchsizeField);
         
         commitButton.addActionListener((e) -> 
@@ -235,10 +238,28 @@ class JdbcNotebookController
         }
     };
     
+    DocumentListener bufferDocumentListener = new DocumentListener()
+    {
+        @Override
+        public void insertUpdate(DocumentEvent e)
+        {
+            unsaved=true;
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e)
+        {
+            unsaved=true;
+        }
+
+        @Override public void changedUpdate(DocumentEvent e) { }
+    };
+
     /**Adds a buffer to the panel and wires listeners. */
     void add(JdbcBufferController c)
     {
         c.addListener(bufferListener);
+        c.addDocumentListener(bufferDocumentListener);
         c.addEditorFocusListener(new FocusListener()
         {
             @Override 
@@ -280,6 +301,7 @@ class JdbcNotebookController
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
+            unsaved=false;
         }
         catch(IOException e)
         {
@@ -315,6 +337,7 @@ class JdbcNotebookController
             nextline = newBufferController.load(r);
             add(newBufferController);
         }
+        unsaved=false;
         bufferPanel.revalidate();
         buffers.get(0).focusEditor();
     }
@@ -324,15 +347,12 @@ class JdbcNotebookController
         buffers.get(lastFocusedBuffer).focusEditor();
     }
     
-    PropertyChangeListener updateFetchSizeListener = (e) ->
+    PropertyChangeListener fetchSizeListener = (e) ->
     {
-        if("value".equals(e.getPropertyName()))
+        int  fetchsize = Integer.parseInt(fetchsizeField.getText());
+        for(JdbcBufferController buffer : buffers)
         {
-            int  fetchsize = Integer.parseInt(fetchsizeField.getText());
-            for(JdbcBufferController buffer : buffers)
-            {
-                buffer.fetchsize = fetchsize;
-            }
+            buffer.fetchsize = fetchsize;
         }
     };
 

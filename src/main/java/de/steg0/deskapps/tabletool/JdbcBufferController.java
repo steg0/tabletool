@@ -24,6 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 
@@ -115,6 +116,11 @@ class JdbcBufferController
         listeners.add(Listener.class,l);
     }
 
+    void addDocumentListener(DocumentListener l)
+    {
+        editor.getDocument().addDocumentListener(l);
+    }
+    
     void addEditorFocusListener(FocusListener f)
     {
         editor.addFocusListener(f);
