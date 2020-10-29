@@ -28,26 +28,25 @@ import javax.swing.JOptionPane;
  * <p>
  * <code>
  * java -jar myriad-0.1-SNAPSHOT.jar 
- *      -XX:+UseSerialGC
+ *      -XX:+UseSerialGC 
  *      -Dfile.encoding=Cp1252 
  *      -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel 
- *      -cp $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;$HOME/.m2/repository/com/ibm/db2/jcc/11.1.4.4/jcc-11.1.4.4.jar\;$APPDATA/myriad
+ *      -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;$HOME/.m2/repository/com/ibm/db2/jcc/11.1.4.4/jcc-11.1.4.4.jar
+ *      -config $HOME/Documents/myriad.properties
  *      $HOME/Documents/workspace.myr.xml
  * </code>
- * <p>
- * Note that $APPDATA/myriad is added to the classpath above so that
- * <code>myriad.properties</code> might be found there.
  */
 public class Myriad
 extends WindowAdapter
 {
 
     JFrame frame;
-    File workspace;
+    File properties,workspace;
     TabSetController controller;
     
-    Myriad(String workspacefile)
+    Myriad(String propertiesfile,String workspacefile)
     {
+        if(propertiesfile!=null) properties = new File(propertiesfile);
         if(workspacefile!=null) workspace = new File(workspacefile);
     }
     
@@ -58,7 +57,7 @@ extends WindowAdapter
         frame = new JFrame(title);
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
-        var propertyHolder = new PropertyHolder();
+        var propertyHolder = new PropertyHolder(properties);
         if(ensureFrameDefaults(propertyHolder))
         {
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -195,9 +194,20 @@ extends WindowAdapter
 
     public static void main(String[] args)
     {
-        String workspacefile=null;
-        if(args.length>0) workspacefile=args[0];
-        Myriad ttool = new Myriad(workspacefile);
+        String workspacefile=null,propertiesfile=null;
+        
+        int optind=0;
+        for(;optind<args.length;optind++)
+        {
+            switch(args[optind])
+            {
+            case "-config":
+                propertiesfile = args[++optind];
+            }
+        }
+        
+        if(optind<args.length) workspacefile=args[optind];
+        Myriad ttool = new Myriad(propertiesfile,workspacefile);
         ttool.showJdbcBuffer();
     }
     

@@ -4,20 +4,29 @@ import static java.util.stream.Collectors.groupingBy;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
 class PropertyHolder
 {
+    File propertiesfile;
     Properties properties = new Properties();
+    
+    PropertyHolder(File propertiesfile)
+    {
+        this.propertiesfile = propertiesfile;
+    }
     
     void load()
     throws IOException
     {
-        try(var propertyStream = getClass().getResourceAsStream(
-                "/myriad.properties"))
+        if(propertiesfile!=null) try(var propertyStream = 
+                new BufferedInputStream(new FileInputStream(propertiesfile)))
         {
-            if(propertyStream != null) properties.load(propertyStream);
+            properties.load(propertyStream);
         }
     }
     
