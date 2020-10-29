@@ -373,6 +373,13 @@ class JdbcNotebookController
         }
     }
 
+    void closeCurrentResultSet()
+    {
+        for(JdbcBufferController buffer : buffers)
+        {
+            buffer.closeCurrentResultSet();
+        }
+    }
     
     void reportDisconnect(ConnectionWorker connection)
     {

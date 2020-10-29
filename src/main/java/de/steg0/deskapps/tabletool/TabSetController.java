@@ -70,6 +70,9 @@ implements KeyListener
     
     void removeSelected()
     {
+        JdbcNotebookController notebook=
+                notebooks.get(tabbedPane.getSelectedIndex());
+        notebook.closeCurrentResultSet();
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         if(notebooks.size()==0) add(null);
