@@ -43,7 +43,15 @@ implements KeyListener
         tabbedPane.addKeyListener(this);
     }
     
-    JdbcNotebookController add(File f)
+    /**
+     * Adds a tab and selects it.
+     * 
+     * @param unnamed whether a new, generic name should be set on the tab.
+     * If <code>false</code>, the tab will not have a name; it is expected
+     * that the caller sets one.
+     * @return the controller responsible for the new tab.
+     */
+    JdbcNotebookController add(boolean unnamed)
     {
         var notebook = new JdbcNotebookController(
                 parent,
@@ -53,18 +61,16 @@ implements KeyListener
         notebook.addListener(notebookListener);
         notebooks.add(notebook);
         int newIndex = tabbedPane.getComponentCount();
-        if(f==null)
+        if(unnamed)
         {
             String newname = "Notebook"+(unnamedNotebookCount++);
             tabbedPane.add(newname,notebook.notebookPanel);
-            tabbedPane.setSelectedIndex(newIndex);
         }
         else
         {
             tabbedPane.add(notebook.notebookPanel);
-            tabbedPane.setSelectedIndex(newIndex);
-            tabbedPane.setTitleAt(newIndex,f.getName());
         }
+        tabbedPane.setSelectedIndex(newIndex);
         return notebook;
     }
     
@@ -75,7 +81,7 @@ implements KeyListener
         notebook.closeCurrentResultSet();
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
-        if(notebooks.size()==0) add(null);
+        if(notebooks.size()==0) add(true);
     }
     
     void load()
@@ -87,9 +93,10 @@ implements KeyListener
         
         try(var r = new LineNumberReader(new FileReader(file)))
         {
-            JdbcNotebookController notebook = add(file);
+            JdbcNotebookController notebook = add(false);
             notebook.load(r);
             notebook.file = file;
+            tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),file.getName());
         }
         catch(IOException e)
         {
@@ -112,7 +119,7 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                add(null);
+                add(true);
             }
         },
         loadAction = new AbstractAction("Load")
@@ -144,15 +151,17 @@ implements KeyListener
     throws IOException
     {
         Workspace w = Workspaces.load(f);
-        if(w.getFiles().length==0) add(null);
+        if(w.getFiles().length==0) add(true);
         for(String fn : w.getFiles())
         {
             File sqlFile = new File(fn);
             try(var r = new LineNumberReader(new FileReader(sqlFile)))
             {
-                JdbcNotebookController notebook = add(sqlFile);
+                JdbcNotebookController notebook = add(false);
                 notebook.load(r);
                 notebook.file = sqlFile;
+                tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),
+                        sqlFile.getName());
             }
         }
     }
@@ -186,6 +195,14 @@ implements KeyListener
              * in their ItemListener.
              */
             connections.reportDisconnect(connection);
+        }
+
+        @Override
+        public void bufferChanged()
+        {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            tabbedPane.setTitleAt(selectedIndex,
+                    "*"+tabbedPane.getTitleAt(selectedIndex));
         }
     };
 

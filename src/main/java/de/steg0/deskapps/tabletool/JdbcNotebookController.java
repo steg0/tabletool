@@ -54,6 +54,7 @@ class JdbcNotebookController
     interface Listener extends EventListener
     {
         void disconnected(ConnectionWorker connection);
+        void bufferChanged();
     }
     
     final JFrame parent;
@@ -243,13 +244,20 @@ class JdbcNotebookController
         @Override
         public void insertUpdate(DocumentEvent e)
         {
-            unsaved=true;
+            if(!unsaved)
+            {
+                unsaved=true;
+                for(Listener l : listeners.getListeners(Listener.class))
+                {
+                    l.bufferChanged();
+                }
+            }
         }
 
         @Override
         public void removeUpdate(DocumentEvent e)
         {
-            unsaved=true;
+            insertUpdate(e);
         }
 
         @Override public void changedUpdate(DocumentEvent e) { }

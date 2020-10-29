@@ -151,7 +151,7 @@ extends WindowAdapter
     
     boolean ensureWorkspace()
     {
-        if(workspace==null || !workspace.exists()) controller.add(null);
+        if(workspace==null || !workspace.exists()) controller.add(true);
         else try
         {
             controller.restoreWorkspace(workspace);
