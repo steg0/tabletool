@@ -49,6 +49,7 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea();
+    JTable resultview;
     
     Consumer<String> log;
     
@@ -80,7 +81,7 @@ class JdbcBufferController
                 case KeyEvent.VK_DOWN:
                     if(editor.getLineOfOffset(editor.getCaretPosition()) == 
                        editor.getLineCount()-1 &&
-                       panel.getComponentCount()>1)
+                       resultview != null)
                     {
                         for(Listener l : listeners.getListeners(Listener.class))
                         {
@@ -207,11 +208,9 @@ class JdbcBufferController
 
     ResultSetTableModel getResultSetTableModel()
     {
-        if(panel.getComponentCount()==2)
+        if(resultview != null)
         {
-            JScrollPane tablepane = (JScrollPane)panel.getComponent(1);
-            JTable t = (JTable)tablepane.getViewport().getComponent(0);
-            return (ResultSetTableModel)t.getModel();
+            return (ResultSetTableModel)resultview.getModel();
         }
         return null;
     }
@@ -258,8 +257,6 @@ class JdbcBufferController
             log.accept(FETCH_LOG_FORMAT.format(logargs));
         }
     };
-    
-    JTable resultview;
     
     void addResultSetTable(ResultSetTableModel rsm)
     {
