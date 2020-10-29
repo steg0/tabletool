@@ -78,6 +78,18 @@ implements KeyListener
     {
         JdbcNotebookController notebook=
                 notebooks.get(tabbedPane.getSelectedIndex());
+        if(notebook.unsaved)
+        {
+            int option = JOptionPane.showConfirmDialog(
+                    parent,
+                    "Buffer is unsaved. Close?",
+                    "Unsaved buffer warning",
+                    JOptionPane.YES_NO_OPTION);
+            if(option!=JOptionPane.YES_OPTION)
+            {
+                return;
+            }
+        }
         notebook.closeCurrentResultSet();
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
