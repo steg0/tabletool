@@ -11,7 +11,7 @@ import java.io.IOException;
 
 class Workspaces
 {
-    Workspace load(File f)
+    static Workspace load(File f)
     throws IOException
     {
         try(var d=new XMLDecoder(new BufferedInputStream(
@@ -21,7 +21,7 @@ class Workspaces
         }
     }
 
-    void store(Workspace workspace,File f)
+    static void store(Workspace workspace,File f)
     throws IOException
     {
         try(var e=new XMLEncoder(new BufferedOutputStream(

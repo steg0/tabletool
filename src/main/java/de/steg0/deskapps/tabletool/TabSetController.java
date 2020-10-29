@@ -138,7 +138,7 @@ implements KeyListener
     void restoreWorkspace(File f)
     throws IOException
     {
-        Workspace w = new Workspaces().load(f);
+        Workspace w = Workspaces.load(f);
         if(w.getFiles().length==0) add(null);
         for(String fn : w.getFiles())
         {
@@ -162,7 +162,7 @@ implements KeyListener
             .filter(Objects::nonNull)
             .map((f) -> f.getPath())
             .toArray(String[]::new));
-        new Workspaces().store(w,file);
+        Workspaces.store(w,file);
     }
         
     JdbcNotebookController.Listener notebookListener = 
