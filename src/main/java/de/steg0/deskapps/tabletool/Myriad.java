@@ -197,12 +197,14 @@ extends WindowAdapter
         String workspacefile=null,propertiesfile=null;
         
         int optind=0;
-        for(;optind<args.length;optind++)
+        for(;optind<args.length&&args[optind].startsWith("-");optind++)
         {
             switch(args[optind])
             {
             case "-config":
                 propertiesfile = args[++optind];
+            case "--":
+                break;
             }
         }
         
