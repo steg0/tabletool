@@ -61,11 +61,6 @@ class Connections
         return connections[i];
     }
     
-    ConnectionWorker getIfConnected(Object connection)
-    {
-        return connections[((ConnectionState)connection).connectionIndex];
-    }
-    
     void reportDisconnect(ConnectionWorker connection)
     {
         for(int i=0;i<connectionInfo.length;i++)

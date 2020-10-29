@@ -338,7 +338,7 @@ class JdbcNotebookController
 
     void onConnection(Consumer<ConnectionWorker> c)
     {
-        ConnectionWorker selectedConnection = connections.selected();
+        ConnectionWorker selectedConnection = buffers.get(0).connection;
         if(selectedConnection != null)
         {
             c.accept(selectedConnection);

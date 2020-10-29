@@ -24,13 +24,6 @@ implements ComboBoxModel<Connections.ConnectionState>
         return connections.getConnection(connection);
     }
     
-    /**does not try to establish a connection; only returns non-null
-     * result if one is already present. */
-    ConnectionWorker selected()
-    {
-        return connections.getIfConnected(getSelectedItem());
-    }
-    
     void reportDisconnect(ConnectionWorker connection)
     {
         connections.reportDisconnect(connection);
