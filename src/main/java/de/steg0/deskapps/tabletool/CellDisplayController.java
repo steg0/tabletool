@@ -273,8 +273,6 @@ class CellDisplayController
                 
                 resultset.updateBlob(column,blob);
                 resultset.updateRow();
-                
-                dialog.dispose();
             }
             catch(SQLException e)
             {
@@ -292,6 +290,7 @@ class CellDisplayController
                         "Error importing",
                         JOptionPane.ERROR_MESSAGE);
             }
+            dialog.dispose();
         }
     }
     
