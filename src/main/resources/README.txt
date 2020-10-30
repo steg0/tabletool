@@ -53,6 +53,8 @@ In a result table, a double click on a cell brings up a window to view the
 cell content in a larger space. For CLOBs, this fetches the complete content
 instead of displaying the standard Object::toString(). For BLOBs, it displays
 the first couple of bytes as a dump but offers export/import functionality.
+For DB2, connect with the "progressiveStreaming=2" option to be able to export
+BLOBs. Also see notes about the import function below.
 
 A right click on the result table brings up a popup menu which allows
 closing the table. This also closes any underlying ResultSet. Normally, the
