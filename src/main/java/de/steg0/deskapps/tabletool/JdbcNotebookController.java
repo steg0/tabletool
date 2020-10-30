@@ -415,7 +415,6 @@ class JdbcNotebookController
         {
             if(buffer.connection == connection) 
             {
-                buffer.closeCurrentResultSet();
                 buffer.connection = null;
             }
         }
