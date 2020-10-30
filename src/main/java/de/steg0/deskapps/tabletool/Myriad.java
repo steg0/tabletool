@@ -23,18 +23,8 @@ import javax.swing.JOptionPane;
 /**
  * This aims to be a simple tabular grid that has DB connectivity.
  * <p>
- * Start example from packaged JAR with Windows L&amp;F and Oracle as well
- * as DB2 drivers:
- * <p>
- * <code>
- * java -jar myriad-0.1-SNAPSHOT.jar 
- *      -XX:+UseSerialGC 
- *      -Dfile.encoding=Cp1252 
- *      -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel 
- *      -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar\;$HOME/.m2/repository/com/ibm/db2/jcc/11.1.4.4/jcc-11.1.4.4.jar
- *      -config $HOME/Documents/myriad.properties
- *      $HOME/Documents/workspace.myr.xml
- * </code>
+ * Consult the README.txt file available in the package to find out
+ * about operation and invocation options.
  */
 public class Myriad
 extends WindowAdapter
@@ -98,32 +88,43 @@ extends WindowAdapter
     {
         var menubar = new JMenuBar();
         
-        var filemenu = new JMenu("File");
-        filemenu.setMnemonic(KeyEvent.VK_F);
+        JMenu menu;
+        
+        menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem item;
 
         item = new JMenuItem(controller.addAction);
         item.setMnemonic(KeyEvent.VK_N);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_T,ActionEvent.CTRL_MASK));
-        filemenu.add(item);
+        menu.add(item);
         
         item = new JMenuItem(controller.loadAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_O,ActionEvent.CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_O);
-        filemenu.add(item);
+        menu.add(item);
 
         item = new JMenuItem(controller.saveAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_S);
-        filemenu.add(item);
+        menu.add(item);
 
         item = new JMenuItem(controller.closeAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_C);
-        filemenu.add(item);
+        menu.add(item);
 
-        menubar.add(filemenu);
+        menubar.add(menu);
+        
+        menu = new JMenu("Help");
+        menu.setMnemonic(KeyEvent.VK_H);
+        
+        item = new JMenuItem(new HelpAction(frame));
+        item.setMnemonic(KeyEvent.VK_R);
+        menu.add(item);
+        
+        menubar.add(menu);
         
         return menubar;
     }
