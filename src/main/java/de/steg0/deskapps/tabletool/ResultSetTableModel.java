@@ -182,6 +182,10 @@ implements TableModel,AutoCloseable
     {
     }
 
+    /**
+     * Right now this is only called from {@link ConnectionWorker} on
+     * its executor, so it's serial with other operations on the connection.
+     */
     @Override
     public void close() throws SQLException
     {
@@ -192,6 +196,7 @@ implements TableModel,AutoCloseable
         }
         finally
         {
+            rs=null;
             st.close();
         }
     }

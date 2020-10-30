@@ -202,8 +202,6 @@ class JdbcBufferController
             return;
         }
         
-        closeCurrentResultSet();
-        
         if(split && resultview!=null)
         {
             int start = editor.getSelectionStart();
@@ -225,7 +223,13 @@ class JdbcBufferController
 
     void closeCurrentResultSet()
     {
-        if(connection!=null) connection.closeResultSet(log);
+        var model = getResultSetTableModel();
+        if(model!=null && 
+           connection!=null &&
+           connection.lastReportedResult == model)
+        {
+            connection.closeResultSet(log);
+        }
     }
 
     ResultSetTableModel getResultSetTableModel()

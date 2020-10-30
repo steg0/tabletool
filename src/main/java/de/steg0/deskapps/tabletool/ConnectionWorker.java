@@ -68,6 +68,15 @@ class ConnectionWorker
             {
                 try
                 {
+                    if(lastReportedResult!=null) try
+                    {
+                        lastReportedResult.close();
+                        report(log,"Closed prior ResultSet at "+new Date());
+                    }
+                    catch(SQLException e)
+                    {
+                        report(log,SQLExceptionPrinter.toString(e));
+                    }
                     getResult(sql);
                 }
                 catch(SQLException e)
@@ -117,7 +126,12 @@ class ConnectionWorker
             invokeLater(() -> resultConsumer.accept(lastReportedResult));
         }
     }
-    
+
+    /**
+     * This is not needed before
+     * {@link #submit(String,int,Consumer,Consumer)} where it's done
+     * automatically.
+     */
     void closeResultSet(Consumer<String> log)
     {
         executor.execute(() ->
@@ -128,7 +142,7 @@ class ConnectionWorker
                 {
                     lastReportedResult.close();
                     lastReportedResult = null;
-                    report(log,"Closed prior ResultSet "+new Date());
+                    report(log,"Closed ResultSet at "+new Date());
                 }
                 catch(SQLException e)
                 {
