@@ -261,6 +261,7 @@ class JdbcNotebookController
                 buffers.get(i+1).prepend(source);
                 remove(i);
             }
+            bufferPanel.repaint();
         }
     };
     
