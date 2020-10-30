@@ -208,7 +208,7 @@ class JdbcNotebookController
             {
                 var newBufferController = new JdbcBufferController(
                         parent,logConsumer);
-                newBufferController.connection = buffers.get(i).connection;
+                newBufferController.connection = source.connection;
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
             }
@@ -243,13 +243,24 @@ class JdbcNotebookController
             int i=buffers.indexOf(source);
             var newBufferController = new JdbcBufferController(
                     parent,logConsumer);
-            newBufferController.connection = buffers.get(i).connection;
+            newBufferController.connection = source.connection;
             add(i,newBufferController);
             bufferPanel.revalidate();
             newBufferController.focusEditor();
             newBufferController.appendText(text);
             newBufferController.selectAll();
             newBufferController.fetch(false);
+        }
+
+        @Override
+        public void reportResultViewClosed(JdbcBufferController source)
+        {
+            int i=buffers.indexOf(source);
+            if(i<buffers.size()-1)
+            {
+                buffers.get(i+1).prepend(source);
+                remove(i);
+            }
         }
     };
     
@@ -295,8 +306,21 @@ class JdbcNotebookController
         c.fetchsize = Integer.parseInt(fetchsizeField.getText());
         
         buffers.add(index,c);
-
+        
+        layoutPanel();
+    }
+    
+    void remove(int index)
+    {
+        buffers.remove(index);
+        
+        layoutPanel();
+    }
+    
+    void layoutPanel()
+    {
         bufferPanel.removeAll();
+        
         for(int i=0;i<buffers.size()-1;i++)
         {
             var panelConstraints = new GridBagConstraints();

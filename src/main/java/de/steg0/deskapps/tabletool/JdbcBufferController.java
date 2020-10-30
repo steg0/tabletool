@@ -8,6 +8,8 @@ import java.awt.Rectangle;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
@@ -19,7 +21,9 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -44,6 +48,7 @@ class JdbcBufferController
         void exitedSouth(JdbcBufferController source);
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
         void splitRequested(JdbcBufferController source,String text);
+        void reportResultViewClosed(JdbcBufferController source);
     }
     
     final JFrame parent;
@@ -133,6 +138,10 @@ class JdbcBufferController
     
     void selectAll() { editor.selectAll(); }
 
+    void prepend(JdbcBufferController c) {
+        editor.setText(c.editor.getText() + "\n" + editor.getText()); 
+    }
+    
     void store(Writer w)
     throws IOException
     {
@@ -197,6 +206,7 @@ class JdbcBufferController
             int start = editor.getSelectionStart();
             int end = editor.getSelectionEnd();
             String rest = editor.getText();
+            if(rest.length()>end && rest.charAt(end) == '\n') end++;
             rest = rest.substring(0,start) + rest.substring(end);
             editor.setText(rest);
             for(var l : listeners.getListeners(Listener.class))
@@ -211,7 +221,7 @@ class JdbcBufferController
     }
 
     void closeCurrentResultSet()
-    {
+    {//XXX
         var currentRsm = getResultSetTableModel();
         if(currentRsm!=null) try
         {
@@ -283,6 +293,7 @@ class JdbcBufferController
         resultview = new JTable(rsm);
         
         new CellDisplayController(parent,resultview,log);
+        addResultSetPopup();
         
         Dimension preferredSize = resultview.getPreferredSize();
         resultview.setPreferredScrollableViewportSize(new Dimension(
@@ -301,6 +312,36 @@ class JdbcBufferController
         
         panel.add(resultscrollpane,resultviewConstraints);
         panel.revalidate();
+    }
+    
+    void addResultSetPopup()
+    {
+        var popup = new JPopupMenu();
+        var item = new JMenuItem("Close",KeyEvent.VK_C);
+        item.addActionListener((e) ->
+        {
+            closeCurrentResultSet();
+            resultview=null;
+            panel.remove(1);
+            panel.revalidate();
+            for(var l : listeners.getListeners(Listener.class))
+            {
+                l.reportResultViewClosed(JdbcBufferController.this);
+            }
+        });
+        popup.add(item);
+        resultview.addMouseListener(new MouseAdapter()
+        {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) popup.show(e.getComponent(),
+                        e.getX(),e.getY());
+            }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                mousePressed(e);
+            }            
+        });
     }
     
     KeyListener resultsetKeyListener = new KeyListener()
