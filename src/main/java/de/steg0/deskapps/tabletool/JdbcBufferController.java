@@ -78,13 +78,19 @@ class JdbcBufferController
         @Override
         public void keyReleased(KeyEvent event)
         {
+            switch(event.getKeyCode())
+            {
+            case KeyEvent.VK_ENTER:
+                if(event.isControlDown()) fetch(event.isShiftDown());
+            }
+        }
+        @Override
+        public void keyPressed(KeyEvent event)
+        { 
             try
             {
                 switch(event.getKeyCode())
                 {
-                case KeyEvent.VK_ENTER:
-                    if(event.isControlDown()) fetch(event.isShiftDown());
-                    break;
                 case KeyEvent.VK_DOWN:
                     if(editor.getLineOfOffset(editor.getCaretPosition()) == 
                        editor.getLineCount()-1 &&
@@ -105,14 +111,12 @@ class JdbcBufferController
                         }
                     }
                 }
-            }
+            }            
             catch(BadLocationException ignored)
             {
             }
         }
-        
         @Override public void keyTyped(KeyEvent e) { }
-        @Override public void keyPressed(KeyEvent e) { }
     };
     
     EventListenerList listeners = new EventListenerList();
