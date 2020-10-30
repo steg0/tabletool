@@ -58,10 +58,9 @@ BLOBs. Also see notes about the import function below.
 
 A right click on the result table brings up a popup menu which allows
 closing the table. This also closes any underlying ResultSet. Normally, the
-tool leaves ResultSets open for as long as the JDBC drivers allows it, but
-closes them when:
+tool leaves ResultSets open, but closes them when:
 
-a) a subsequent query is submitted over the connection;
+a) a subsequent query is submitted over the connection; and, as mentioned,
 b) the result table is closed (either with the popup action or by closing the
 tab).
 
@@ -73,8 +72,9 @@ beyond the last row.
 
 If a query begins with "{", "begin", or "declare", CallableStatement is used
 to submit it. Note that there are differences between database products when
-it comes to this feature. Oracle expects a trailing semicolon after the "END"
-that closes the block, while DB2 does not.
+it comes to what actually can be submitted this way. Generally, Oracle
+expects a trailing semicolon after the "END" that closes the block, while 
+DB2 does not.
 
 
 == Update function for BLOBs ==
