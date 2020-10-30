@@ -380,14 +380,14 @@ class JdbcNotebookController
     /**blocking */
     void updateConnection(ItemEvent event)
     {
+        /* 
+         * If the update was due to a Deselect action, don't do anything
+         * with it. Note this will happen for disconnect.
+         */
+        if(event.getStateChange()==ItemEvent.DESELECTED) return;
         try
         {
             var connection = connections.getConnection(event.getItem());
-            /* 
-             * If the update was due to a Disconnect action, the connection
-             * is closed but not yet cleaned up.
-             */
-            if(connection.isClosed()) return;
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer);
             for(JdbcBufferController buffer : buffers)
             {

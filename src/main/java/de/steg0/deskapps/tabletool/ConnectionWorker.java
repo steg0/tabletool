@@ -186,12 +186,9 @@ class ConnectionWorker
             {
                 try
                 {
-                    if(!connection.isClosed())
-                    {
-                        connection.setAutoCommit(enabled);
-                        report(log,"Autocommit set to "+enabled+" at "+
-                                new Date());
-                    }
+                    connection.setAutoCommit(enabled);
+                    report(log,"Autocommit set to "+enabled+" at "+
+                            new Date());
                 }
                 catch(SQLException e)
                 {
