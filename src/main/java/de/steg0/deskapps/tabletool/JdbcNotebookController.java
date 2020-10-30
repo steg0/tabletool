@@ -152,7 +152,7 @@ class JdbcNotebookController
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
         var buffer = new JdbcBufferController(parent,logConsumer);
-        add(buffer);
+        add(0,buffer);
 
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(.85);
@@ -208,9 +208,8 @@ class JdbcNotebookController
             {
                 var newBufferController = new JdbcBufferController(
                         parent,logConsumer);
-                newBufferController.connection =
-                        buffers.get(i).connection;
-                add(newBufferController);
+                newBufferController.connection = buffers.get(i).connection;
+                add(i+1,newBufferController);
                 bufferPanel.revalidate();
             }
             buffers.get(i+1).focusEditor();
@@ -236,6 +235,21 @@ class JdbcNotebookController
                     (int)rect.getWidth(),
                     (int)rect.getHeight()
             ));
+        }
+
+        @Override
+        public void splitRequested(JdbcBufferController source,String text)
+        {
+            int i=buffers.indexOf(source);
+            var newBufferController = new JdbcBufferController(
+                    parent,logConsumer);
+            newBufferController.connection = buffers.get(i).connection;
+            add(i,newBufferController);
+            bufferPanel.revalidate();
+            newBufferController.focusEditor();
+            newBufferController.appendText(text);
+            newBufferController.selectAll();
+            newBufferController.fetch(false);
         }
     };
     
@@ -264,7 +278,7 @@ class JdbcNotebookController
     };
 
     /**Adds a buffer to the panel and wires listeners. */
-    void add(JdbcBufferController c)
+    void add(int index,JdbcBufferController c)
     {
         c.addListener(bufferListener);
         c.addDocumentListener(bufferDocumentListener);
@@ -279,9 +293,11 @@ class JdbcNotebookController
             public void focusGained(FocusEvent e) { }
         });
         c.fetchsize = Integer.parseInt(fetchsizeField.getText());
+        
+        buffers.add(index,c);
 
         bufferPanel.removeAll();
-        for(int i=0;i<buffers.size();i++)
+        for(int i=0;i<buffers.size()-1;i++)
         {
             var panelConstraints = new GridBagConstraints();
             panelConstraints.anchor = GridBagConstraints.WEST;
@@ -293,8 +309,7 @@ class JdbcNotebookController
         panelConstraints.anchor = GridBagConstraints.NORTHWEST;
         panelConstraints.weighty = panelConstraints.weightx = 1;
         panelConstraints.gridy=buffers.size();
-        bufferPanel.add(c.panel,panelConstraints);
-        buffers.add(c);
+        bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
     public void store()
@@ -343,7 +358,7 @@ class JdbcNotebookController
                     parent,logConsumer);
             newBufferController.appendText(nextline);
             nextline = newBufferController.load(r);
-            add(newBufferController);
+            add(buffers.size(),newBufferController);
         }
         unsaved=false;
         bufferPanel.revalidate();

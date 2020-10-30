@@ -43,6 +43,7 @@ class JdbcBufferController
         void exitedNorth(JdbcBufferController source);
         void exitedSouth(JdbcBufferController source);
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
+        void splitRequested(JdbcBufferController source,String text);
     }
     
     final JFrame parent;
@@ -77,14 +78,14 @@ class JdbcBufferController
                 switch(event.getKeyCode())
                 {
                 case KeyEvent.VK_ENTER:
-                    if(event.isControlDown()) fetch();
+                    if(event.isControlDown()) fetch(event.isShiftDown());
                     break;
                 case KeyEvent.VK_DOWN:
                     if(editor.getLineOfOffset(editor.getCaretPosition()) == 
                        editor.getLineCount()-1 &&
                        resultview != null)
                     {
-                        for(Listener l : listeners.getListeners(Listener.class))
+                        for(var l : listeners.getListeners(Listener.class))
                         {
                             l.exitedSouth(JdbcBufferController.this);
                         }
@@ -93,7 +94,7 @@ class JdbcBufferController
                 case KeyEvent.VK_UP:
                     if(editor.getLineOfOffset(editor.getCaretPosition()) == 0)
                     {
-                        for(Listener l : listeners.getListeners(Listener.class))
+                        for(var l : listeners.getListeners(Listener.class))
                         {
                             l.exitedNorth(JdbcBufferController.this);
                         }
@@ -126,15 +127,11 @@ class JdbcBufferController
         editor.addFocusListener(f);
     }
     
-    void focusEditor()
-    {
-        editor.requestFocusInWindow();
-    }
+    void focusEditor() { editor.requestFocusInWindow(); }
     
-    void appendText(String text)
-    {
-        editor.append(text);
-    }
+    void appendText(String text) { editor.append(text); }
+    
+    void selectAll() { editor.selectAll(); }
 
     void store(Writer w)
     throws IOException
@@ -177,7 +174,7 @@ class JdbcBufferController
     ConnectionWorker connection;
     int fetchsize;
     
-    void fetch()
+    void fetch(boolean split)
     {
         savedCaretPosition = editor.getCaretPosition();
         String text = editor.getSelectedText() != null?
@@ -195,7 +192,22 @@ class JdbcBufferController
         
         closeCurrentResultSet();
         
-        connection.submit(text,fetchsize,resultConsumer,log);
+        if(split && resultview!=null)
+        {
+            int start = editor.getSelectionStart();
+            int end = editor.getSelectionEnd();
+            String rest = editor.getText();
+            rest = rest.substring(0,start) + rest.substring(end);
+            editor.setText(rest);
+            for(var l : listeners.getListeners(Listener.class))
+            {
+                l.splitRequested(this,text);
+            }
+        }
+        else
+        {
+            connection.submit(text,fetchsize,resultConsumer,log);
+        }
     }
 
     void closeCurrentResultSet()
@@ -204,7 +216,7 @@ class JdbcBufferController
         if(currentRsm!=null) try
         {
             currentRsm.close();
-            log.accept("Statement closed at "+new Date());
+            log.accept("Prior statement closed at "+new Date());
         }
         catch(SQLException e)
         {
