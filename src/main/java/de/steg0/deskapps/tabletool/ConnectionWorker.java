@@ -31,6 +31,8 @@ class ConnectionWorker
         invokeLater(() -> log.accept(str));
     }
     
+    ResultSetTableModel lastReportedResult;
+    
     /**
      * @param resultConsumer where a Statement will be pushed to right after
      * <code>execute()</code> om the Swing event thread 
@@ -104,21 +106,36 @@ class ConnectionWorker
         {
             Object[] count = {statement.getUpdateCount(),new Date().toString()};
             report(log,UPDATE_LOG_FORMAT.format(count));
+            statement.close();
         }
         
         void reportResult(Statement statement)
         throws SQLException
         {
-            var rsm = new ResultSetTableModel();
-            rsm.update(statement,fetchsize);
-            invokeLater(() -> resultConsumer.accept(rsm));
+            lastReportedResult = new ResultSetTableModel();
+            lastReportedResult.update(statement,fetchsize);
+            invokeLater(() -> resultConsumer.accept(lastReportedResult));
         }
     }
     
-    boolean isClosed()
-    throws SQLException
+    void closeResultSet(Consumer<String> log)
     {
-        return connection.isClosed();
+        executor.execute(() ->
+        {
+            synchronized(ConnectionWorker.this)
+            {
+                if(lastReportedResult!=null) try
+                {
+                    lastReportedResult.close();
+                    lastReportedResult = null;
+                    report(log,"Closed prior ResultSet "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    report(log,SQLExceptionPrinter.toString(e));
+                }
+            }
+        });
     }
     
     void commit(Consumer<String> log)

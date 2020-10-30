@@ -13,7 +13,6 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
@@ -225,17 +224,8 @@ class JdbcBufferController
     }
 
     void closeCurrentResultSet()
-    {//XXX
-        var currentRsm = getResultSetTableModel();
-        if(currentRsm!=null) try
-        {
-            currentRsm.close();
-            log.accept("Prior statement closed at "+new Date());
-        }
-        catch(SQLException e)
-        {
-            log.accept(SQLExceptionPrinter.toString(e));
-        }
+    {
+        if(connection!=null) connection.closeResultSet(log);
     }
 
     ResultSetTableModel getResultSetTableModel()
