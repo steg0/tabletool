@@ -253,7 +253,7 @@ class JdbcNotebookController
         }
 
         @Override
-        public void reportResultViewClosed(JdbcBufferController source)
+        public void resultViewClosed(JdbcBufferController source)
         {
             int i=buffers.indexOf(source);
             if(i<buffers.size()-1)

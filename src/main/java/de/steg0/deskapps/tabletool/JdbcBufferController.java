@@ -47,7 +47,7 @@ class JdbcBufferController
         void exitedSouth(JdbcBufferController source);
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
         void splitRequested(JdbcBufferController source,String text);
-        void reportResultViewClosed(JdbcBufferController source);
+        void resultViewClosed(JdbcBufferController source);
     }
     
     final JFrame parent;
@@ -324,7 +324,7 @@ class JdbcBufferController
             panel.revalidate();
             for(var l : listeners.getListeners(Listener.class))
             {
-                l.reportResultViewClosed(JdbcBufferController.this);
+                l.resultViewClosed(JdbcBufferController.this);
             }
         });
         popup.add(item);
