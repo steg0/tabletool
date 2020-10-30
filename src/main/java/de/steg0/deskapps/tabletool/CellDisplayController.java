@@ -97,6 +97,7 @@ class CellDisplayController
             for(String line=l.readLine();line!=null;line=l.readLine())
             {
                 b.append(line);
+                b.append('\n');
             }
             textarea.setText(b.toString());
             dialogtitle = "CLOB display";
