@@ -183,7 +183,7 @@ class JdbcBufferController
         return nextline;
     }
     
-    int savedCaretPosition;
+    int savedCaretPosition,savedSelectionStart,savedSelectionEnd;
 
     ConnectionWorker connection;
     int fetchsize;
@@ -193,6 +193,8 @@ class JdbcBufferController
         savedCaretPosition = editor.getCaretPosition();
         String text = editor.getSelectedText() != null?
                 editor.getSelectedText().trim() : selectCurrentQuery();
+        savedSelectionStart = editor.getSelectionStart();
+        savedSelectionEnd = editor.getSelectionEnd();
         if(text == null)
         {
             log.accept("No query found at "+new Date());
@@ -206,11 +208,10 @@ class JdbcBufferController
         
         if(split && resultview!=null)
         {
-            int start = editor.getSelectionStart();
-            int end = editor.getSelectionEnd();
+            int end = savedSelectionEnd;
             String rest = editor.getText();
             if(rest.length()>end && rest.charAt(end) == '\n') end++;
-            rest = rest.substring(0,start) + rest.substring(end);
+            rest = rest.substring(0,savedSelectionStart) + rest.substring(end);
             editor.setText(rest);
             for(var l : listeners.getListeners(Listener.class))
             {
@@ -265,17 +266,24 @@ class JdbcBufferController
         }
         return null;
     }
+    
+    void restoreCaretPosition()
+    {
+        if(editor.getSelectionStart()!=savedSelectionStart ||
+           editor.getSelectionEnd()!=savedSelectionEnd) return;
+        editor.setCaretPosition(savedCaretPosition);
+    }
 
     Consumer<Integer> updateCountConsumer = (i) ->
     {
         Object[] logargs = {i,new Date().toString()};
         log.accept(UPDATE_LOG_FORMAT.format(logargs));
-        if(savedCaretPosition>=0) editor.setCaretPosition(savedCaretPosition);
+        restoreCaretPosition();
     };
     
     Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
     {
-        if(savedCaretPosition>=0) editor.setCaretPosition(savedCaretPosition);
+        restoreCaretPosition();
 
         addResultSetTable(rsm);
         
