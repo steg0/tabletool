@@ -96,6 +96,7 @@ class ConnectionWorker
             if(lc.startsWith("begin") || 
                lc.startsWith("declare") ||
                lc.startsWith("create") ||
+               lc.startsWith("call") ||
                lc.startsWith("{")
             )
             {
