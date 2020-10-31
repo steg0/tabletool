@@ -91,6 +91,7 @@ class ConnectionWorker
         {
             if(text.startsWith("begin") || 
                text.startsWith("declare") ||
+               text.startsWith("create") ||
                text.startsWith("{")
             )
             {
