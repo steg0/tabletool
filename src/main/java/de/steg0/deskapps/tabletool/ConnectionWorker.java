@@ -89,12 +89,19 @@ class ConnectionWorker
         void getResult(String text)
         throws SQLException
         {
-            if(text.startsWith("begin") || 
-               text.startsWith("declare") ||
-               text.startsWith("create") ||
-               text.startsWith("{")
+            String lc = text.toLowerCase();
+            if(lc.startsWith("begin") || 
+               lc.startsWith("declare") ||
+               lc.startsWith("create") ||
+               lc.startsWith("{")
             )
             {
+                if(text.endsWith(";"))
+                {
+                    String noSemicolon = lc.substring(0,text.length()-1);
+                    if(!noSemicolon.trim().endsWith("end")) text = text
+                            .substring(0,text.length()-1);
+                }
                 CallableStatement st = connection.prepareCall(text);
                 if(st.execute()) reportResult(st);
                 else displayUpdateCount(st);
