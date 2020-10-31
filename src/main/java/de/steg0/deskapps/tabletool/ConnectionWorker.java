@@ -7,16 +7,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 class ConnectionWorker
 {
-    static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected at {1}\n");
-
     final Connection connection;
     final Executor executor;
     
@@ -35,7 +31,11 @@ class ConnectionWorker
     
     /**
      * @param resultConsumer where a Statement will be pushed to right after
-     * <code>execute()</code> om the Swing event thread 
+     * <code>execute()</code> om the Swing event thread, if execute() returned
+     * <code>true</code> 
+     * @param resultConsumer where an update count will be pushed to right after
+     * <code>execute()</code> om the Swing event thread, if execute() returned
+     * <code>false</code> 
      * on the Swing event thread once available
      * @param log where log messages will be pushed to on the Swing event thread
      * as far as available
@@ -44,11 +44,13 @@ class ConnectionWorker
             String sql,
             int fetchsize,
             Consumer<ResultSetTableModel> resultConsumer,
+            Consumer<Integer> updateCountConsumer,
             Consumer<String> log
     )
     {
         var sqlRunnable = new SqlRunnable();
         sqlRunnable.resultConsumer = resultConsumer;
+        sqlRunnable.updateCountConsumer = updateCountConsumer;
         sqlRunnable.fetchsize = fetchsize;
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
@@ -58,6 +60,7 @@ class ConnectionWorker
     class SqlRunnable implements Runnable
     {
         Consumer<ResultSetTableModel> resultConsumer;
+        Consumer<Integer> updateCountConsumer;
         Consumer<String> log;
         String sql;
         int fetchsize;
@@ -121,8 +124,8 @@ class ConnectionWorker
         void displayUpdateCount(Statement statement)
         throws SQLException
         {
-            Object[] count = {statement.getUpdateCount(),new Date().toString()};
-            report(log,UPDATE_LOG_FORMAT.format(count));
+            Integer count = statement.getUpdateCount();
+            invokeLater(() -> updateCountConsumer.accept(count));
             statement.close();
         }
         

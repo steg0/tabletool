@@ -37,6 +37,8 @@ class JdbcBufferController
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched and ResultSet {1} at {2}\n");
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched and ResultSet {1} at {2}\n");
+    static final MessageFormat UPDATE_LOG_FORMAT = 
+            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected at {1}\n");
 
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -217,7 +219,8 @@ class JdbcBufferController
         }
         else
         {
-            connection.submit(text,fetchsize,resultConsumer,log);
+            connection.submit(text,fetchsize,resultConsumer,updateCountConsumer,
+                    log);
         }
     }
 
@@ -263,9 +266,16 @@ class JdbcBufferController
         return null;
     }
 
+    Consumer<Integer> updateCountConsumer = (i) ->
+    {
+        Object[] logargs = {i,new Date().toString()};
+        log.accept(UPDATE_LOG_FORMAT.format(logargs));
+        if(savedCaretPosition>=0) editor.setCaretPosition(savedCaretPosition);
+    };
+    
     Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
     {
-        editor.setCaretPosition(savedCaretPosition);
+        if(savedCaretPosition>=0) editor.setCaretPosition(savedCaretPosition);
 
         addResultSetTable(rsm);
         
