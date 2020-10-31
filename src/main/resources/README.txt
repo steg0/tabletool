@@ -10,7 +10,7 @@ will be persisted to. The file does not need to exist initially.
 
 An example command line is:
 
-┌─────────────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────────────────────┐
   java -XX:+UseSerialGC \
       -Dfile.encoding=Cp1252 \
       -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
@@ -18,7 +18,7 @@ An example command line is:
       -jar myriad-<Version>.jar \
       -config $HOME/Documents/myriad.properties \
       $HOME/Documents/workspace.myr.xml
-└─────────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────────────┘
 
 This example uses the serial GC, which is a recommendation for desktop
 applications, sets a default encoding for text files, and uses the Windows L&F.
@@ -28,7 +28,7 @@ applications, sets a default encoding for text files, and uses the Windows L&F.
 
 The configuration file supports the following keys:
 
-┌─────────────────────────────────────────────────────────────────┐
+┌─────────────────────────────────────────────────────────────────────┐
   frame.x=100
   frame.y=100
   frame.w=700
@@ -36,7 +36,7 @@ The configuration file supports the following keys:
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
-└─────────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the
 name part (after "connections.") is different.
