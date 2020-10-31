@@ -4,7 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
@@ -32,7 +32,7 @@ class HelpAction extends AbstractAction
     {
         try(var r=new BufferedReader(new InputStreamReader(
                 getClass().getResourceAsStream("/README.txt"),
-                Charset.forName("UTF-8"))))
+                StandardCharsets.UTF_8)))
         {
             var dialog = new JDialog(parent,"Myriad README",false);
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
