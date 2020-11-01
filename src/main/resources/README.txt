@@ -1,12 +1,8 @@
 ▶ Invocation
 
-The tool builds as modular JAR and can be started up without arguments. However,
-to be of any practical use, it is necessary to put JDBC drivers on the module
-path, and use a properties file where connection definitions will be read from.
+The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and use a properties file where connection definitions will be read from.
 
-Also, an optional single file name argument is supported which is understood as
-"workspace file" (an XML format) where the current set of open SQL files 
-will be persisted to. The file does not need to exist initially.
+Also, an optional single file name argument is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially.
 
 An example command line is:
 
@@ -20,8 +16,7 @@ An example command line is:
       $HOME/Documents/workspace.myr.xml
 └─────────────────────────────────────────────────────────────────────┘
 
-This example uses the serial GC, which is a recommendation for desktop
-applications, sets a default encoding for text files, and uses the Windows L&F.
+This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
 
 
 ▶ Property file format
@@ -38,8 +33,7 @@ The configuration file supports the following keys:
   connections.<Name 1>.password=<Password>
 └─────────────────────────────────────────────────────────────────────┘
 
-More than one connection definition can occur in the file as long as the
-name part (after "connections.") is different.
+More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
 
 
 ▶ Actions in a notebook
@@ -53,20 +47,12 @@ While editing SQL in a notebook, the following keys are supported:
 
 To navigate across a result table, use Up/Down arrow keys.
 
-In a result table, a double click on a cell brings up a window to view the
-cell content in a larger space. For CLOBs, this fetches the complete content
-instead of displaying the standard Object::toString(). For BLOBs, it displays
-the first couple of bytes as a dump but offers export/import functionality.
-For DB2, connect with the "progressiveStreaming=2" option to be able to export
-BLOBs. Also see notes about the import function below.
+In a result table, a double click on a cell brings up a window to view the cell content in a larger space. For CLOBs, this fetches the complete content instead of displaying the standard Object::toString(). For BLOBs, it displays the first couple of bytes as a dump but offers export/import functionality. For DB2, connect with the "progressiveStreaming=2" option to be able to export BLOBs. Also see notes about the import function below.
 
-A right click on the result table brings up a popup menu which allows
-closing the table. This also closes any underlying ResultSet. Normally, the
-tool leaves ResultSets open, but closes them when:
+A right click on the result table brings up a popup menu which allows closing the table. This also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
 
 Ⓐ a subsequent query is submitted over the connection; and, as mentioned,
-Ⓑ the result table is closed (either with the popup action or by closing the
-tab).
+Ⓑ the result table is closed (either with the popup action or by closing the tab).
 
 Some JDBC drivers close ResultSets automatically when the cursor moves
 beyond the last row.
@@ -74,26 +60,15 @@ beyond the last row.
 
 ▶ Submitting blocks
 
-If a query begins with "{", "create", "begin", or "declare", CallableStatement
-is used to submit it. Note that there are differences between database products
-when it comes to what actually can be submitted this way. Generally, Oracle
-expects a trailing semicolon after the END that closes the block, while
-DB2 does not.
+If a query begins with "{", "create", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
 
 
 ▶ Update function for BLOBs
 
-The single benefit (right now) of leaving the ResultSet open is that updatable
-ResultSets can be made available to the user. This is utilized to allow
-BLOB value updates. There are a few prerequisites for this to work:
+The single benefit (right now) of leaving the ResultSet open is that updatable ResultSets can be made available to the user. This is utilized to allow BLOB value updates. There are a few prerequisites for this to work:
 
-Ⓐ don't fetch beyond the last row. If you did, fetch again but set a manual,
-small enough fetch size in the 〈Fetch:〉 field before.
+Ⓐ don't fetch beyond the last row. If you did, fetch again but set a manual, small enough fetch size in the 〈Fetch:〉 field before.
 Ⓑ use explicit columns instead of SELECT * in the query.
 Ⓒ use SELECT FOR UPDATE instead of SELECT.
 
-There is some difference between JDBC drivers when it comes to this feature.
-DB2 drivers will error out if Ⓐ and Ⓑ are not met. Oracle drivers show an
-error but can still update the value (it might be best not to rely on
-this particular behavior). DB2 might not need the FOR UPDATE, but Oracle
-generally will.
+There is some difference between JDBC drivers when it comes to this feature. DB2 drivers will error out if Ⓐ and Ⓑ are not met. Oracle drivers show an error but can still update the value (it might be best not to rely on this particular behavior). DB2 might not need the FOR UPDATE, but Oracle generally will.
