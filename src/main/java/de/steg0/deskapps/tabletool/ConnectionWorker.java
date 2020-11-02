@@ -202,7 +202,7 @@ class ConnectionWorker
         });
     }
     
-    void disconnect(Consumer<String> log)
+    void disconnect(Consumer<String> log,Runnable cb)
     {
         executor.execute(() ->
         {
@@ -212,6 +212,7 @@ class ConnectionWorker
                 {
                     connection.close();
                     report(log,"Disconnected at "+new Date());
+                    invokeLater(cb);
                 }
                 catch(SQLException e)
                 {

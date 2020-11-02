@@ -126,11 +126,13 @@ class JdbcNotebookController
         {
             onConnection((c) -> 
             {
-                c.disconnect(logConsumer);
-                for(Listener l : listeners.getListeners(Listener.class))
+                c.disconnect(logConsumer,() ->
                 {
-                    l.disconnected(c);
-                }
+                    for(Listener l : listeners.getListeners(Listener.class))
+                    {
+                        l.disconnected(c);
+                    }
+                });
             });
         });
         connectionPanel.add(disconnectButton);
