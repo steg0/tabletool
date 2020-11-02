@@ -307,6 +307,7 @@ class JdbcBufferController
         if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
+        TableSizer.sizeColumns(resultview);
         
         new CellDisplayController(parent,resultview,log);
         addResultSetPopup();
