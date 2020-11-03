@@ -150,6 +150,8 @@ class JdbcNotebookController
         
         var connectionPanelConstraints = new GridBagConstraints();
         connectionPanelConstraints.anchor = GridBagConstraints.EAST;
+        connectionPanelConstraints.weightx = 1;
+        connectionPanelConstraints.fill = GridBagConstraints.HORIZONTAL;
         
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
