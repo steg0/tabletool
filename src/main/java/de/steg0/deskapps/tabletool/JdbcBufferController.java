@@ -317,6 +317,8 @@ class JdbcBufferController
                 (int)preferredSize.getWidth(),
                 (int)Math.min(150,preferredSize.getHeight())));
         
+        resultview.setCellSelectionEnabled(true);
+        
         resultview.addKeyListener(resultsetKeyListener);
         
         var resultscrollpane = new JScrollPane(resultview,
