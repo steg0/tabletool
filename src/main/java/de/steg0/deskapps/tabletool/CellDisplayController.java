@@ -133,6 +133,7 @@ class CellDisplayController
             if(value!=null) textarea.setText(value.toString());
             dialogtitle = "Scalar value display";
         }
+        textarea.setCaretPosition(0);
         
         dialog = new JDialog(parent,dialogtitle,true);
 
