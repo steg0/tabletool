@@ -15,7 +15,7 @@ class Connections
         public String toString()
         {
             /* connected ones get a star in front */
-            return (connections[connectionIndex] != null? "*" : "") +
+            return (connections[connectionIndex] != null? "*" : "  ") +
                     connectionInfo[connectionIndex].name;
         }
     }
