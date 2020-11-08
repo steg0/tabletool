@@ -41,7 +41,7 @@ class HelpAction extends AbstractAction
             
             panel.setBorder(new EmptyBorder(10,10,10,10));
             
-            var textarea = new JTextArea(30,45);
+            var textarea = new JTextArea(30,77);
             textarea.setEditable(false);
             textarea.setLineWrap(true);
             textarea.setWrapStyleWord(true);
