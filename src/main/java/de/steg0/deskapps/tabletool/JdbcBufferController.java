@@ -113,6 +113,9 @@ class JdbcBufferController
                             l.exitedNorth(JdbcBufferController.this);
                         }
                     }
+                    break;
+                case KeyEvent.VK_SLASH:
+                    if(event.isControlDown()) toggleComment();
                 }
             }            
             catch(BadLocationException ignored)
@@ -139,7 +142,21 @@ class JdbcBufferController
         editor.addFocusListener(f);
     }
     
-    void focusEditor() { editor.requestFocusInWindow(); }
+    /**
+     * @param where the Y position to focus. This is understood as the
+     * rightmost area of the editor in terms of X coordinates, to support
+     * a sensible way of focusing from a container where the editor is
+     * layouted in a left-aligned way.
+     */
+    void focusEditor(Integer where)
+    {
+        if(where != null)
+        {
+            var rightEdge=new Point(editor.getWidth()-1,where);
+            editor.setCaretPosition(editor.viewToModel2D(rightEdge));
+        }
+        editor.requestFocusInWindow();
+    }
     
     void appendText(String text) { editor.append(text); }
     
@@ -147,6 +164,59 @@ class JdbcBufferController
 
     void prepend(JdbcBufferController c) {
         editor.setText(c.editor.getText() + "\n" + editor.getText()); 
+    }
+    
+    void toggleComment()
+    {
+        Boolean comment=null;
+        int start = editor.getSelectionStart();
+        int end = editor.getSelectionEnd();
+        try
+        {
+            if(start<0 || start==end)
+            {
+                /* no or zero-size selection -- treat like one char selection */
+                start=(end=Math.max(1,editor.getCaretPosition()))-1;
+            }
+            else
+            {
+                /* 
+                 * if selection started on pos 0 in line, don't include
+                 * this line in selection
+                 */
+                if(editor.getText(end-1,1).equals("\n")) end-=1;
+            }
+            /* if only part of line was selected, scan through its beginning */
+            for(;start>=0;start--)
+            {
+                if(editor.getText(start,1).equals("\n")) break;
+            }
+            /* 
+             * now determine whether to uncomment or comment, and change text
+             * from bottom to top
+             */
+            for(int pos = end-1;pos>=start;pos--)
+            {
+                if(pos==-1 || editor.getText(pos,1).equals("\n"))
+                {
+                    if(Boolean.FALSE.equals(comment) ||
+                       editor.getText().length()>pos+2 &&
+                       editor.getText(pos+1,2).equals("--"))
+                    {
+                        comment=false;
+                        editor.getDocument().remove(pos+1,2);
+                    }
+                    else
+                    {
+                        comment=true;
+                        editor.getDocument().insertString(pos+1,"--",null);
+                    }
+                }
+            }
+        }
+        catch(BadLocationException ignored)
+        {
+        }
     }
     
     void store(Writer w)
