@@ -183,55 +183,56 @@ class JdbcBufferController
     
     void toggleComment()
     {
-        Boolean comment=null;
+        var textbuf=new StringBuilder(editor.getText());
+        if(textbuf.length()==0) return;
         int start = editor.getSelectionStart();
         int end = editor.getSelectionEnd();
-        try
+        int caret = editor.getCaretPosition();
+        if(start<0 || start==end)
         {
-            if(start<0 || start==end)
-            {
-                /* no or zero-size selection -- treat like one char selection */
-                start=(end=Math.max(1,editor.getCaretPosition()))-1;
-            }
-            else
-            {
-                /* 
-                 * if selection started on pos 0 in line, don't include
-                 * this line in selection
-                 */
-                if(editor.getText(end-1,1).equals("\n")) end-=1;
-            }
-            /* if only part of line was selected, scan through its beginning */
-            for(;start>=0;start--)
-            {
-                if(editor.getText(start,1).equals("\n")) break;
-            }
+            /* no or zero-size selection -- treat like one char selection */
+            start=(end=Math.max(1,caret))-1;
+        }
+        else
+        {
             /* 
-             * now determine whether to uncomment or comment, and change text
-             * from bottom to top
+             * if selection started on pos 0 in line, don't include
+             * this line in selection
              */
-            for(int pos = end-1;pos>=start;pos--)
+            if(textbuf.charAt(end-1)=='\n') end-=1;
+        }
+        /* if only part of line was selected, scan through its beginning */
+        for(;start>=0;start--)
+        {
+            if(textbuf.charAt(start)=='\n') break;
+        }
+        Boolean comment=null;
+        /* 
+         * now determine whether to uncomment or comment, and change text
+         * from bottom to top
+         */
+        for(int pos = end-1;pos>=start;pos--)
+        {
+            if(pos==-1 || textbuf.charAt(pos)=='\n')
             {
-                if(pos==-1 || editor.getText(pos,1).equals("\n"))
+                if(Boolean.FALSE.equals(comment) ||
+                   textbuf.length()>pos+2 &&
+                   textbuf.substring(pos+1,pos+3).equals("--"))
                 {
-                    if(Boolean.FALSE.equals(comment) ||
-                       editor.getText().length()>pos+2 &&
-                       editor.getText(pos+1,2).equals("--"))
-                    {
-                        comment=false;
-                        editor.getDocument().remove(pos+1,2);
-                    }
-                    else
-                    {
-                        comment=true;
-                        editor.getDocument().insertString(pos+1,"--",null);
-                    }
+                    comment=false;
+                    textbuf.delete(pos+1,pos+3);
+                    if(pos<=caret) caret-=2;
+                }
+                else
+                {
+                    comment=true;
+                    textbuf.insert(pos+1,"--");
+                    if(pos<=caret) caret+=2;
                 }
             }
         }
-        catch(BadLocationException ignored)
-        {
-        }
+        editor.setText(textbuf.toString());
+        editor.setCaretPosition(caret);
     }
     
     void store(Writer w)
