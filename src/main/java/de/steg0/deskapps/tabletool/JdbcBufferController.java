@@ -30,6 +30,7 @@ import javax.swing.JViewport;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
+import javax.swing.undo.UndoManager;
 
 class JdbcBufferController
 {
@@ -57,6 +58,7 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea();
+    UndoManager undoManager = new UndoManager();
     JTable resultview;
     
     Consumer<String> log;
@@ -72,6 +74,7 @@ class JdbcBufferController
         panel.setBackground(editor.getBackground());
         
         editor.addKeyListener(editorKeyListener);
+        editor.getDocument().addUndoableEditListener(undoManager);
     }
 
     KeyListener editorKeyListener = new KeyListener()
@@ -116,6 +119,18 @@ class JdbcBufferController
                     break;
                 case KeyEvent.VK_SLASH:
                     if(event.isControlDown()) toggleComment();
+                    break;
+                case KeyEvent.VK_Z:
+                    if(event.isControlDown() && undoManager.canUndo())
+                    {
+                        undoManager.undo();
+                    }
+                    break;
+                case KeyEvent.VK_Y:
+                    if(event.isControlDown() && undoManager.canRedo())
+                    {
+                        undoManager.redo();
+                    }
                 }
             }            
             catch(BadLocationException ignored)
@@ -251,7 +266,10 @@ class JdbcBufferController
                 newText.append(line);
             }
         }
+        editor.getDocument().removeUndoableEditListener(undoManager);
         editor.setText(newText.toString());
+        undoManager = new UndoManager();
+        editor.getDocument().addUndoableEditListener(undoManager);
         return nextline;
     }
     
