@@ -242,7 +242,8 @@ class JdbcNotebookController
         }
 
         @Override
-        public void splitRequested(JdbcBufferController source,String text)
+        public void splitRequested(JdbcBufferController source,String text,
+                int selectionStart,int selectionEnd)
         {
             int i=buffers.indexOf(source);
             var newBufferController = new JdbcBufferController(
@@ -252,7 +253,7 @@ class JdbcNotebookController
             bufferPanel.revalidate();
             newBufferController.focusEditor(null);
             newBufferController.appendText(text);
-            newBufferController.selectAll();
+            newBufferController.select(selectionStart,selectionEnd);
             newBufferController.fetch(false);
         }
 

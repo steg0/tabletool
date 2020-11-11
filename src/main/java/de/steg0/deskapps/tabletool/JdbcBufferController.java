@@ -49,7 +49,8 @@ class JdbcBufferController
         void exitedNorth(JdbcBufferController source);
         void exitedSouth(JdbcBufferController source);
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
-        void splitRequested(JdbcBufferController source,String text);
+        void splitRequested(JdbcBufferController source,String text,
+                int selectionStart,int selectionEnd);
         void resultViewClosed(JdbcBufferController source);
         void resultViewUpdated(JdbcBufferController source);
     }
@@ -176,7 +177,7 @@ class JdbcBufferController
     
     void appendText(String text) { editor.append(text); }
     
-    void selectAll() { editor.selectAll(); }
+    void select(int start,int end) { editor.select(start,end); }
 
     void prepend(JdbcBufferController c) {
         editor.setText(c.editor.getText() + "\n" + editor.getText()); 
@@ -284,8 +285,6 @@ class JdbcBufferController
         savedCaretPosition = editor.getCaretPosition();
         String text = editor.getSelectedText() != null?
                 editor.getSelectedText().trim() : selectCurrentQuery();
-        savedSelectionStart = editor.getSelectionStart();
-        savedSelectionEnd = editor.getSelectionEnd();
         if(text == null)
         {
             log.accept("No query found at "+new Date());
@@ -299,15 +298,16 @@ class JdbcBufferController
         
         if(split && resultview!=null)
         {
-            int end = savedSelectionEnd;
+            int end = editor.getSelectionEnd();
             String rest = editor.getText();
             if(rest.length()>end && rest.charAt(end) == '\n') end++;
-            rest = rest.substring(0,savedSelectionStart) + rest.substring(end);
-            editor.setText(rest);
+            rest = rest.substring(end);
             for(var l : listeners.getListeners(Listener.class))
             {
-                l.splitRequested(this,text);
+                l.splitRequested(this,editor.getText().substring(0,end),
+                        editor.getSelectionStart(),end);
             }
+            editor.setText(rest);
         }
         else
         {
@@ -421,6 +421,7 @@ class JdbcBufferController
         resultviewConstraints.gridy = 1;
         
         panel.add(resultscrollpane,resultviewConstraints);
+        panel.revalidate();
         for(var l : listeners.getListeners(Listener.class))
         {
             l.resultViewUpdated(this);
