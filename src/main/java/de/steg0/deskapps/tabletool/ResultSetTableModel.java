@@ -1,8 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
@@ -71,8 +68,7 @@ implements TableModel,AutoCloseable
             b.append("<th>");
             cols[i].toString().chars().forEach((c) ->
             {
-                if(c < 128) b.append((char)c);
-                else b.append("&#").append(c).append(";");
+                b.append(HtmlEscaper.escape(c));
             });
             b.append("</th>");
         }
@@ -87,8 +83,7 @@ implements TableModel,AutoCloseable
                 {
                     row[i].toString().chars().forEach((c) ->
                     {
-                        if(c < 128) b.append((char)c);
-                        else b.append("&#").append(c).append(";");
+                        b.append(HtmlEscaper.escape(c));
                     });
                 }
                 b.append("</td>");

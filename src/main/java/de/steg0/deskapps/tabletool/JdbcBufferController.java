@@ -7,7 +7,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -244,8 +243,7 @@ class JdbcBufferController
         var htmlbuf = new StringBuilder();
         editor.getText().chars().forEach((c) -> 
         {
-            if(c < 128) htmlbuf.append((char)c);
-            else htmlbuf.append("&#").append(String.valueOf(c)).append(";");
+            htmlbuf.append(HtmlEscaper.escape(c));
         });
         String html = "<pre>" +
                 htmlbuf +
