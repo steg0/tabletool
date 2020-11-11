@@ -51,6 +51,7 @@ class JdbcBufferController
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
         void splitRequested(JdbcBufferController source,String text);
         void resultViewClosed(JdbcBufferController source);
+        void resultViewUpdated(JdbcBufferController source);
     }
     
     final JFrame parent;
@@ -420,7 +421,10 @@ class JdbcBufferController
         resultviewConstraints.gridy = 1;
         
         panel.add(resultscrollpane,resultviewConstraints);
-        panel.revalidate();
+        for(var l : listeners.getListeners(Listener.class))
+        {
+            l.resultViewUpdated(this);
+        }
     }
     
     void addResultSetPopup()

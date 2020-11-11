@@ -267,6 +267,12 @@ class JdbcNotebookController
             }
             bufferPanel.repaint();
         }
+
+        @Override
+        public void resultViewUpdated(JdbcBufferController source)
+        {
+            bufferPanel.repaint();
+        }
     };
     
     DocumentListener bufferDocumentListener = new DocumentListener()
