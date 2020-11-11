@@ -1,5 +1,8 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
@@ -57,6 +60,43 @@ implements TableModel,AutoCloseable
             rowcount++;
         }
         resultSetClosed = rs.isClosed();
+    }
+    
+    String toHtml()
+    {
+        var b = new StringBuilder();
+        b.append("<table><tr>");
+        for(int i=0;i<cols.length;i++)
+        {
+            b.append("<th>");
+            cols[i].toString().chars().forEach((c) ->
+            {
+                if(c < 128) b.append((char)c);
+                else b.append("&#").append(c).append(";");
+            });
+            b.append("</th>");
+        }
+        b.append("</tr>");
+        for(Object[] row : rows)
+        {
+            b.append("<tr>");
+            for(int i=0;i<row.length;i++)
+            {
+                b.append("<td>");
+                if(row[i] != null)
+                {
+                    row[i].toString().chars().forEach((c) ->
+                    {
+                        if(c < 128) b.append((char)c);
+                        else b.append("&#").append(c).append(";");
+                    });
+                }
+                b.append("</td>");
+            }
+            b.append("</tr>");
+        }
+        b.append("</table>");
+        return b.toString();
     }
     
     void store(Writer w)

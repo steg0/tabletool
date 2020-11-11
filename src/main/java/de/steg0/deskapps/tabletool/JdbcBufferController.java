@@ -5,6 +5,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -236,6 +239,23 @@ class JdbcBufferController
         }
     }
     
+    void copyAsHtml()
+    {
+        var htmlbuf = new StringBuilder();
+        editor.getText().chars().forEach((c) -> 
+        {
+            if(c < 128) htmlbuf.append((char)c);
+            else htmlbuf.append("&#").append(String.valueOf(c)).append(";");
+        });
+        String html = "<pre>" +
+                htmlbuf +
+                "</pre>" +
+                getResultSetTableModel().toHtml();
+        var selection = new HtmlSelection(html);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection,null);
+    }
+    
     void store(Writer w)
     throws IOException
     {
@@ -431,7 +451,11 @@ class JdbcBufferController
     void addResultSetPopup()
     {
         var popup = new JPopupMenu();
-        var item = new JMenuItem("Close",KeyEvent.VK_C);
+        JMenuItem item;
+        item = new JMenuItem("Copy as HTML",KeyEvent.VK_H);
+        item.addActionListener((e) -> copyAsHtml());
+        popup.add(item);
+        item = new JMenuItem("Close",KeyEvent.VK_C);
         item.addActionListener((e) ->
         {
             closeCurrentResultSet();
