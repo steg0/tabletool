@@ -172,7 +172,10 @@ class JdbcBufferController
         if(where != null)
         {
             var rightEdge=new Point(editor.getWidth()-1,where);
-            editor.setCaretPosition(editor.viewToModel2D(rightEdge));
+            int position=editor.viewToModel2D(rightEdge);
+            editor.setSelectionEnd(position);
+            editor.setSelectionStart(position);
+            editor.setCaretPosition(position);
         }
         editor.requestFocusInWindow();
     }
@@ -303,6 +306,8 @@ class JdbcBufferController
         savedCaretPosition = editor.getCaretPosition();
         String text = editor.getSelectedText() != null?
                 editor.getSelectedText().trim() : selectCurrentQuery();
+        savedSelectionStart = editor.getSelectionStart();
+        savedSelectionEnd = editor.getSelectionEnd();
         if(text == null)
         {
             log.accept("No query found at "+new Date());
@@ -316,14 +321,14 @@ class JdbcBufferController
         
         if(split && resultview!=null)
         {
-            int end = editor.getSelectionEnd();
+            int end = savedSelectionEnd;
             String rest = editor.getText();
             if(rest.length()>end && rest.charAt(end) == '\n') end++;
             rest = rest.substring(end);
             for(var l : listeners.getListeners(Listener.class))
             {
                 l.splitRequested(this,editor.getText().substring(0,end),
-                        editor.getSelectionStart(),end);
+                        savedSelectionStart,end);
             }
             editor.setText(rest);
         }
@@ -380,6 +385,8 @@ class JdbcBufferController
     {
         if(editor.getSelectionStart()!=savedSelectionStart ||
            editor.getSelectionEnd()!=savedSelectionEnd) return;
+        editor.setSelectionEnd(savedCaretPosition);
+        editor.setSelectionStart(savedCaretPosition);
         editor.setCaretPosition(savedCaretPosition);
     }
 
