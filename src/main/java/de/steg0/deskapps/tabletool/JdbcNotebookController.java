@@ -224,16 +224,19 @@ class JdbcNotebookController
             }
             buffers.get(i+1).focusEditor(null);
             selectedRectChanged(source,new Rectangle(0,
-                    (int)source.panel.getBounds().getY(),1,1));
+                    (int)buffers.get(i+1).panel.getBounds().getY(),1,1));
         }
 
         @Override
         public void exitedNorth(JdbcBufferController source)
         {
             int i=buffers.indexOf(source);
-            if(i > 0) buffers.get(i-1).focusEditor(null);
-            selectedRectChanged(source,new Rectangle(0,
-                    (int)source.panel.getBounds().getY(),1,1));
+            if(i > 0) 
+            {
+                buffers.get(i-1).focusEditor(null);
+                selectedRectChanged(source,new Rectangle(0,
+                        (int)buffers.get(i-1).panel.getBounds().getY(),1,1));
+            }
         }
 
         @Override
