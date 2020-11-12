@@ -122,7 +122,14 @@ class JdbcBufferController
                     }
                     break;
                 case KeyEvent.VK_SLASH:
-                    if(event.isControlDown()) toggleComment();
+                    if(event.isControlDown()) togglePrefix("--",null);
+                    break;
+                case KeyEvent.VK_TAB:
+                    if(editor.getSelectionEnd()!=editor.getSelectionStart())
+                    {
+                        togglePrefix("\t",!event.isShiftDown());
+                        event.consume();
+                    }
                     break;
                 case KeyEvent.VK_Z:
                     if(event.isControlDown() && undoManager.canUndo())
@@ -188,9 +195,9 @@ class JdbcBufferController
         editor.setText(c.editor.getText() + "\n" + editor.getText()); 
     }
     
-    void toggleComment()
+    void togglePrefix(String prefix,Boolean add)
     {
-        Boolean comment=null;
+        int plen = prefix.length();
         int start = editor.getSelectionStart();
         int end = editor.getSelectionEnd();
         try
@@ -221,17 +228,18 @@ class JdbcBufferController
             {
                 if(pos==-1 || editor.getText(pos,1).equals("\n"))
                 {
-                    if(Boolean.FALSE.equals(comment) ||
-                       editor.getText().length()>pos+2 &&
-                       editor.getText(pos+1,2).equals("--"))
+                    boolean hasPrefix=editor.getText().length()>pos+plen &&
+                            editor.getText(pos+1,plen).equals(prefix);
+                    if(add==null) add=!hasPrefix;
+                    if(Boolean.FALSE.equals(add))
                     {
-                        comment=false;
-                        editor.getDocument().remove(pos+1,2);
+                        add=false;
+                        if(hasPrefix) editor.getDocument().remove(pos+1,plen);
                     }
                     else
                     {
-                        comment=true;
-                        editor.getDocument().insertString(pos+1,"--",null);
+                        add=true;
+                        editor.getDocument().insertString(pos+1,prefix,null);
                     }
                 }
             }
