@@ -68,7 +68,7 @@ implements TableModel,AutoCloseable
             b.append("<th>");
             cols[i].toString().chars().forEach((c) ->
             {
-                b.append(HtmlEscaper.escape(c));
+                b.append(HtmlEscaper.nonAscii(c));
             });
             b.append("</th>");
         }
@@ -83,7 +83,7 @@ implements TableModel,AutoCloseable
                 {
                     row[i].toString().chars().forEach((c) ->
                     {
-                        b.append(HtmlEscaper.escape(c));
+                        b.append(HtmlEscaper.nonAscii(c));
                     });
                 }
                 b.append("</td>");

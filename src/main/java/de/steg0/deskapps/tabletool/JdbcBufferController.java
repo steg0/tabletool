@@ -243,7 +243,7 @@ class JdbcBufferController
         var htmlbuf = new StringBuilder();
         editor.getText().chars().forEach((c) -> 
         {
-            htmlbuf.append(HtmlEscaper.escape(c));
+            htmlbuf.append(HtmlEscaper.nonAscii(c));
         });
         String html = "<pre>" +
                 htmlbuf +
