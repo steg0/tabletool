@@ -203,7 +203,7 @@ class JdbcNotebookController
             }
             JdbcBufferController buffer = buffers.get(buffers.size() - 1);
             int bufferY = (int)buffer.panel.getLocation().getY();
-            buffer.focusEditor(viewportY - viewportY - bufferY);
+            buffer.focusEditor(e.getY() + viewportY - bufferY);
         }
     }
     
