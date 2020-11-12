@@ -188,17 +188,22 @@ class JdbcNotebookController
         @Override
         public void mouseClicked(MouseEvent e)
         {
-            Point reference = new Point(0,e.getY());
+            int viewportY = (int)bufferPane.getViewport()
+                    .getViewPosition().getY();
+            Point reference = new Point(0,e.getY() + viewportY);
             var component = bufferPanel.getComponentAt(reference);
             for(var buffer : buffers)
             {
                 if(buffer.panel == component)
                 {
-                    buffer.focusEditor(e.getY());
+                    int bufferY = (int)buffer.panel.getLocation().getY();
+                    buffer.focusEditor(e.getY() + viewportY - bufferY);
                     return;
                 }
             }
-            buffers.get(buffers.size()-1).focusEditor(e.getY());
+            JdbcBufferController buffer = buffers.get(buffers.size() - 1);
+            int bufferY = (int)buffer.panel.getLocation().getY();
+            buffer.focusEditor(viewportY - + viewportY - bufferY);
         }
     }
     
