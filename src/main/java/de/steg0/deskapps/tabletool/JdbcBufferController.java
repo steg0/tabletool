@@ -252,15 +252,14 @@ class JdbcBufferController
     void copyAsHtml()
     {
         var htmlbuf = new StringBuilder();
+        htmlbuf.append("<pre>");
         editor.getText().chars().forEach((c) -> 
         {
             htmlbuf.append(HtmlEscaper.nonAscii(c));
         });
-        String html = "<pre>" +
-                htmlbuf +
-                "</pre>" +
-                getResultSetTableModel().toHtml();
-        var selection = new HtmlSelection(html);
+        htmlbuf.append("</pre>");
+        htmlbuf.append(getResultSetTableModel().toHtml());
+        var selection = new HtmlSelection(htmlbuf.toString());
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection,null);
     }
