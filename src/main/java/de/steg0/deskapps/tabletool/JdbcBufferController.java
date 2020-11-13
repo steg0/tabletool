@@ -480,7 +480,7 @@ class JdbcBufferController
             }
         });
         popup.add(item);
-        resultview.addMouseListener(new MouseAdapter()
+        var popuplistener = new MouseAdapter()
         {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -491,7 +491,9 @@ class JdbcBufferController
             public void mouseReleased(MouseEvent e) {
                 mousePressed(e);
             }            
-        });
+        };
+        resultview.addMouseListener(popuplistener);
+        resultview.getTableHeader().addMouseListener(popuplistener);
     }
     
     KeyListener resultsetKeyListener = new KeyListener()
