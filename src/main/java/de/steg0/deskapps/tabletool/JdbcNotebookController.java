@@ -222,7 +222,7 @@ class JdbcNotebookController
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
             }
-            buffers.get(i+1).focusEditor(null);
+            buffers.get(i+1).focusEditor(0);
             selectedRectChanged(source,new Rectangle(0,
                     (int)buffers.get(i+1).panel.getBounds().getY(),1,1));
         }
@@ -233,7 +233,7 @@ class JdbcNotebookController
             int i=buffers.indexOf(source);
             if(i > 0) 
             {
-                buffers.get(i-1).focusEditor(null);
+                buffers.get(i-1).focusEditor(-1);
                 selectedRectChanged(source,new Rectangle(0,
                         (int)buffers.get(i-1).panel.getBounds().getY(),1,1));
             }

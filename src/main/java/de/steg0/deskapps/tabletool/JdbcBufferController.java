@@ -172,14 +172,16 @@ class JdbcBufferController
      * @param where the Y position to focus. This is understood as the
      * rightmost area of the editor in terms of X coordinates, to support
      * a sensible way of focusing from a container where the editor is
-     * layouted in a left-aligned way.
+     * layouted in a left-aligned way. If negative, measures from the bottom
+     * of the editor area.
      */
     void focusEditor(Integer where)
     {
         if(where != null)
         {
-            var rightEdge=new Point(editor.getWidth()-1,where);
-            int position=editor.viewToModel2D(rightEdge);
+            var rightEdge=new Point(editor.getWidth()-1,
+                    where>=0? where : editor.getHeight()-where);
+            int position=Math.max(0,editor.viewToModel2D(rightEdge));
             editor.setSelectionEnd(position);
             editor.setSelectionStart(position);
             editor.setCaretPosition(position);
