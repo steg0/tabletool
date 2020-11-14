@@ -403,8 +403,8 @@ class JdbcBufferController
         {
             int end = savedSelectionEnd;
             String rest = editor.getText();
-            if(rest.length()>end && rest.charAt(end) == '\n') end++;
-            rest = rest.substring(end);
+            rest = rest.substring(
+                    rest.length()>end && rest.charAt(end) == '\n'? end+1 : end);
             for(var l : listeners.getListeners(Listener.class))
             {
                 l.splitRequested(this,editor.getText().substring(0,end),
