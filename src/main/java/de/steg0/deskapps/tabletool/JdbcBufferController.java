@@ -230,27 +230,31 @@ class JdbcBufferController
     }
     
     /**
-     * @param x
-     *            the X position to set the caret to. If negative, measures from
-     *            the right of the editor area. If provided, <code>y</code>
-     *            must be provided too, otherwise has no effect.
+     * @param characterX
+     *            the X position to set the caret to, which is a character
+     *            position relative to the start of the line that has the caret.
      * @param y
-     *            the Y position to set the caret to. If negative, measures from
-     *            the bottom of the editor area. If provided, <code>x</code>
-     *            must be provided too, otherwise has no effect.
+     *            the Y position (in point units) to set the caret to. If
+     *            negative, measures from the bottom of the editor area. If
+     *            provided without <code>characterX</code>, this will result in
+     *            the rightmost possible caret position of the resulting line.
      */
-    void focusEditor(Integer x,Integer y)
+    void focusEditor(Integer characterX,Integer pointY)
     {
-        if(x != null && y != null)
+        if(pointY != null)
         {
             var p=new Point(
-                    x>=0? x : editor.getWidth()-x,
-                    y>=0? y : editor.getHeight()-y
+                    editor.getWidth() - 1,
+                    pointY>=0? pointY : editor.getHeight() - pointY
             );
             int position=Math.max(0,editor.viewToModel2D(p));
             editor.setSelectionEnd(position);
             editor.setSelectionStart(position);
             editor.setCaretPosition(position);
+        }
+        if(characterX != null)
+        {
+            setCaretPositionInLine(characterX);
         }
         editor.requestFocusInWindow();
     }

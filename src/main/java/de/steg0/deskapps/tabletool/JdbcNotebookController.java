@@ -197,13 +197,13 @@ class JdbcNotebookController
                 if(buffer.panel == component)
                 {
                     int bufferY = (int)buffer.panel.getLocation().getY();
-                    buffer.focusEditor(-1,e.getY() + viewportY - bufferY);
+                    buffer.focusEditor(null,e.getY() + viewportY - bufferY);
                     return;
                 }
             }
             JdbcBufferController buffer = buffers.get(buffers.size() - 1);
             int bufferY = (int)buffer.panel.getLocation().getY();
-            buffer.focusEditor(-1,e.getY() + viewportY - bufferY);
+            buffer.focusEditor(null,e.getY() + viewportY - bufferY);
         }
     }
     
@@ -222,7 +222,7 @@ class JdbcNotebookController
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
             }
-            buffers.get(i+1).focusEditor(0,0);
+            buffers.get(i+1).focusEditor(source.getCaretPositionInLine(),0);
             /* scroll relative to source, because if we added a buffer above,
              * it's not yet laid out */
             selectedRectChanged(source,new Rectangle(0,
@@ -236,7 +236,7 @@ class JdbcNotebookController
             if(i > 0) 
             {
                 JdbcBufferController target = buffers.get(i-1);
-                target.focusEditor(0,-1);
+                target.focusEditor(source.getCaretPositionInLine(),-1);
                 selectedRectChanged(target,new Rectangle(0,
                         (int)target.editor.getBounds().getHeight()-16,1,16));
             }
