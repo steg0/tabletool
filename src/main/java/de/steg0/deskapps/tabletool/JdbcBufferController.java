@@ -117,12 +117,13 @@ class JdbcBufferController
                         int vpheight = findViewportParent(editor).getHeight();
                         int linesOnScreen = vpheight / getLineHeight();
                         String t = editor.getText();
-                        int i=caret,nl=0;
+                        int i=caret,nl=0,offset=getCaretPositionInLine();
                         for(;i<t.length()&&nl<linesOnScreen;i++)
                         {
                             if(t.charAt(i)=='\n') nl++;
                         }
-                        editor.setCaretPosition(Math.min(t.length(),i));
+                        editor.setCaretPosition(i);
+                        setCaretPositionInLine(offset);
                         event.consume();
                     }
                     break;
@@ -140,12 +141,13 @@ class JdbcBufferController
                         int vpheight = findViewportParent(editor).getHeight();
                         int linesOnScreen = vpheight / getLineHeight();
                         String t = editor.getText();
-                        int i=caret-1,nl=0;
+                        int i=caret-1,nl=0,offset=getCaretPositionInLine();
                         for(;i>=0&&nl<linesOnScreen;i--)
                         {
                             if(t.charAt(i)=='\n') nl++;
                         }
                         editor.setCaretPosition(i+1);
+                        setCaretPositionInLine(offset);
                         event.consume();
                     }
                     break;
@@ -190,6 +192,28 @@ class JdbcBufferController
     int getLineHeight()
     {
         return editor.getHeight() / editor.getLineCount();
+    }
+    
+    int getCaretPositionInLine()
+    {
+        String t = editor.getText();
+        int caret = editor.getCaretPosition();
+        int index = t.lastIndexOf('\n',caret-1);
+        if(index<0) return caret;
+        return caret-1-index;
+    }
+    
+    void setCaretPositionInLine(int position)
+    {
+        String t = editor.getText();
+        int caretInLine = getCaretPositionInLine();
+        int caretBeginning = editor.getCaretPosition() - caretInLine;
+        int lastIndex = t.indexOf('\n',caretBeginning);
+        if(lastIndex<0) lastIndex = t.length();
+        int newPosition = Math.min(lastIndex,caretBeginning + position);
+        editor.setCaretPosition(newPosition);
+        editor.setSelectionStart(newPosition);
+        editor.setSelectionEnd(newPosition);
     }
     
     EventListenerList listeners = new EventListenerList();
