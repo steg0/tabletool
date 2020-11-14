@@ -147,8 +147,10 @@ implements KeyListener
             {
                 int index=tabbedPane.getSelectedIndex();
                 JdbcNotebookController notebook=notebooks.get(index);
-                notebook.store(false);
-                tabbedPane.setTitleAt(index,notebook.file.getName());
+                if(notebook.store(false))
+                {
+                    tabbedPane.setTitleAt(index,notebook.file.getName());
+                }
             }
         },
         saveAsAction = new AbstractAction("Save As...")
@@ -157,8 +159,10 @@ implements KeyListener
             {
                 int index=tabbedPane.getSelectedIndex();
                 JdbcNotebookController notebook=notebooks.get(index);
-                notebook.store(true);
-                tabbedPane.setTitleAt(index,notebook.file.getName());
+                if(notebook.store(true))
+                {
+                    tabbedPane.setTitleAt(index,notebook.file.getName());
+                }
             }
         },
         closeAction = new AbstractAction("Close")

@@ -364,19 +364,29 @@ class JdbcNotebookController
         bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
-    public void store(boolean saveAs)
+    public boolean store(boolean saveAs)
     {
         if(file==null || saveAs)
         {
             var filechooser = new JFileChooser();
             int returnVal = filechooser.showSaveDialog(bufferPanel);
-            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            if(returnVal != JFileChooser.APPROVE_OPTION) return false;
             file=filechooser.getSelectedFile();
+            if(file.exists())
+            {
+                int option = JOptionPane.showConfirmDialog(
+                        bufferPanel,
+                        "File exists. Continue?",
+                        "File exists",
+                        JOptionPane.YES_NO_OPTION);
+                if(option != JOptionPane.YES_OPTION) return false;
+            }
         }
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
             unsaved=false;
+            return true;
         }
         catch(IOException e)
         {
@@ -385,6 +395,7 @@ class JdbcNotebookController
                     "Error saving: "+e.getMessage(),
                     "Error saving",
                     JOptionPane.ERROR_MESSAGE);
+            return false;
         }
     }
 
