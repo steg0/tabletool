@@ -235,9 +235,10 @@ class JdbcNotebookController
             int i=buffers.indexOf(source);
             if(i > 0) 
             {
-                buffers.get(i-1).focusEditor(0,-1);
-                selectedRectChanged(buffers.get(i-1),new Rectangle(0,
-                        (int)buffers.get(i-1).editor.getBounds().getHeight()-16,1,16));
+                JdbcBufferController target = buffers.get(i-1);
+                target.focusEditor(0,-1);
+                selectedRectChanged(target,new Rectangle(0,
+                        (int)target.editor.getBounds().getHeight()-16,1,16));
             }
         }
 
