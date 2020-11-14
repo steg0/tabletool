@@ -414,7 +414,7 @@ class JdbcNotebookController
         }
         unsaved=false;
         bufferPanel.revalidate();
-        buffers.get(0).focusEditor(null,null);
+        buffers.get(0).focusEditor(0,0);
     }
     
     void restoreFocus()
