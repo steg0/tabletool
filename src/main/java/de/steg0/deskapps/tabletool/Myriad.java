@@ -110,6 +110,10 @@ extends WindowAdapter
         item.setMnemonic(KeyEvent.VK_S);
         menu.add(item);
 
+        item = new JMenuItem(controller.saveAsAction);
+        item.setMnemonic(KeyEvent.VK_A);
+        menu.add(item);
+
         item = new JMenuItem(controller.closeAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_C);

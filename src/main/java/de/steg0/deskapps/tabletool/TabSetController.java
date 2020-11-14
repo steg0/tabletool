@@ -134,7 +134,7 @@ implements KeyListener
                 add(true);
             }
         },
-        loadAction = new AbstractAction("Load")
+        loadAction = new AbstractAction("Load...")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
@@ -147,7 +147,17 @@ implements KeyListener
             {
                 int index=tabbedPane.getSelectedIndex();
                 JdbcNotebookController notebook=notebooks.get(index);
-                notebook.store();
+                notebook.store(false);
+                tabbedPane.setTitleAt(index,notebook.file.getName());
+            }
+        },
+        saveAsAction = new AbstractAction("Save As...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                notebook.store(true);
                 tabbedPane.setTitleAt(index,notebook.file.getName());
             }
         },

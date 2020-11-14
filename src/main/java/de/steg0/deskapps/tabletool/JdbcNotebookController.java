@@ -364,9 +364,9 @@ class JdbcNotebookController
         bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
-    public void store()
+    public void store(boolean saveAs)
     {
-        if(file==null)
+        if(file==null || saveAs)
         {
             var filechooser = new JFileChooser();
             int returnVal = filechooser.showSaveDialog(bufferPanel);
