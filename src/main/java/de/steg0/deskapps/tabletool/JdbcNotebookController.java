@@ -226,8 +226,7 @@ class JdbcNotebookController
             /* scroll relative to source, because if we added a buffer above,
              * it's not yet layouted */
             selectedRectChanged(source,new Rectangle(0,
-                    (int)(source.panel.getBounds().getY() +
-                    source.panel.getBounds().getHeight()),1,16));
+                    (int)source.panel.getBounds().getHeight(),1,16));
         }
 
         @Override
