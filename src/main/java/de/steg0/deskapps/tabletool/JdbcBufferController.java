@@ -321,6 +321,7 @@ class JdbcBufferController
         }
     }
     
+    /**blocking */
     void copyAsHtml()
     {
         var htmlbuf = new StringBuilder();
