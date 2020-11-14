@@ -33,6 +33,7 @@ import javax.swing.JViewport;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
 class JdbcBufferController
@@ -264,7 +265,16 @@ class JdbcBufferController
     void select(int start,int end) { editor.select(start,end); }
 
     void prepend(JdbcBufferController c) {
-        editor.setText(c.editor.getText() + "\n" + editor.getText()); 
+        /* Use Document API so that the editor does not request a viewport
+         * change. */
+        try
+        {
+            editor.getDocument().insertString(0,c.editor.getText() + "\n",null);
+        }
+        catch(BadLocationException e)
+        {
+            assert false : e.getMessage();
+        }
     }
     
     void togglePrefix(String prefix,Boolean add)
@@ -399,18 +409,25 @@ class JdbcBufferController
             return;
         }
         
-        if(split && resultview!=null)
+        if(split && resultview!=null) try
         {
             int end = savedSelectionEnd;
-            String rest = editor.getText();
-            rest = rest.substring(
-                    rest.length()>end && rest.charAt(end) == '\n'? end+1 : end);
+            Document d = editor.getDocument();
+            
             for(var l : listeners.getListeners(Listener.class))
             {
-                l.splitRequested(this,editor.getText().substring(0,end),
-                        savedSelectionStart,end);
+                l.splitRequested(this,d.getText(0,end),savedSelectionStart,end);
             }
-            editor.setText(rest);
+            /* Use Document API so that the editor does not request a viewport
+             * change. */
+            if(d.getLength()>end && d.getText(end,1).equals("\n")) end++;
+            editor.getDocument().remove(0,end);
+
+            savedCaretPosition = savedSelectionStart = savedSelectionEnd = 0;
+        }
+        catch(BadLocationException e)
+        {
+            assert false : e.getMessage();
         }
         else
         {
