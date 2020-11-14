@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -97,11 +98,12 @@ class JdbcBufferController
         { 
             try
             {
+                int caret = editor.getCaretPosition();
                 switch(event.getKeyCode())
                 {
                 case KeyEvent.VK_DOWN:
                 case KeyEvent.VK_PAGE_DOWN:
-                    if(editor.getLineOfOffset(editor.getCaretPosition()) == 
+                    if(editor.getLineOfOffset(caret) == 
                        editor.getLineCount()-1 &&
                        resultview != null)
                     {
@@ -110,15 +112,41 @@ class JdbcBufferController
                             l.exitedSouth(JdbcBufferController.this);
                         }
                     }
+                    else if(event.getKeyCode()==KeyEvent.VK_PAGE_DOWN)
+                    {
+                        int vpheight = findViewportParent(editor).getHeight();
+                        int linesOnScreen = vpheight / getLineHeight();
+                        String t = editor.getText();
+                        int i=caret,nl=0;
+                        for(;i<t.length()&&nl<linesOnScreen;i++)
+                        {
+                            if(t.charAt(i)=='\n') nl++;
+                        }
+                        editor.setCaretPosition(Math.min(t.length(),i));
+                        event.consume();
+                    }
                     break;
                 case KeyEvent.VK_UP:
                 case KeyEvent.VK_PAGE_UP:
-                    if(editor.getLineOfOffset(editor.getCaretPosition()) == 0)
+                    if(editor.getLineOfOffset(caret) == 0)
                     {
                         for(var l : listeners.getListeners(Listener.class))
                         {
                             l.exitedNorth(JdbcBufferController.this);
                         }
+                    }
+                    else if(event.getKeyCode()==KeyEvent.VK_PAGE_UP)
+                    {
+                        int vpheight = findViewportParent(editor).getHeight();
+                        int linesOnScreen = vpheight / getLineHeight();
+                        String t = editor.getText();
+                        int i=caret-1,nl=0;
+                        for(;i>=0&&nl<linesOnScreen;i--)
+                        {
+                            if(t.charAt(i)=='\n') nl++;
+                        }
+                        editor.setCaretPosition(i+1);
+                        event.consume();
                     }
                     break;
                 case KeyEvent.VK_SLASH:
@@ -144,12 +172,25 @@ class JdbcBufferController
                     }
                 }
             }            
-            catch(BadLocationException ignored)
+            catch(BadLocationException e)
             {
+                assert false : e.getMessage();
             }
         }
         @Override public void keyTyped(KeyEvent e) { }
     };
+    
+    static JViewport findViewportParent(Component c)
+    {
+        if(c==null) return null;
+        if(c instanceof JViewport) return (JViewport)c;
+        return findViewportParent(c.getParent());
+    }
+    
+    int getLineHeight()
+    {
+        return editor.getHeight() / editor.getLineCount();
+    }
     
     EventListenerList listeners = new EventListenerList();
     
