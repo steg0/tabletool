@@ -371,7 +371,7 @@ class JdbcNotebookController
             var filechooser = new JFileChooser();
             int returnVal = filechooser.showSaveDialog(bufferPanel);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
-            file=filechooser.getSelectedFile();
+            File file=filechooser.getSelectedFile();
             if(file.exists())
             {
                 int option = JOptionPane.showConfirmDialog(
@@ -381,6 +381,7 @@ class JdbcNotebookController
                         JOptionPane.YES_NO_OPTION);
                 if(option != JOptionPane.YES_OPTION) return false;
             }
+            this.file=file;
         }
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
