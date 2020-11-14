@@ -169,19 +169,24 @@ class JdbcBufferController
     }
     
     /**
-     * @param where the Y position to focus. This is understood as the
-     * rightmost area of the editor in terms of X coordinates, to support
-     * a sensible way of focusing from a container where the editor is
-     * layouted in a left-aligned way. If negative, measures from the bottom
-     * of the editor area.
+     * @param x
+     *            the X position to set the caret to. If negative, measures from
+     *            the right of the editor area. If provided, <code>y</code>
+     *            must be provided too, otherwise has no effect.
+     * @param y
+     *            the Y position to set the caret to. If negative, measures from
+     *            the bottom of the editor area. If provided, <code>x</code>
+     *            must be provided too, otherwise has no effect.
      */
-    void focusEditor(Integer where)
+    void focusEditor(Integer x,Integer y)
     {
-        if(where != null)
+        if(x != null && y != null)
         {
-            var rightEdge=new Point(editor.getWidth()-1,
-                    where>=0? where : editor.getHeight()-where);
-            int position=Math.max(0,editor.viewToModel2D(rightEdge));
+            var p=new Point(
+                    x>=0? x : editor.getWidth()-x,
+                    y>=0? y : editor.getHeight()-y
+            );
+            int position=Math.max(0,editor.viewToModel2D(p));
             editor.setSelectionEnd(position);
             editor.setSelectionStart(position);
             editor.setCaretPosition(position);

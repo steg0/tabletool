@@ -197,13 +197,13 @@ class JdbcNotebookController
                 if(buffer.panel == component)
                 {
                     int bufferY = (int)buffer.panel.getLocation().getY();
-                    buffer.focusEditor(e.getY() + viewportY - bufferY);
+                    buffer.focusEditor(-1,e.getY() + viewportY - bufferY);
                     return;
                 }
             }
             JdbcBufferController buffer = buffers.get(buffers.size() - 1);
             int bufferY = (int)buffer.panel.getLocation().getY();
-            buffer.focusEditor(e.getY() + viewportY - bufferY);
+            buffer.focusEditor(-1,e.getY() + viewportY - bufferY);
         }
     }
     
@@ -222,9 +222,12 @@ class JdbcNotebookController
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
             }
-            buffers.get(i+1).focusEditor(0);
+            buffers.get(i+1).focusEditor(0,0);
+            /* scroll relative to source, because if we added a buffer above,
+             * it's not yet layouted */
             selectedRectChanged(source,new Rectangle(0,
-                    (int)buffers.get(i+1).panel.getBounds().getY(),1,1));
+                    (int)(source.panel.getBounds().getY() +
+                    source.panel.getBounds().getHeight()),1,16));
         }
 
         @Override
@@ -233,9 +236,9 @@ class JdbcNotebookController
             int i=buffers.indexOf(source);
             if(i > 0) 
             {
-                buffers.get(i-1).focusEditor(-1);
-                selectedRectChanged(source,new Rectangle(0,
-                        (int)buffers.get(i-1).panel.getBounds().getY(),1,1));
+                buffers.get(i-1).focusEditor(-1,-1);
+                selectedRectChanged(buffers.get(i-1),new Rectangle(0,
+                        (int)buffers.get(i-1).editor.getBounds().getHeight()-16,1,16));
             }
         }
 
@@ -264,7 +267,7 @@ class JdbcNotebookController
             newBufferController.connection = source.connection;
             add(i,newBufferController);
             bufferPanel.revalidate();
-            newBufferController.focusEditor(null);
+            newBufferController.focusEditor(null,null);
             newBufferController.appendText(text);
             newBufferController.select(selectionStart,selectionEnd);
             newBufferController.fetch(false);
@@ -411,12 +414,12 @@ class JdbcNotebookController
         }
         unsaved=false;
         bufferPanel.revalidate();
-        buffers.get(0).focusEditor(null);
+        buffers.get(0).focusEditor(null,null);
     }
     
     void restoreFocus()
     {
-        buffers.get(lastFocusedBuffer).focusEditor(null);
+        buffers.get(lastFocusedBuffer).focusEditor(null,null);
     }
     
     PropertyChangeListener fetchSizeListener = (e) ->
