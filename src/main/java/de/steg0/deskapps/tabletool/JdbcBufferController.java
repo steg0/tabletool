@@ -114,16 +114,7 @@ class JdbcBufferController
                     }
                     else if(event.getKeyCode()==KeyEvent.VK_PAGE_DOWN)
                     {
-                        int vpheight = findViewportParent(editor).getHeight();
-                        int linesOnScreen = vpheight / getLineHeight();
-                        String t = editor.getText();
-                        int i=caret,nl=0,offset=getCaretPositionInLine();
-                        for(;i<t.length()&&nl<linesOnScreen;i++)
-                        {
-                            if(t.charAt(i)=='\n') nl++;
-                        }
-                        editor.setCaretPosition(i);
-                        setCaretPositionInLine(offset);
+                        traverseScreenful(caret,1);
                         event.consume();
                     }
                     break;
@@ -138,16 +129,7 @@ class JdbcBufferController
                     }
                     else if(event.getKeyCode()==KeyEvent.VK_PAGE_UP)
                     {
-                        int vpheight = findViewportParent(editor).getHeight();
-                        int linesOnScreen = vpheight / getLineHeight();
-                        String t = editor.getText();
-                        int i=caret-1,nl=0,offset=getCaretPositionInLine();
-                        for(;i>=0&&nl<linesOnScreen;i--)
-                        {
-                            if(t.charAt(i)=='\n') nl++;
-                        }
-                        editor.setCaretPosition(i+1);
-                        setCaretPositionInLine(offset);
+                        traverseScreenful(caret-1,-1);
                         event.consume();
                     }
                     break;
@@ -216,6 +198,20 @@ class JdbcBufferController
         editor.setSelectionEnd(newPosition);
     }
     
+    void traverseScreenful(int start,int vec)
+    {
+        int vpheight = findViewportParent(editor).getHeight();
+        int linesOnScreen = vpheight / getLineHeight();
+        String t = editor.getText();
+        int i=start,nl=0,offset=getCaretPositionInLine();
+        for(;i>=0&&i<t.length()&&nl<linesOnScreen;i += vec)
+        {
+            if(t.charAt(i)=='\n') nl++;
+        }
+        editor.setCaretPosition(Math.max(0,i));
+        setCaretPositionInLine(offset);
+    }
+
     EventListenerList listeners = new EventListenerList();
     
     void addListener(Listener l)
