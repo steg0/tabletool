@@ -224,7 +224,7 @@ class JdbcNotebookController
             }
             buffers.get(i+1).focusEditor(0,0);
             /* scroll relative to source, because if we added a buffer above,
-             * it's not yet layouted */
+             * it's not yet laid out */
             selectedRectChanged(source,new Rectangle(0,
                     (int)source.panel.getBounds().getHeight(),1,16));
         }
