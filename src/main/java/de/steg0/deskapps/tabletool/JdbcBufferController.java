@@ -359,17 +359,22 @@ class JdbcBufferController
         }
     }
     
-    String load(LineNumberReader r)
+    /**
+     * @return the number of lines read
+     */
+    int load(LineNumberReader r)
     throws IOException
     {
         var newText = new StringBuilder(editor.getText());
-        String line,nextline=null;
+        String line=null;
+        int linesRead = 0;
         while((line=r.readLine())!=null)
         {
+            linesRead++;
             if(line.equals("--CSV Result"))
             {
                 var rsm = new ResultSetTableModel();
-                nextline = rsm.load(r);
+                rsm.load(r);
                 addResultSetTable(rsm);
                 break;
             }
@@ -383,7 +388,7 @@ class JdbcBufferController
         editor.setText(newText.toString());
         undoManager = new UndoManager();
         editor.getDocument().addUndoableEditListener(undoManager);
-        return nextline;
+        return linesRead;
     }
     
     int savedCaretPosition,savedSelectionStart,savedSelectionEnd;

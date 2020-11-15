@@ -417,14 +417,13 @@ class JdbcNotebookController
     throws IOException
     {
         assert buffers.size()==1 : "load only supports uninitialized panels";
-        String nextline=buffers.get(0).load(r);
-        while(nextline != null)
+        int linesRead = buffers.get(0).load(r);
+        while(linesRead>0)
         {
             var newBufferController = new JdbcBufferController(
                     parent,logConsumer);
-            newBufferController.appendText(nextline);
-            nextline = newBufferController.load(r);
-            add(buffers.size(),newBufferController);
+            linesRead = newBufferController.load(r);
+            if(linesRead > 0) add(buffers.size(),newBufferController);
         }
         unsaved=false;
         bufferPanel.revalidate();

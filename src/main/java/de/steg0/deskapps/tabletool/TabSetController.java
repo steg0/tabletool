@@ -189,6 +189,15 @@ implements KeyListener
                 tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),
                         sqlFile.getName());
             }
+            catch(IOException e)
+            {
+                throw new IOException(fn+":\n"+e.getMessage(),e);
+            }
+            catch(ArrayIndexOutOfBoundsException e)
+            {
+                throw new ArrayIndexOutOfBoundsException(fn+":\n"+
+                        e.getMessage());
+            }
         }
     }
     

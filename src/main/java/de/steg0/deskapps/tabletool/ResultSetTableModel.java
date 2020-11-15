@@ -119,6 +119,7 @@ implements TableModel,AutoCloseable
             }
             w.write('\n');
         }
+        w.write('\n');
     }
     
     
@@ -134,30 +135,25 @@ implements TableModel,AutoCloseable
         return strval;
     }
 
-    /**
-     * @return the first line from <code>r</code> which follows the tabular
-     * region, or <code>null</code> if the file ends there.
-     * The value is expected to be processed by the caller.
-     */
-    String load(LineNumberReader r)
+    void load(LineNumberReader r)
     throws IOException
     {
         try
         {
-            String line,nextline=null;
+            String line=null;
             var buffer=new GrowingCsvBuffer();
             while((line=r.readLine())!=null)
             {
                 if(!line.startsWith("--"))
                 {
-                    nextline=line;
+                    if(line.length()>0) throw new IOException(
+                            "Empty line expected");
                     break;
                 }
                 buffer.append(line.substring(2)+'\n');
             }
             cols = buffer.getHeader();
             rows = buffer.getRows();
-            return nextline;
         }
         catch(Exception e)
         {
@@ -199,7 +195,16 @@ implements TableModel,AutoCloseable
     @Override
     public Object getValueAt(int rowIndex,int columnIndex)
     {
-        return rows.get(rowIndex)[columnIndex];
+        try
+        {
+            return rows.get(rowIndex)[columnIndex];
+        }
+        catch(ArrayIndexOutOfBoundsException e)
+        {
+            throw new ArrayIndexOutOfBoundsException(
+                    "Table data incomplete in row "+rowIndex+
+                    ": "+e.getMessage());
+        }
     }
 
     @Override
