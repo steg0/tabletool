@@ -161,7 +161,7 @@ extends WindowAdapter
         {
             controller.restoreWorkspace(workspace);
         }
-        catch(IOException e)
+        catch(Exception e)
         {
             JOptionPane.showMessageDialog(
                     frame,

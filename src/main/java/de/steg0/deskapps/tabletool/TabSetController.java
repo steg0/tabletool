@@ -110,7 +110,7 @@ implements KeyListener
             notebook.file = file;
             tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),file.getName());
         }
-        catch(IOException e)
+        catch(Exception e)
         {
             JOptionPane.showMessageDialog(
                     tabbedPane,
