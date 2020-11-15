@@ -48,32 +48,31 @@ extends WindowAdapter
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
         var propertyHolder = new PropertyHolder(properties);
-        if(ensureFrameDefaults(propertyHolder))
-        {
-            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-            frame.addWindowListener(this);
+        
+        ensureFrameDefaults(propertyHolder);
+
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(this);
+        
+        controller = new TabSetController(frame,propertyHolder);
             
-            controller = new TabSetController(frame,propertyHolder);
-            
-            if(ensureWorkspace())
-            {
-                var contentPaneConstraints = new GridBagConstraints();
-                contentPaneConstraints.fill = GridBagConstraints.BOTH;
-                contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
-                contentPaneConstraints.weightx = 
-                        contentPaneConstraints.weighty = 1;
-                frame.getContentPane().add(
-                        controller.tabbedPane,
-                        contentPaneConstraints
-                );
-                
-                JMenuBar menubar = getMenuBar(controller);
-                frame.setJMenuBar(menubar);
-                
-                frame.pack();
-                frame.setVisible(true);
-            }
-        }
+        ensureWorkspace();
+        
+        var contentPaneConstraints = new GridBagConstraints();
+        contentPaneConstraints.fill = GridBagConstraints.BOTH;
+        contentPaneConstraints.anchor = GridBagConstraints.NORTHWEST;
+        contentPaneConstraints.weightx = 
+                contentPaneConstraints.weighty = 1;
+        frame.getContentPane().add(
+                controller.tabbedPane,
+                contentPaneConstraints
+        );
+        
+        JMenuBar menubar = getMenuBar(controller);
+        frame.setJMenuBar(menubar);
+        
+        frame.pack();
+        frame.setVisible(true);
     }
     
     List<Image> getIcons()
@@ -133,7 +132,7 @@ extends WindowAdapter
         return menubar;
     }
     
-    boolean ensureFrameDefaults(PropertyHolder propertyHolder)
+    void ensureFrameDefaults(PropertyHolder propertyHolder)
     {
         try
         {
@@ -141,7 +140,6 @@ extends WindowAdapter
             frame.getContentPane().setPreferredSize(
                     propertyHolder.getDefaultFrameSize());
             frame.setLocation(propertyHolder.getDefaultFrameLocation());
-            return true;
         }
         catch(Exception e)
         {
@@ -150,11 +148,11 @@ extends WindowAdapter
                     "Error loading properties: "+e.getMessage(),
                     "Error loading properties",
                     JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
-        return false;
     }
     
-    boolean ensureWorkspace()
+    void ensureWorkspace()
     {
         if(workspace==null || !workspace.exists()) controller.add(true);
         else try
@@ -168,9 +166,8 @@ extends WindowAdapter
                     "Error loading workspace: "+e.getMessage(),
                     "Error loading workspace",
                     JOptionPane.ERROR_MESSAGE);
-            return false;
+            System.exit(2);
         }
-        return true;
     }
     
     @Override
