@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -247,11 +248,39 @@ implements KeyListener
     @Override
     public void keyReleased(KeyEvent e)
     {
+        int index=0;
         switch(e.getKeyCode())
         {
         case KeyEvent.VK_ENTER:
             notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
             break;
+        case KeyEvent.VK_RIGHT:
+            index = tabbedPane.getSelectedIndex();
+            if(e.isAltDown() && index<tabbedPane.getComponentCount()-1)
+            {
+                String title = tabbedPane.getTitleAt(index);
+                Component c = tabbedPane.getSelectedComponent();
+                tabbedPane.remove(index);
+                tabbedPane.add(c,index+1);
+                tabbedPane.setTitleAt(index+1,title);
+                JdbcNotebookController notebook = notebooks.remove(index);
+                notebooks.add(index+1,notebook);
+                tabbedPane.setSelectedComponent(c);
+            }
+            break;
+        case KeyEvent.VK_LEFT:
+            index = tabbedPane.getSelectedIndex();
+            if(e.isAltDown() && index>0)
+            {
+                String title = tabbedPane.getTitleAt(index);
+                Component c = tabbedPane.getSelectedComponent();
+                tabbedPane.remove(index);
+                tabbedPane.add(c,index-1);
+                tabbedPane.setTitleAt(index-1,title);
+                JdbcNotebookController notebook = notebooks.remove(index);
+                notebooks.add(index-1,notebook);
+                tabbedPane.setSelectedComponent(c);
+            }
         }
     }
 }
