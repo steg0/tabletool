@@ -13,6 +13,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
@@ -52,6 +54,8 @@ class JdbcBufferController
     {
         void exitedNorth(JdbcBufferController source);
         void exitedSouth(JdbcBufferController source);
+        void scrolledNorth(JdbcBufferController source);
+        void scrolledSouth(JdbcBufferController source);
         void selectedRectChanged(JdbcBufferController source,Rectangle rect);
         void splitRequested(JdbcBufferController source,String text,
                 int selectionStart,int selectionEnd);
@@ -547,6 +551,12 @@ class JdbcBufferController
         resultviewConstraints.anchor = GridBagConstraints.WEST;
         resultviewConstraints.gridy = 1;
         
+        /* https://bugs.openjdk.java.net/browse/JDK-4890196 */
+        var newMl = new ResultPaneMouseWheelListener();
+        newMl.originalListener = resultscrollpane.getMouseWheelListeners()[0];
+        resultscrollpane.removeMouseWheelListener(newMl.originalListener);
+        resultscrollpane.addMouseWheelListener(newMl);
+        
         panel.add(resultscrollpane,resultviewConstraints);
         panel.revalidate();
         for(var l : listeners.getListeners(Listener.class))
@@ -590,6 +600,47 @@ class JdbcBufferController
         resultview.addMouseListener(popuplistener);
         resultview.getTableHeader().addMouseListener(popuplistener);
     }
+    
+    class ResultPaneMouseWheelListener implements MouseWheelListener
+    {
+        MouseWheelListener originalListener;
+
+        @Override
+        public void mouseWheelMoved(MouseWheelEvent e)
+        {
+            int wr = e.getWheelRotation();
+            JViewport vp = (JViewport)resultview.getParent();
+            if(wr > 0)
+            {
+                if(vp.getViewPosition().getY() + vp.getHeight() >= 
+                        resultview.getHeight())
+                {
+                    for(var l : listeners.getListeners(Listener.class))
+                    {
+                        l.scrolledSouth(JdbcBufferController.this);
+                    }
+                }
+                else
+                {
+                    originalListener.mouseWheelMoved(e);
+                }
+            }
+            else if(wr < 0)
+            {
+                if(vp.getViewPosition().getY() == 0)
+                {
+                    for(var l : listeners.getListeners(Listener.class))
+                    {
+                        l.scrolledNorth(JdbcBufferController.this);
+                    }
+                }
+                else
+                {
+                    originalListener.mouseWheelMoved(e);
+                }
+            }
+        }
+    };
     
     KeyListener resultsetKeyListener = new KeyListener()
     {

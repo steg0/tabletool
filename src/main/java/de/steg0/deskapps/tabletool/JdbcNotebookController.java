@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
@@ -240,6 +241,20 @@ class JdbcNotebookController
                 selectedRectChanged(target,new Rectangle(0,
                         (int)target.editor.getBounds().getHeight()-16,1,16));
             }
+        }
+        
+        @Override
+        public void scrolledSouth(JdbcBufferController source)
+        {
+            JScrollBar scrollbar = bufferPane.getVerticalScrollBar();
+            scrollbar.setValue(scrollbar.getValue()+16);
+        }
+
+        @Override
+        public void scrolledNorth(JdbcBufferController source)
+        {
+            JScrollBar scrollbar = bufferPane.getVerticalScrollBar();
+            scrollbar.setValue(scrollbar.getValue()-16);
         }
 
         @Override
