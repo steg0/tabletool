@@ -165,6 +165,7 @@ class JdbcNotebookController
         bufferPanel.setBackground(buffer.editor.getBackground());
         bufferPane = new JScrollPane(bufferPanel);
         bufferPane.getVerticalScrollBar().setUnitIncrement(16);
+        bufferPane.getHorizontalScrollBar().setUnitIncrement(16);
         bufferPane.addMouseListener(new BufferPaneMouseListener());
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
