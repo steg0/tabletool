@@ -146,6 +146,8 @@ class JdbcNotebookController
         connectionPanel.add(autocommitCb);
         
         connectionsSelector = new JComboBox<>(this.connections);
+        connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
+                Boolean.TRUE);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
         connectionPanel.add(connectionsSelector);
         
