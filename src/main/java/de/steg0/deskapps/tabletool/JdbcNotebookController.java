@@ -98,8 +98,14 @@ class JdbcNotebookController
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         
-        var connectionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
+        connectionsSelector = new JComboBox<>(this.connections);
+        connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
+                Boolean.TRUE);
+        connectionsSelector.addItemListener((e) -> updateConnection(e));
+        connectionPanel.add(connectionsSelector);
+        
         connectionPanel.add(new JLabel("Fetch:"));
         
         NumberFormat format = NumberFormat.getIntegerInstance();
@@ -144,12 +150,6 @@ class JdbcNotebookController
                     autocommitCb.isSelected(),logConsumer));
         });
         connectionPanel.add(autocommitCb);
-        
-        connectionsSelector = new JComboBox<>(this.connections);
-        connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
-                Boolean.TRUE);
-        connectionsSelector.addItemListener((e) -> updateConnection(e));
-        connectionPanel.add(connectionsSelector);
         
         var connectionPanelConstraints = new GridBagConstraints();
         connectionPanelConstraints.anchor = GridBagConstraints.EAST;
