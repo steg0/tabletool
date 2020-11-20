@@ -108,6 +108,7 @@ class JdbcBufferController
                 {
                 case KeyEvent.VK_DOWN:
                 case KeyEvent.VK_PAGE_DOWN:
+                    if(event.isShiftDown()) break;
                     if(editor.getLineOfOffset(caret) == 
                        editor.getLineCount()-1 &&
                        resultview != null)
@@ -125,6 +126,7 @@ class JdbcBufferController
                     break;
                 case KeyEvent.VK_UP:
                 case KeyEvent.VK_PAGE_UP:
+                    if(event.isShiftDown()) break;
                     if(editor.getLineOfOffset(caret) == 0)
                     {
                         for(var l : listeners.getListeners(Listener.class))
