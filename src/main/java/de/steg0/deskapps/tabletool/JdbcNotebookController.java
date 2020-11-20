@@ -509,12 +509,10 @@ class JdbcNotebookController
     
     void reportDisconnect(ConnectionWorker connection)
     {
+        if(buffers.get(0).connection != connection) return;
         for(JdbcBufferController buffer : buffers)
         {
-            if(buffer.connection == connection) 
-            {
-                buffer.connection = null;
-            }
+            buffer.connection = null;
         }
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
