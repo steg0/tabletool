@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
 class TabSetController
+extends MouseAdapter
 implements KeyListener
 {
     JFrame parent;
@@ -42,6 +45,7 @@ implements KeyListener
         connections = new Connections(propertyHolder,executor);
         
         tabbedPane.addKeyListener(this);
+        tabbedPane.addMouseListener(this);
     }
     
     /**
@@ -281,6 +285,17 @@ implements KeyListener
                 notebooks.add(index-1,notebook);
                 tabbedPane.setSelectedComponent(c);
             }
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e)
+    {
+        if(!tabbedPane.hasFocus())
+        {
+             JdbcNotebookController notebook = notebooks.get(
+                     tabbedPane.getSelectedIndex());
+             if(notebook.hasSavedFocusPosition) notebook.restoreFocus();
         }
     }
 }

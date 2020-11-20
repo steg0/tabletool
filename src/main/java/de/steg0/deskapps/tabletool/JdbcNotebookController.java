@@ -86,6 +86,7 @@ class JdbcNotebookController
     
     List<JdbcBufferController> buffers = new ArrayList<>();
     int lastFocusedBuffer;
+    boolean hasSavedFocusPosition;
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
@@ -347,6 +348,7 @@ class JdbcNotebookController
             public void focusLost(FocusEvent e)
             {
                 lastFocusedBuffer = buffers.indexOf(c);
+                hasSavedFocusPosition = true;
             }
             @Override 
             public void focusGained(FocusEvent e) { }
