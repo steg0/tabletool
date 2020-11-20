@@ -221,6 +221,11 @@ implements TableModel,AutoCloseable
     public void removeTableModelListener(TableModelListener l)
     {
     }
+    
+    boolean isClosed() throws SQLException
+    {
+        return rs.isClosed();
+    }
 
     /**
      * Right now this is only called from {@link ConnectionWorker} on

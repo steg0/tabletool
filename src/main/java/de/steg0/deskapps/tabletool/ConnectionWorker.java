@@ -71,7 +71,8 @@ class ConnectionWorker
             {
                 try
                 {
-                    if(lastReportedResult!=null) try
+                    if(lastReportedResult!=null && 
+                       !lastReportedResult.isClosed()) try
                     {
                         lastReportedResult.close();
                         report(log,"Closed prior ResultSet at "+new Date());
