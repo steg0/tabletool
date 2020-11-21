@@ -313,8 +313,11 @@ class JdbcNotebookController
         }
     };
     
-    DocumentListener bufferDocumentListener = new DocumentListener()
+    /* this listener could live in JdbcBufferController */
+    class BufferDocumentListener implements DocumentListener
     {
+        JdbcBufferController buffer;
+        
         @Override
         public void insertUpdate(DocumentEvent e)
         {
@@ -332,6 +335,9 @@ class JdbcNotebookController
         public void removeUpdate(DocumentEvent e)
         {
             insertUpdate(e);
+            JTextArea editor = buffer.editor;
+            if(editor.getSelectionStart()==editor.getSelectionEnd()) return;
+            ExtendTextDamageEvent.send(editor,e);
         }
 
         @Override public void changedUpdate(DocumentEvent e) { }
@@ -341,7 +347,9 @@ class JdbcNotebookController
     void add(int index,JdbcBufferController c)
     {
         c.addListener(bufferListener);
-        c.addDocumentListener(bufferDocumentListener);
+        var documentListener = new BufferDocumentListener();
+        documentListener.buffer = c;
+        c.addDocumentListener(documentListener);
         c.addEditorFocusListener(new FocusListener()
         {
             @Override 
