@@ -34,9 +34,9 @@ import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.undo.UndoManager;
 
 class JdbcBufferController
 {
@@ -68,7 +68,7 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea();
-    UndoManager undoManager = new UndoManager();
+    UndoManagerProxy undoManagerProxy = new UndoManagerProxy(editor); 
     JTable resultview;
     
     Consumer<String> log;
@@ -84,7 +84,6 @@ class JdbcBufferController
         panel.setBackground(editor.getBackground());
         
         editor.addKeyListener(editorKeyListener);
-        editor.getDocument().addUndoableEditListener(undoManager);
     }
 
     KeyListener editorKeyListener = new KeyListener()
@@ -151,16 +150,10 @@ class JdbcBufferController
                     }
                     break;
                 case KeyEvent.VK_Z:
-                    if(event.isControlDown() && undoManager.canUndo())
-                    {
-                        undoManager.undo();
-                    }
+                    if(event.isControlDown()) undoManagerProxy.tryUndo();
                     break;
                 case KeyEvent.VK_Y:
-                    if(event.isControlDown() && undoManager.canRedo())
-                    {
-                        undoManager.redo();
-                    }
+                    if(event.isControlDown()) undoManagerProxy.tryRedo();
                 }
             }            
             catch(BadLocationException e)
@@ -312,6 +305,7 @@ class JdbcBufferController
              * now determine whether to uncomment or comment, and change text
              * from bottom to top
              */
+            undoManagerProxy.stop();
             for(int pos = end-1;pos>=start;pos--)
             {
                 if(pos==-1 || editor.getText(pos,1).equals("\n"))
@@ -331,9 +325,11 @@ class JdbcBufferController
                     }
                 }
             }
+            undoManagerProxy.start();
         }
-        catch(BadLocationException ignored)
+        catch(BadLocationException e)
         {
+            assert false : e.getMessage();
         }
     }
     
@@ -390,10 +386,13 @@ class JdbcBufferController
                 newText.append(line);
             }
         }
-        editor.getDocument().removeUndoableEditListener(undoManager);
+        var document = (AbstractDocument)editor.getDocument();
+        for(var l : document.getUndoableEditListeners())
+        {
+            document.removeUndoableEditListener(l);
+        }
         editor.setText(newText.toString());
-        undoManager = new UndoManager();
-        editor.getDocument().addUndoableEditListener(undoManager);
+        undoManagerProxy = new UndoManagerProxy(editor);
         return linesRead;
     }
     
