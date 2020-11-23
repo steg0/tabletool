@@ -511,6 +511,7 @@ class JdbcNotebookController
         }
         catch(SQLException e)
         {
+            connectionsSelector.setSelectedIndex(-1);
             logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
     }
