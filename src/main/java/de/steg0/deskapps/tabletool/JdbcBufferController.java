@@ -61,6 +61,7 @@ class JdbcBufferController
                 int selectionStart,int selectionEnd);
         void resultViewClosed(JdbcBufferController source);
         void resultViewUpdated(JdbcBufferController source);
+        void promptConnection();
     }
     
     final JFrame parent;
@@ -416,6 +417,10 @@ class JdbcBufferController
         else if(connection == null)
         {
             log.accept("No connection available at "+new Date());
+            for(var l : listeners.getListeners(Listener.class))
+            {
+                l.promptConnection();
+            }
             return;
         }
         

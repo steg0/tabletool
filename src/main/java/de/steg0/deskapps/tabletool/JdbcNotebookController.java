@@ -311,6 +311,12 @@ class JdbcNotebookController
         {
             bufferPanel.repaint();
         }
+
+        @Override
+        public void promptConnection()
+        {
+            connectionsSelector.requestFocusInWindow();
+        }
     };
     
     /* this listener could live in JdbcBufferController */
