@@ -47,14 +47,12 @@ extends WindowAdapter
         frame = new JFrame(title);
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
-        var propertyHolder = new PropertyHolder(properties);
-        
-        ensureFrameDefaults(propertyHolder);
-
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
         
-        controller = new TabSetController(frame,propertyHolder);
+        var propertyHolder = new PropertyHolder(properties);
+
+        controller = ensureFrameConfiguration(propertyHolder);
             
         ensureWorkspace();
         
@@ -132,7 +130,7 @@ extends WindowAdapter
         return menubar;
     }
     
-    void ensureFrameDefaults(PropertyHolder propertyHolder)
+    TabSetController ensureFrameConfiguration(PropertyHolder propertyHolder)
     {
         try
         {
@@ -140,16 +138,18 @@ extends WindowAdapter
             frame.getContentPane().setPreferredSize(
                     propertyHolder.getDefaultFrameSize());
             frame.setLocation(propertyHolder.getDefaultFrameLocation());
+            return new TabSetController(frame,propertyHolder);
         }
         catch(Exception e)
         {
             JOptionPane.showMessageDialog(
                     frame,
-                    "Error loading properties: "+e.getMessage(),
-                    "Error loading properties",
+                    "Error loading configuration: "+e.getMessage(),
+                    "Error loading configuration",
                     JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
+        return null;
     }
     
     void ensureWorkspace()

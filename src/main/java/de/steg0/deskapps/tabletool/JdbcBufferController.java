@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -69,6 +70,7 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea();
+    Color defaultBackground = editor.getBackground();
     UndoManagerProxy undoManagerProxy = new UndoManagerProxy(editor); 
     JTable resultview;
     
@@ -82,9 +84,15 @@ class JdbcBufferController
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
         panel.add(editor,editorConstraints);
-        panel.setBackground(editor.getBackground());
+        panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
+    }
+    
+    void setBackground(Color background)
+    {
+        editor.setBackground(background);
+        panel.setBackground(background);
     }
 
     KeyListener editorKeyListener = new KeyListener()

@@ -18,7 +18,7 @@ implements ComboBoxModel<Connections.ConnectionState>
     }
 
     /**blocking; establishes connection if needed */
-    ConnectionWorker getConnection(Object connection)
+    ConnectionWorker getConnection(Connections.ConnectionState connection)
     throws SQLException
     {
         return connections.getConnection(connection);

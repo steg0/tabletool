@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -165,7 +166,7 @@ class JdbcNotebookController
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(.85);
         
-        bufferPanel.setBackground(buffer.editor.getBackground());
+        bufferPanel.setBackground(buffer.defaultBackground);
         bufferPane = new JScrollPane(bufferPanel);
         bufferPane.getVerticalScrollBar().setUnitIncrement(16);
         bufferPane.getHorizontalScrollBar().setUnitIncrement(16);
@@ -179,6 +180,14 @@ class JdbcNotebookController
         bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
+    }
+    
+    void setBackground(Color bg)
+    {
+        if(bg==null) bg=buffers.get(0).defaultBackground;
+        bufferPanel.setBackground(bg);
+        log.setBackground(bg);
+        for(JdbcBufferController buffer : buffers) buffer.setBackground(bg);
     }
     
     EventListenerList listeners = new EventListenerList();
@@ -501,12 +510,14 @@ class JdbcNotebookController
         if(event.getStateChange()==ItemEvent.DESELECTED) return;
         try
         {
-            var connection = connections.getConnection(event.getItem());
+            var item = (Connections.ConnectionState)event.getItem();
+            var connection = connections.getConnection(item);
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer);
             for(JdbcBufferController buffer : buffers)
             {
                 buffer.connection = connection;
             }
+            setBackground(item.info().background);
             restoreFocus();
         }
         catch(SQLException e)
@@ -533,6 +544,8 @@ class JdbcNotebookController
         }
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
+        
+        setBackground(buffers.get(0).defaultBackground);
     }
     
 }

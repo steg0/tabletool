@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import static java.util.stream.Collectors.groupingBy;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.io.BufferedInputStream;
@@ -55,15 +56,20 @@ class PropertyHolder
         static final String PROPERTY_PREFIX = "connections.";
         
         String name,url,username,password;
+        Color background;
         
         ConnectionInfo(String nameKey)
         {
             name=nameKey;
-            url=String.valueOf(properties.get(PROPERTY_PREFIX+nameKey+".url"));
-            username=String.valueOf(
-                    properties.get(PROPERTY_PREFIX+nameKey+".username"));
-            password=String.valueOf(
-                    properties.get(PROPERTY_PREFIX+nameKey+".password"));
+            String prefix=PROPERTY_PREFIX+nameKey;
+            url=String.valueOf(properties.get(prefix+".url"));
+            username=String.valueOf(properties.get(prefix+".username"));
+            password=String.valueOf(properties.get(prefix+".password"));
+            if(properties.containsKey(prefix+".bg"))
+            {
+                background=Color.decode(String.valueOf(properties.get(
+                        prefix+".bg")));
+            }
         }
     }
     

@@ -12,6 +12,11 @@ class Connections
     {
         int connectionIndex;
         
+        PropertyHolder.ConnectionInfo info()
+        {
+            return connectionInfo[connectionIndex];
+        }
+        
         public String toString()
         {
             /* connected ones get a star in front */
@@ -41,7 +46,7 @@ class Connections
     }
     
     /**blocking; establishes connection if needed */
-    ConnectionWorker getConnection(Object connection)
+    ConnectionWorker getConnection(ConnectionState connection)
     throws SQLException
     {
         int i = ((ConnectionState)connection).connectionIndex;
