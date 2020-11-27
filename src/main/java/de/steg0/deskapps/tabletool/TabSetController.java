@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -170,7 +171,8 @@ implements KeyListener
     {
         JMenu menu = new JMenu("Recent");
         
-        Set<String> paths = new LinkedHashSet<String>(recents);
+        List<String> paths = new ArrayList<>(new LinkedHashSet<>(recents));
+        Collections.reverse(paths);
         int count=0;
         for(var path : paths)
         {
