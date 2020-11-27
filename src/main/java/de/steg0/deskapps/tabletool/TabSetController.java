@@ -113,7 +113,9 @@ implements KeyListener
             JdbcNotebookController notebook = add(false);
             notebook.load(r);
             notebook.file = file;
-            tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),file.getName());
+            int index = tabbedPane.getSelectedIndex();
+            tabbedPane.setTitleAt(index,file.getName());
+            tabbedPane.setToolTipTextAt(index,file.getPath());
         }
         catch(Exception e)
         {
@@ -155,6 +157,7 @@ implements KeyListener
                 if(notebook.store(false))
                 {
                     tabbedPane.setTitleAt(index,notebook.file.getName());
+                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                 }
             }
         },
@@ -167,6 +170,7 @@ implements KeyListener
                 if(notebook.store(true))
                 {
                     tabbedPane.setTitleAt(index,notebook.file.getName());
+                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                 }
             }
         },
@@ -191,8 +195,10 @@ implements KeyListener
                 JdbcNotebookController notebook = add(false);
                 notebook.load(r);
                 notebook.file = sqlFile;
-                tabbedPane.setTitleAt(tabbedPane.getSelectedIndex(),
-                        sqlFile.getName());
+                int index = tabbedPane.getSelectedIndex();
+                tabbedPane.setTitleAt(index,sqlFile.getName());
+                tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
+
             }
             catch(IOException e)
             {
