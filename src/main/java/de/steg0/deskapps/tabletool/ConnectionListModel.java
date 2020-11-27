@@ -5,6 +5,10 @@ import java.sql.SQLException;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
 
+/**
+ * The model to make connections, and a specific selected index in the list,
+ * available to {@link JdbcNotebookController}. 
+ */
 class ConnectionListModel
 implements ComboBoxModel<Connections.ConnectionState>
 {

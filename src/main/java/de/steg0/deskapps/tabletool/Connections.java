@@ -4,10 +4,16 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
+/**
+ * Represents the list of connections available to the runtime.
+ */
 class Connections
 {
     static final boolean AUTOCOMMIT_DEFAULT=false;
 
+    /**
+     * Exposes an index into the connection list.
+     */
     class ConnectionState
     {
         int connectionIndex;

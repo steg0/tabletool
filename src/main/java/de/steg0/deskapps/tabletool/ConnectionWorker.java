@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+/**
+ * A wrapper to run operations on top of a JDBC <code>Connection</code>.
+ */
 class ConnectionWorker
 {
     final Connection connection;
