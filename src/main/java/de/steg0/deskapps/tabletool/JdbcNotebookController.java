@@ -166,7 +166,6 @@ class JdbcNotebookController
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(.85);
         
-        bufferPanel.setBackground(buffer.defaultBackground);
         bufferPane = new JScrollPane(bufferPanel);
         bufferPane.getVerticalScrollBar().setUnitIncrement(16);
         bufferPane.getHorizontalScrollBar().setUnitIncrement(16);
@@ -180,10 +179,13 @@ class JdbcNotebookController
         bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
+        
+        setBackground(null);
     }
     
     void setBackground(Color bg)
     {
+        if(bg==null) bg=propertyHolder.getDefaultBackground(); 
         if(bg==null) bg=buffers.get(0).defaultBackground;
         bufferPanel.setBackground(bg);
         log.setBackground(bg);
@@ -233,6 +235,7 @@ class JdbcNotebookController
                 var newBufferController = new JdbcBufferController(
                         parent,logConsumer);
                 newBufferController.connection = source.connection;
+                newBufferController.setBackground(source.getBackground());
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
             }
@@ -293,6 +296,7 @@ class JdbcNotebookController
             var newBufferController = new JdbcBufferController(
                     parent,logConsumer);
             newBufferController.connection = source.connection;
+            newBufferController.setBackground(source.getBackground());
             add(i,newBufferController);
             bufferPanel.revalidate();
             newBufferController.focusEditor(null,null);
@@ -465,6 +469,7 @@ class JdbcNotebookController
         {
             var newBufferController = new JdbcBufferController(
                     parent,logConsumer);
+            newBufferController.setBackground(buffers.get(0).getBackground());
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);
         }
@@ -545,7 +550,7 @@ class JdbcNotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBackground(buffers.get(0).defaultBackground);
+        setBackground(null);
     }
     
 }

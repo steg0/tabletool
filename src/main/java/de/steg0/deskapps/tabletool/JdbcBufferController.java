@@ -70,7 +70,8 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea();
-    Color defaultBackground = editor.getBackground();
+    /**The system-default editor background */
+    final Color defaultBackground = editor.getBackground();
     UndoManagerProxy undoManagerProxy = new UndoManagerProxy(editor); 
     JTable resultview;
     
@@ -93,6 +94,11 @@ class JdbcBufferController
     {
         editor.setBackground(background);
         panel.setBackground(background);
+    }
+    
+    Color getBackground()
+    {
+        return editor.getBackground();
     }
 
     KeyListener editorKeyListener = new KeyListener()

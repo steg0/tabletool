@@ -51,6 +51,12 @@ class PropertyHolder
         );
     }
     
+    Color getDefaultBackground()
+    {
+        if(!properties.containsKey("default.bg")) return null;
+        return Color.decode(properties.getProperty("default.bg").toString());
+    }
+    
     class ConnectionInfo
     {
         static final String PROPERTY_PREFIX = "connections.";
