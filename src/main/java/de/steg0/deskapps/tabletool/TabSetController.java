@@ -184,6 +184,13 @@ implements KeyListener
         return menu;
     }
     
+    void addRecent(File file)
+    {
+        recents.add(file.getPath());
+        while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
+        recreateMenuBar();
+    }
+    
     void load(String path)
     {
         File file;
@@ -207,9 +214,7 @@ implements KeyListener
             int index = tabbedPane.getSelectedIndex();
             tabbedPane.setTitleAt(index,file.getName());
             tabbedPane.setToolTipTextAt(index,file.getPath());
-            recents.add(file.getPath());
-            while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
-            recreateMenuBar();
+            addRecent(file);
         }
         catch(Exception e)
         {
@@ -248,10 +253,12 @@ implements KeyListener
             {
                 int index=tabbedPane.getSelectedIndex();
                 JdbcNotebookController notebook=notebooks.get(index);
+                boolean newBuffer=notebook.file==null;
                 if(notebook.store(false))
                 {
                     tabbedPane.setTitleAt(index,notebook.file.getName());
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
+                    if(newBuffer) addRecent(notebook.file);
                 }
             }
         },
