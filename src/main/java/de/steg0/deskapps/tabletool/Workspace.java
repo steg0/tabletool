@@ -13,4 +13,16 @@ public class Workspace
     {
         this.files = files;
     }
+    
+    private String[] recentFiles;
+
+    public String[] getRecentFiles()
+    {
+        return recentFiles;
+    }
+
+    public void setRecentFiles(String[] recentFiles)
+    {
+        this.recentFiles = recentFiles;
+    }
 }

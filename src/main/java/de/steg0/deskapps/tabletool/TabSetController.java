@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -11,8 +13,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -20,6 +26,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
@@ -27,6 +36,8 @@ class TabSetController
 extends MouseAdapter
 implements KeyListener
 {
+    int MAX_RECENTS_SIZE=500;
+    
     JFrame parent;
     PropertyHolder propertyHolder;
     
@@ -46,6 +57,58 @@ implements KeyListener
         
         tabbedPane.addKeyListener(this);
         tabbedPane.addMouseListener(this);
+    }
+    
+    void recreateMenuBar()
+    {
+        var menubar = new JMenuBar();
+        
+        JMenu menu;
+        
+        menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem item;
+
+        item = new JMenuItem(addAction);
+        item.setMnemonic(KeyEvent.VK_N);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,ActionEvent.CTRL_MASK));
+        menu.add(item);
+        
+        item = new JMenuItem(loadAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_O);
+        menu.add(item);
+
+        item = getRecentsMenu();
+        menu.add(item);
+        
+        item = new JMenuItem(saveAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_S);
+        menu.add(item);
+
+        item = new JMenuItem(saveAsAction);
+        item.setMnemonic(KeyEvent.VK_A);
+        menu.add(item);
+
+        item = new JMenuItem(closeAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
+
+        menubar.add(menu);
+        
+        menu = new JMenu("Help");
+        menu.setMnemonic(KeyEvent.VK_H);
+        
+        item = new JMenuItem(new HelpAction(parent));
+        item.setMnemonic(KeyEvent.VK_R);
+        menu.add(item);
+        
+        menubar.add(menu);
+        
+        parent.setJMenuBar(menubar);
     }
     
     /**
@@ -101,12 +164,39 @@ implements KeyListener
         if(notebooks.size()==0) add(true);
     }
     
-    void load()
+    Deque<String> recents = new LinkedList<>();
+    
+    JMenu getRecentsMenu()
     {
-        var filechooser = new JFileChooser();
-        int returnVal = filechooser.showOpenDialog(tabbedPane);
-        if(returnVal != JFileChooser.APPROVE_OPTION) return;
-        File file=filechooser.getSelectedFile();
+        JMenu menu = new JMenu("Recent");
+        
+        Set<String> paths = new LinkedHashSet<String>(recents);
+        int count=0;
+        for(var path : paths)
+        {
+            if(count++>20) break;
+            var menuItem = new JMenuItem(path);
+            menuItem.addActionListener((e) -> load(path));
+            menu.add(menuItem);
+        }
+        
+        return menu;
+    }
+    
+    void load(String path)
+    {
+        File file;
+        if(path==null)
+        {
+            var filechooser = new JFileChooser();
+            int returnVal = filechooser.showOpenDialog(tabbedPane);
+            if(returnVal != JFileChooser.APPROVE_OPTION) return;
+            file=filechooser.getSelectedFile();
+        }
+        else
+        {
+            file=new File(path);
+        }
         
         try(var r = new LineNumberReader(new FileReader(file)))
         {
@@ -116,6 +206,9 @@ implements KeyListener
             int index = tabbedPane.getSelectedIndex();
             tabbedPane.setTitleAt(index,file.getName());
             tabbedPane.setToolTipTextAt(index,file.getPath());
+            recents.add(file.getPath());
+            while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
+            recreateMenuBar();
         }
         catch(Exception e)
         {
@@ -145,7 +238,7 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                load();
+                load(null);
             }
         },
         saveAction = new AbstractAction("Save")
@@ -186,6 +279,12 @@ implements KeyListener
     throws IOException
     {
         Workspace w = Workspaces.load(f);
+        
+        if(w.getRecentFiles() != null)
+        {
+            for(var path : w.getRecentFiles()) recents.add(path);
+        }
+        
         if(w.getFiles().length==0) add(true);
         for(String fn : w.getFiles())
         {
@@ -198,7 +297,6 @@ implements KeyListener
                 int index = tabbedPane.getSelectedIndex();
                 tabbedPane.setTitleAt(index,sqlFile.getName());
                 tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
-
             }
             catch(IOException e)
             {
@@ -222,6 +320,7 @@ implements KeyListener
             .filter(Objects::nonNull)
             .map((f) -> f.getPath())
             .toArray(String[]::new));
+        w.setRecentFiles(recents.toArray(new String[recents.size()]));
         Workspaces.store(w,file);
     }
         
