@@ -4,7 +4,7 @@
   <groupId>de.steg0.deskapps.tabletool</groupId>
   <artifactId>myriad</artifactId>
   <packaging>jar</packaging>
-  <version>0.10-SNAPSHOT</version>
+  <version>0.11-SNAPSHOT</version>
   <name>myriad</name>
   <url>http://www.steg0.eu</url>
 
