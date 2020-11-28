@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,6 +26,8 @@ import java.util.Date;
 import java.util.EventListener;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -58,6 +61,8 @@ class JdbcNotebookController
         void disconnected(ConnectionWorker connection);
         void bufferChanged();
     }
+    
+    Logger logger = Logger.getLogger("tabletool.editor");
     
     final JFrame parent;
     final PropertyHolder propertyHolder;
@@ -169,7 +174,9 @@ class JdbcNotebookController
         bufferPane = new JScrollPane(bufferPanel);
         bufferPane.getVerticalScrollBar().setUnitIncrement(16);
         bufferPane.getHorizontalScrollBar().setUnitIncrement(16);
-        bufferPane.addMouseListener(new BufferPaneMouseListener());
+        var ml = new BufferPaneMouseListener();
+        bufferPane.addMouseListener(ml);
+        bufferPane.addMouseMotionListener(ml);
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
         logBufferPane.add(logPane);
@@ -204,22 +211,53 @@ class JdbcNotebookController
         @Override
         public void mouseClicked(MouseEvent e)
         {
-            int viewportY = (int)bufferPane.getViewport()
+            int vpY = e.getY() + (int)bufferPane.getViewport()
                     .getViewPosition().getY();
-            Point reference = new Point(0,e.getY() + viewportY);
-            var component = bufferPanel.getComponentAt(reference);
+            logger.log(Level.FINE,"mouseClicked,vpY={0}",vpY);
+            var component = bufferPanel.getComponentAt(new Point(0,vpY));
             for(var buffer : buffers)
             {
                 if(buffer.panel == component)
                 {
                     int bufferY = (int)buffer.panel.getLocation().getY();
-                    buffer.focusEditor(null,e.getY() + viewportY - bufferY);
+                    buffer.focusEditor(null,vpY - bufferY);
                     return;
                 }
             }
             JdbcBufferController buffer = buffers.get(buffers.size() - 1);
             int bufferY = (int)buffer.panel.getLocation().getY();
-            buffer.focusEditor(null,e.getY() + viewportY - bufferY);
+            buffer.focusEditor(null,vpY - bufferY);
+        }
+        
+        int clickVpY;
+        Component clickBuffer;
+        
+        @Override
+        public void mousePressed(MouseEvent e)
+        {
+            int bufY = (int)bufferPane.getViewport().getViewPosition().getY();
+            clickVpY = bufY + e.getY();
+            logger.log(Level.FINE,"mousePressed,clickVpY={0}",clickVpY);
+            clickBuffer = bufferPanel.getComponentAt(new Point(0,clickVpY));
+        }
+        
+        @Override
+        public void mouseDragged(MouseEvent e)
+        {
+            int vpY = e.getY() + (int)bufferPane.getViewport()
+                    .getViewPosition().getY();
+            logger.log(Level.FINE,"mouseDragged,vpY={0}",vpY);
+            var component = bufferPanel.getComponentAt(new Point(0,vpY));
+            if(component != clickBuffer) return;
+            for(var buffer : buffers)
+            {
+                if(buffer.panel == component)
+                {
+                    int bufferY = (int)buffer.panel.getLocation().getY();
+                    buffer.dragLineSelection(clickVpY - bufferY,vpY - bufferY);
+                    return;
+                }
+            }
         }
     }
     

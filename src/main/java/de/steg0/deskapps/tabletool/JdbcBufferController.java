@@ -23,6 +23,8 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
@@ -65,6 +67,8 @@ class JdbcBufferController
         void promptConnection();
     }
     
+    Logger logger = Logger.getLogger("tabletool.editor");
+
     final JFrame parent;
 
     JPanel panel = new JPanel(new GridBagLayout());
@@ -277,6 +281,22 @@ class JdbcBufferController
             setCaretPositionInLine(characterX);
         }
         editor.requestFocusInWindow();
+    }
+    
+    void dragLineSelection(int y1,int y2)
+    {
+        logger.log(Level.FINE,"dragLineSelection,y1={0}",y1);
+        logger.log(Level.FINE,"dragLineSelection,y2={0}",y2);
+        
+        int p1 = editor.viewToModel2D(new Point(0,y1));
+        int p2 = editor.viewToModel2D(new Point(0,y2));
+        
+        if(p1<0 || p2<0 || p1==p2) return;
+
+        focusEditor(null,null);
+        
+        if(p1<p2) editor.select(p1,p2);
+        else editor.select(p2,p1);
     }
     
     void appendText(String text) { editor.append(text); }
