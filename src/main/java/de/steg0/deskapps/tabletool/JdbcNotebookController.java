@@ -224,9 +224,16 @@ class JdbcNotebookController
                     return;
                 }
             }
-            JdbcBufferController buffer = buffers.get(buffers.size() - 1);
-            int bufferY = (int)buffer.panel.getLocation().getY();
-            buffer.focusEditor(null,vpY - bufferY);
+            JdbcBufferController lastBuffer = buffers.get(buffers.size() - 1);
+            if(lastBuffer.resultview != null)
+            {
+                bufferListener.exitedSouth(buffers.get(buffers.size() - 1));
+            }
+            else
+            {
+                int bufferY = (int)lastBuffer.panel.getLocation().getY();
+                lastBuffer.focusEditor(null,vpY - bufferY);
+            }
         }
         
         int clickVpY;
