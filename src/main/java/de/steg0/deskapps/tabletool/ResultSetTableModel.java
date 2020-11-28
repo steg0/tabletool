@@ -224,7 +224,7 @@ implements TableModel,AutoCloseable
     
     boolean isClosed() throws SQLException
     {
-        return rs.isClosed();
+        return rs==null || rs.isClosed();
     }
 
     /**
