@@ -345,10 +345,10 @@ class JdbcNotebookController
             add(i,newBufferController);
             bufferPanel.revalidate();
             newBufferController.focusEditor(null,null);
-            newBufferController.appendText(text);
+            newBufferController.editor.append(text);
             /* We don't have enough info here to restore the caret position.
              * This should be acceptable. */
-            newBufferController.select(selectionStart,selectionEnd);
+            newBufferController.editor.select(selectionStart,selectionEnd);
             newBufferController.fetch(false);
         }
 
@@ -414,7 +414,7 @@ class JdbcNotebookController
         var documentListener = new BufferDocumentListener();
         documentListener.buffer = c;
         c.addDocumentListener(documentListener);
-        c.addEditorFocusListener(new FocusListener()
+        c.editor.addFocusListener(new FocusListener()
         {
             @Override 
             public void focusLost(FocusEvent e)

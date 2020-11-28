@@ -248,11 +248,6 @@ class JdbcBufferController
         editor.getDocument().addDocumentListener(l);
     }
     
-    void addEditorFocusListener(FocusListener f)
-    {
-        editor.addFocusListener(f);
-    }
-    
     /**
      * @param characterX
      *            the X position to set the caret to, which is a character
@@ -299,10 +294,6 @@ class JdbcBufferController
         else editor.select(p2,p1);
     }
     
-    void appendText(String text) { editor.append(text); }
-    
-    void select(int start,int end) { editor.select(start,end); }
-
     void prepend(JdbcBufferController c) {
         /* Use Document API so that the editor does not request a viewport
          * change. */
