@@ -15,7 +15,8 @@ import javax.swing.JTextArea;
  * <a href="https://stackoverflow.com/questions/60029617/java-swing-double-click-drag-to-select-whole-words"
  * >StackOverflow 60029617</a> shows, it is not required to subclass
  * <code>DefaultCaret</code> to override double-click behavior. While in
- * the event loop we can also override the default selection in a listener.
+ * the event loop we can override the default selection in a listener. This
+ * class also does it for triple-click.
  */
 class WordSelectListener
 extends MouseAdapter
