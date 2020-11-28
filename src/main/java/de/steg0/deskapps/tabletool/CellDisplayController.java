@@ -23,6 +23,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Date;
 import java.util.function.Consumer;
 
@@ -103,11 +104,11 @@ class CellDisplayController
             textarea.setText(b.toString());
             dialogtitle = "CLOB display";
         }
-        else if(value instanceof Blob)
+        else if(resultset.getMetaData().getColumnType(column)==Types.BLOB)
         {
             var blob = (Blob)value;
             
-            if(Desktop.isDesktopSupported())
+            if(blob != null && Desktop.isDesktopSupported())
             {
                 var openButton = new JButton("Open");
                 var openAction = new BlobOpenAction();
@@ -116,11 +117,14 @@ class CellDisplayController
                 buttonPanel.add(openButton);
             }
             
-            var saveButton = new JButton("Export");
-            var exportAction = new BlobExportAction();
-            exportAction.blob = blob;
-            saveButton.addActionListener(exportAction);
-            buttonPanel.add(saveButton);
+            if(blob != null)
+            {
+                var saveButton = new JButton("Export");
+                var exportAction = new BlobExportAction();
+                exportAction.blob = blob;
+                saveButton.addActionListener(exportAction);
+                buttonPanel.add(saveButton);
+            }
             
             var loadButton = new JButton("Import");
             var importAction = new BlobImportAction();
@@ -130,13 +134,17 @@ class CellDisplayController
             loadButton.addActionListener(importAction);
             buttonPanel.add(loadButton);
 
-            var dump = new HexDump(blob,16*0x100);
-            textarea.setFont(new Font(
-                    Font.MONOSPACED,
-                    Font.PLAIN,
-                    textarea.getFont().getSize()));
-            textarea.setText(dump.dump);
-            dialogtitle = "BLOB bytes 0 to "+dump.length+" of "+blob.length();
+            dialogtitle = "BLOB bytes";
+            if(blob != null)
+            {
+                var dump = new HexDump(blob,16*0x100);
+                textarea.setFont(new Font(
+                        Font.MONOSPACED,
+                        Font.PLAIN,
+                        textarea.getFont().getSize()));
+                textarea.setText(dump.dump);
+                dialogtitle += " 0 to "+dump.length+" of "+blob.length();
+            }
         }
         else
         {
@@ -286,7 +294,7 @@ class CellDisplayController
                         "Error exporting",
                         JOptionPane.ERROR_MESSAGE);
             }
-            catch(IOException e)
+            catch(Exception e)
             {
                 JOptionPane.showMessageDialog(
                         parent,
