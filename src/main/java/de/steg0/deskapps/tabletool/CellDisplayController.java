@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -106,6 +107,15 @@ class CellDisplayController
         {
             var blob = (Blob)value;
             
+            if(Desktop.isDesktopSupported())
+            {
+                var openButton = new JButton("Open");
+                var openAction = new BlobOpenAction();
+                openAction.blob = blob;
+                openButton.addActionListener(openAction);
+                buttonPanel.add(openButton);
+            }
+            
             var saveButton = new JButton("Export");
             var exportAction = new BlobExportAction();
             exportAction.blob = blob;
@@ -208,6 +218,47 @@ class CellDisplayController
         }
     }
     
+    class BlobOpenAction implements ActionListener
+    {
+        Blob blob;
+
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            try(var is = new BufferedInputStream(blob.getBinaryStream()))
+            {
+                String suffix = SuffixGuess.fromStream(is);
+                var tmpfile = File.createTempFile("myriadblob",suffix);
+                tmpfile.deleteOnExit();
+                try(var os = new BufferedOutputStream(
+                        new FileOutputStream(tmpfile)))
+                {
+                    byte[] buf=new byte[0x4000];
+                    int len;
+                    while((len=is.read(buf))!=-1) os.write(buf,0,len);
+                }
+                Desktop.getDesktop().open(tmpfile);
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error opening: "+SQLExceptionPrinter.toString(e),
+                        "Error opening",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            catch(Exception e)
+            {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error opening: "+e.getMessage(),
+                        "Error opening",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    
     class BlobExportAction implements ActionListener
     {
         Blob blob;
@@ -284,7 +335,7 @@ class CellDisplayController
                         "Error importing",
                         JOptionPane.ERROR_MESSAGE);
             }
-            catch(IOException e)
+            catch(Exception e)
             {
                 JOptionPane.showMessageDialog(
                         parent,
