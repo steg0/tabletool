@@ -288,9 +288,18 @@ class JdbcBufferController
         if(p1<0 || p2<0 || p1==p2) return;
 
         focusEditor(null,null);
-        
-        if(p1<p2) editor.select(p1,p2);
-        else editor.select(p2,p1);
+
+        if(p1<p2)
+        {
+            editor.select(p1,p2);
+        }
+        else
+        {
+            editor.setSelectionStart(p2);
+            editor.setSelectionEnd(p1);
+            editor.setCaretPosition(p1);
+            editor.moveCaretPosition(p2);
+        }
     }
     
     void prepend(JdbcBufferController c) {
