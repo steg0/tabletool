@@ -28,9 +28,11 @@ The configuration file supports the following keys:
   frame.y=100
   frame.w=700
   frame.h=450
+  default.bg=#dddddd
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
+  connections.<Name 1>.bg=#eeeedd
 └─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
