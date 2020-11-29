@@ -72,7 +72,7 @@ class JdbcBufferController
 
     JPanel panel = new JPanel(new GridBagLayout());
     
-    JTextArea editor = new JTextArea();
+    JTextArea editor = new JTextArea(new AtomicReplaceDocument());
     
     {
         new WordSelectListener(editor);
