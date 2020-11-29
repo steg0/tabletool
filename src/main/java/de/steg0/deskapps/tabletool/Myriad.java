@@ -7,6 +7,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -24,13 +25,21 @@ extends WindowAdapter
 {
 
     JFrame frame;
-    File properties,workspace;
+    File properties,workspace,sqlFiles[];
     TabSetController controller;
     
     Myriad(String propertiesfile,String workspacefile)
     {
         if(propertiesfile!=null) properties = new File(propertiesfile);
         if(workspacefile!=null) workspace = new File(workspacefile);
+    }
+    
+    Myriad(String propertiesfile,String[] sqlFiles)
+    {
+        if(propertiesfile!=null) properties = new File(propertiesfile);
+        this.sqlFiles=Arrays.stream(sqlFiles)
+                .map((p) -> new File(p))
+                .toArray(File[]::new);
     }
     
     void showJdbcBuffer()
@@ -154,7 +163,7 @@ extends WindowAdapter
 
     public static void main(String[] args)
     {
-        String workspacefile=null,propertiesfile=null;
+        String propertiesfile=null;
         
         int optind=0;
         for(;optind<args.length&&args[optind].startsWith("-");optind++)
@@ -168,9 +177,25 @@ extends WindowAdapter
             }
         }
         
-        if(optind<args.length) workspacefile=args[optind];
-        Myriad ttool = new Myriad(propertiesfile,workspacefile);
-        ttool.showJdbcBuffer();
+        Myriad m;
+        if(optind<args.length)
+        {
+            String firstdoc=args[optind];
+            if(firstdoc.toLowerCase().endsWith(".xml"))
+            {
+                m = new Myriad(propertiesfile,firstdoc);
+            }
+            else
+            {
+                m = new Myriad(propertiesfile,
+                        Arrays.copyOfRange(args,optind,args.length));
+            }
+        }
+        else
+        {
+            m = new Myriad(propertiesfile,(String)null);
+        }
+        m.showJdbcBuffer();
     }
     
 }
