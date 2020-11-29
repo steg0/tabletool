@@ -3,6 +3,11 @@ package de.steg0.deskapps.tabletool;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -32,6 +37,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
+@SuppressWarnings("serial")
 class TabSetController
 extends MouseAdapter
 implements KeyListener
@@ -44,72 +50,52 @@ implements KeyListener
     Connections connections;
     Executor executor = Executors.newCachedThreadPool();
 
-    JTabbedPane tabbedPane = new JTabbedPane();
-    List<JdbcNotebookController> notebooks = new ArrayList<>();
-    int unnamedNotebookCount;
-    
     TabSetController(JFrame parent,PropertyHolder propertyHolder)
     {
         this.parent = parent;
         this.propertyHolder = propertyHolder;
         
         connections = new Connections(propertyHolder,executor);
-        
+    }
+
+    JTabbedPane tabbedPane = new JTabbedPane();
+    
+    {
         tabbedPane.addKeyListener(this);
         tabbedPane.addMouseListener(this);
+        
+        /* https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path */
+        tabbedPane.setDropTarget(new DropTarget()
+        {
+            public synchronized void drop(DropTargetDropEvent event)
+            {
+                try
+                {
+                    event.acceptDrop(DnDConstants.ACTION_COPY);
+                    Transferable t = event.getTransferable();
+                    for(var flavor : t.getTransferDataFlavors())
+                    {
+                        if(flavor.isFlavorJavaFileListType())
+                        {
+                            var files = (List<?>)t.getTransferData(
+                                    DataFlavor.javaFileListFlavor);
+                            for(var file : files) load((File)file);
+                            event.dropComplete(true);
+                            return;
+                        }
+                    }
+                    event.dropComplete(false);
+                }
+                catch(Exception e)
+                {
+                    event.dropComplete(false);
+                }
+            }
+        });
     }
     
-    void recreateMenuBar()
-    {
-        var menubar = new JMenuBar();
-        
-        JMenu menu;
-        
-        menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-
-        JMenuItem item;
-
-        item = new JMenuItem(addAction);
-        item.setMnemonic(KeyEvent.VK_N);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,ActionEvent.CTRL_MASK));
-        menu.add(item);
-        
-        item = new JMenuItem(loadAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,ActionEvent.CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_O);
-        menu.add(item);
-
-        item = getRecentsMenu();
-        menu.add(item);
-        
-        item = new JMenuItem(saveAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_S);
-        menu.add(item);
-
-        item = new JMenuItem(saveAsAction);
-        item.setMnemonic(KeyEvent.VK_A);
-        menu.add(item);
-
-        item = new JMenuItem(closeAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-
-        menubar.add(menu);
-        
-        menu = new JMenu("Help");
-        menu.setMnemonic(KeyEvent.VK_H);
-        
-        item = new JMenuItem(new HelpAction(parent));
-        item.setMnemonic(KeyEvent.VK_R);
-        menu.add(item);
-        
-        menubar.add(menu);
-        
-        parent.setJMenuBar(menubar);
-    }
+    List<JdbcNotebookController> notebooks = new ArrayList<>();
+    int unnamedNotebookCount;
     
     /**
      * Adds a tab and selects it.
@@ -177,7 +163,7 @@ implements KeyListener
         {
             if(count++>20) break;
             var menuItem = new JMenuItem(path);
-            menuItem.addActionListener((e) -> load(path));
+            menuItem.addActionListener((e) -> load(new File(path)));
             menu.add(menuItem);
         }
         
@@ -191,19 +177,14 @@ implements KeyListener
         recreateMenuBar();
     }
     
-    void load(String path)
+    void load(File file)
     {
-        File file;
-        if(path==null)
+        if(file==null)
         {
             var filechooser = new JFileChooser();
             int returnVal = filechooser.showOpenDialog(tabbedPane);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
-        }
-        else
-        {
-            file=new File(path);
         }
         
         try(var r = new LineNumberReader(new FileReader(file)))
@@ -231,7 +212,6 @@ implements KeyListener
         return !notebooks.stream().noneMatch((n) -> n.unsaved); 
     }
     
-    @SuppressWarnings("serial")
     Action
         addAction = new AbstractAction("New")
         {
@@ -282,6 +262,58 @@ implements KeyListener
                 removeSelected();
             }
         };
+    
+    void recreateMenuBar()
+    {
+        var menubar = new JMenuBar();
+        
+        JMenu menu;
+        
+        menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
+
+        JMenuItem item;
+
+        item = new JMenuItem(addAction);
+        item.setMnemonic(KeyEvent.VK_N);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,ActionEvent.CTRL_MASK));
+        menu.add(item);
+        
+        item = new JMenuItem(loadAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_O);
+        menu.add(item);
+
+        item = getRecentsMenu();
+        menu.add(item);
+        
+        item = new JMenuItem(saveAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_S);
+        menu.add(item);
+
+        item = new JMenuItem(saveAsAction);
+        item.setMnemonic(KeyEvent.VK_A);
+        menu.add(item);
+
+        item = new JMenuItem(closeAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
+
+        menubar.add(menu);
+        
+        menu = new JMenu("Help");
+        menu.setMnemonic(KeyEvent.VK_H);
+        
+        item = new JMenuItem(new HelpAction(parent));
+        item.setMnemonic(KeyEvent.VK_R);
+        menu.add(item);
+        
+        menubar.add(menu);
+        
+        parent.setJMenuBar(menubar);
+    }
     
     void restoreWorkspace(File f)
     throws IOException
