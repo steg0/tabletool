@@ -7,6 +7,10 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.undo.UndoManager;
 
+/* 
+ * this support could be migrated into AtomicReplaceDocument, using
+ * CompoundEdits
+ */
 class UndoManagerProxy
 implements UndoableEditListener
 {
