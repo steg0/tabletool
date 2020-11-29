@@ -106,10 +106,21 @@ extends WindowAdapter
     
     void ensureWorkspace()
     {
-        if(workspace==null || !workspace.exists()) controller.add(true);
-        else try
+        try
         {
-            controller.restoreWorkspace(workspace);
+            if(workspace==null)
+            {
+                if(sqlFiles==null) controller.add(true);
+                else for(File f : sqlFiles) controller.load(f);
+            }
+            else if(!workspace.exists())
+            {
+                controller.add(true);
+            }
+            else
+            {
+                controller.restoreWorkspace(workspace);
+            }
         }
         catch(Exception e)
         {
