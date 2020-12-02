@@ -72,7 +72,7 @@ class JdbcBufferController
 
     JPanel panel = new JPanel(new GridBagLayout());
     
-    JTextArea editor = new JTextArea(new AtomicReplaceDocument());
+    JTextArea editor = new JTextArea(new GroupableUndoDocument());
     
     {
         new WordSelectListener(editor);
@@ -344,7 +344,7 @@ class JdbcBufferController
              * now determine whether to uncomment or comment, and change text
              * from bottom to top
              */
-            undoManagerProxy.stop();
+            ((GroupableUndoDocument)editor.getDocument()).startCompoundEdit();
             for(int pos = end-1;pos>=start;pos--)
             {
                 if(pos==-1 || editor.getText(pos,1).equals("\n"))
@@ -364,7 +364,7 @@ class JdbcBufferController
                     }
                 }
             }
-            undoManagerProxy.start();
+            ((GroupableUndoDocument)editor.getDocument()).endCompoundEdit();
         }
         catch(BadLocationException e)
         {

@@ -12,7 +12,7 @@ import javax.swing.undo.CompoundEdit;
  * >StackOverflow 24433089</a>
  */
 @SuppressWarnings("serial")
-class AtomicReplaceDocument extends PlainDocument
+class GroupableUndoDocument extends PlainDocument
 {
     private CompoundEdit compoundEdit;
 
@@ -39,12 +39,22 @@ class AtomicReplaceDocument extends PlainDocument
         }
         else
         {
-            compoundEdit = new CompoundEdit();
-            super.fireUndoableEditUpdate(
-                    new UndoableEditEvent(this,compoundEdit));
+            startCompoundEdit();
             super.replace(offset,length,text,attrs);
-            compoundEdit.end();
-            compoundEdit = null;
+            endCompoundEdit();
         }
+    }
+    
+    void startCompoundEdit()
+    {
+        compoundEdit = new CompoundEdit();
+        super.fireUndoableEditUpdate(
+                new UndoableEditEvent(this,compoundEdit));
+    }
+    
+    void endCompoundEdit()
+    {
+        compoundEdit.end();
+        compoundEdit = null;
     }
 }
