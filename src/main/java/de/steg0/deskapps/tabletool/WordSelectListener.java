@@ -127,6 +127,10 @@ extends MouseAdapter
     int getLineStartPos(String text,int initPos)
     {
         int i = initPos;
+        if(text.charAt(i) == '\n')
+        {
+            i--;
+        }
         while(i >= 0 && text.charAt(i) != '\n')
         {
             i--;
