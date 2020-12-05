@@ -308,7 +308,8 @@ class JdbcBufferController
         }
     }
     
-    void prepend(JdbcBufferController c) {
+    void prepend(JdbcBufferController c)
+    {
         /* Use Document API so that the editor does not request a viewport
          * change. */
         try
