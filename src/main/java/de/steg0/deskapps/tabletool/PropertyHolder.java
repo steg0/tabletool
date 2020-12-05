@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 class PropertyHolder
 {
@@ -34,8 +33,8 @@ class PropertyHolder
     
     Dimension getDefaultFrameSize()
     {
-        String wstr = properties.getOrDefault("frame.w","700").toString();
-        String hstr = properties.getOrDefault("frame.h","450").toString();
+        String wstr = properties.getOrDefault("frame.w","550").toString();
+        String hstr = properties.getOrDefault("frame.h","300").toString();
         return new Dimension(
                 Integer.parseInt(wstr),
                 Integer.parseInt(hstr)
@@ -62,14 +61,6 @@ class PropertyHolder
     {
         if(!properties.containsKey("default.bg")) return null;
         return Color.decode(properties.getProperty("default.bg").toString());
-    }
-    
-    Pattern getCallablePattern()
-    {
-        return Pattern.compile(properties.getOrDefault(
-                "callable.pattern",
-                "^(begin|declare|create|call|\\{)"
-        ).toString());
     }
     
     class ConnectionInfo
