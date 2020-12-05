@@ -37,7 +37,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 
-@SuppressWarnings("serial")
 class TabSetController
 extends MouseAdapter
 implements KeyListener

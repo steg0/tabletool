@@ -55,7 +55,7 @@ class Connections
     ConnectionWorker getConnection(ConnectionState connection)
     throws SQLException
     {
-        int i = ((ConnectionState)connection).connectionIndex;
+        int i = connection.connectionIndex;
         if(connections[i] == null)
         {
             var jdbcConnection = DriverManager.getConnection(

@@ -3,7 +3,6 @@ package de.steg0.deskapps.tabletool;
 import java.awt.Rectangle;
 import java.util.EventObject;
 
-@SuppressWarnings("serial")
 class JdbcBufferControllerEvent extends EventObject
 {
     enum Type {

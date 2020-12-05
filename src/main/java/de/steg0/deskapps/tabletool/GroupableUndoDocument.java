@@ -11,7 +11,6 @@ import javax.swing.undo.CompoundEdit;
  * <a href="https://stackoverflow.com/questions/24433089/jtextarea-settext-undomanager"
  * >StackOverflow 24433089</a>
  */
-@SuppressWarnings("serial")
 class GroupableUndoDocument extends PlainDocument
 {
     private CompoundEdit compoundEdit;
