@@ -294,9 +294,9 @@ class JdbcNotebookController
                 {
                     JdbcBufferController target = buffers.get(i-1);
                     target.focusEditor(source.getCaretPositionInLine(),-1);
+                    int h = target.getLineHeight();
                     selectedRectChanged(target,new Rectangle(0,
-                            (int)target.editor.getBounds().getHeight()-16,1,
-                            16));
+                            (int)target.editor.getBounds().getHeight()-h,1,h));
                 }
                 break;
                 
@@ -448,8 +448,9 @@ class JdbcNotebookController
         buffers.get(i+1).focusEditor(source.getCaretPositionInLine(),0);
         /* scroll relative to source, because if we added a buffer above, it's 
          * not yet laid out */
+        int h = source.getLineHeight();
         selectedRectChanged(source,new Rectangle(0,
-                (int)source.panel.getBounds().getHeight(),1,16));
+                (int)source.panel.getBounds().getHeight(),1,h));
     }
 
     void selectedRectChanged(JdbcBufferController source,Rectangle rect)
