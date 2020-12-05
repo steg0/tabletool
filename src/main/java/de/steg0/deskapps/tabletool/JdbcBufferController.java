@@ -75,12 +75,15 @@ class JdbcBufferController
     final Color defaultBackground = editor.getBackground();
     UndoManagerProxy undoManagerProxy = new UndoManagerProxy(editor); 
     JTable resultview;
+    int resultviewHeight;
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame parent,Consumer<String> updateLog)
+    JdbcBufferController(JFrame parent,Consumer<String> updateLog,
+            int resultviewHeight)
     {
         this.parent = parent;
+        this.resultviewHeight = resultviewHeight;
         this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
@@ -580,7 +583,7 @@ class JdbcBufferController
         Dimension preferredSize = resultview.getPreferredSize();
         resultview.setPreferredScrollableViewportSize(new Dimension(
                 (int)preferredSize.getWidth(),
-                (int)Math.min(150,preferredSize.getHeight())));
+                (int)Math.min(resultviewHeight,preferredSize.getHeight())));
         
         resultview.setCellSelectionEnabled(true);
         

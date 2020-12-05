@@ -57,6 +57,12 @@ class PropertyHolder
                 properties.getOrDefault("scroll.increment","16").toString());
     }
     
+    int getResultviewHeight()
+    {
+        return Integer.parseInt(
+                properties.getOrDefault("resultview.height","150").toString());
+    }
+    
     Color getDefaultBackground()
     {
         if(!properties.containsKey("default.bg")) return null;

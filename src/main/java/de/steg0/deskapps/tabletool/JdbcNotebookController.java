@@ -94,6 +94,7 @@ class JdbcNotebookController
     List<JdbcBufferController> buffers = new ArrayList<>();
     int lastFocusedBuffer;
     boolean hasSavedFocusPosition;
+    int resultviewHeight;
     JPanel bufferPanel = new JPanel(new GridBagLayout());
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
@@ -165,7 +166,9 @@ class JdbcNotebookController
         
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
-        var buffer = new JdbcBufferController(parent,logConsumer);
+        resultviewHeight = propertyHolder.getResultviewHeight();
+        var buffer = new JdbcBufferController(parent,logConsumer,
+                resultviewHeight);
         add(0,buffer);
 
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -323,7 +326,7 @@ class JdbcNotebookController
             case SPLIT_REQUESTED:
                 i=buffers.indexOf(source);
                 var newBufferController = new JdbcBufferController(
-                        parent,logConsumer);
+                        parent,logConsumer,resultviewHeight);
                 newBufferController.connection = source.connection;
                 newBufferController.setBackground(source.getBackground());
                 add(i,newBufferController);
@@ -441,7 +444,7 @@ class JdbcNotebookController
         if(buffers.size() <= i+1)
         {
             var newBufferController = new JdbcBufferController(parent,
-                    logConsumer);
+                    logConsumer,resultviewHeight);
             newBufferController.connection = source.connection;
             newBufferController.setBackground(source.getBackground());
             add(i+1,newBufferController);
@@ -523,7 +526,7 @@ class JdbcNotebookController
         while(linesRead>0)
         {
             var newBufferController = new JdbcBufferController(
-                    parent,logConsumer);
+                    parent,logConsumer,resultviewHeight);
             newBufferController.setBackground(buffers.get(0).getBackground());
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);
