@@ -177,14 +177,15 @@ extends WindowAdapter
         String propertiesfile=null;
         
         int optind=0;
-        for(;optind<args.length&&args[optind].startsWith("-");optind++)
+        ARGS: for(;optind<args.length&&args[optind].startsWith("-");optind++)
         {
             switch(args[optind])
             {
             case "-config":
                 propertiesfile = args[++optind];
-            case "--":
                 break;
+            case "--":
+                break ARGS;
             }
         }
         
