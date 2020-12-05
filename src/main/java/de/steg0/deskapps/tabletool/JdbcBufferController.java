@@ -40,6 +40,8 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import de.steg0.deskapps.tabletool.JdbcBufferControllerEvent.Type;
+
 class JdbcBufferController
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
@@ -54,16 +56,7 @@ class JdbcBufferController
     
     interface Listener extends EventListener
     {
-        void exitedNorth(JdbcBufferController source);
-        void exitedSouth(JdbcBufferController source);
-        void scrolledNorth(JdbcBufferController source);
-        void scrolledSouth(JdbcBufferController source);
-        void selectedRectChanged(JdbcBufferController source,Rectangle rect);
-        void splitRequested(JdbcBufferController source,String text,
-                int selectionStart,int selectionEnd);
-        void resultViewClosed(JdbcBufferController source);
-        void resultViewUpdated(JdbcBufferController source);
-        void promptConnection();
+        void bufferActionPerformed(JdbcBufferControllerEvent e);
     }
     
     Logger logger = Logger.getLogger("tabletool.editor");
@@ -135,10 +128,7 @@ class JdbcBufferController
                        editor.getLineCount()-1 &&
                        resultview != null)
                     {
-                        for(var l : listeners.getListeners(Listener.class))
-                        {
-                            l.exitedSouth(JdbcBufferController.this);
-                        }
+                        fireBufferEvent(Type.EXITED_SOUTH);
                     }
                     else if(event.getKeyCode()==KeyEvent.VK_PAGE_DOWN)
                     {
@@ -151,10 +141,7 @@ class JdbcBufferController
                     if(event.isShiftDown()) break;
                     if(editor.getLineOfOffset(caret) == 0)
                     {
-                        for(var l : listeners.getListeners(Listener.class))
-                        {
-                            l.exitedNorth(JdbcBufferController.this);
-                        }
+                        fireBufferEvent(Type.EXITED_NORTH);
                     }
                     else if(event.getKeyCode()==KeyEvent.VK_PAGE_UP)
                     {
@@ -240,6 +227,19 @@ class JdbcBufferController
     void addListener(Listener l)
     {
         listeners.add(Listener.class,l);
+    }
+    
+    void fireBufferEvent(JdbcBufferControllerEvent e)
+    {
+        for(var l : listeners.getListeners(Listener.class))
+        {
+            l.bufferActionPerformed(e);
+        }
+    }
+
+    void fireBufferEvent(Type type)
+    {
+        fireBufferEvent(new JdbcBufferControllerEvent(this,type));
     }
 
     void addDocumentListener(DocumentListener l)
@@ -455,10 +455,7 @@ class JdbcBufferController
         else if(connection == null)
         {
             log.accept("No connection available at "+new Date());
-            for(var l : listeners.getListeners(Listener.class))
-            {
-                l.promptConnection();
-            }
+            fireBufferEvent(Type.DRY_FETCH);
             return;
         }
         
@@ -466,11 +463,13 @@ class JdbcBufferController
         {
             int end = savedSelectionEnd;
             Document d = editor.getDocument();
+
+            var e = new JdbcBufferControllerEvent(this,Type.SPLIT_REQUESTED);
+            e.text = d.getText(0,end);
+            e.selectionStart = savedSelectionStart;
+            e.selectionEnd = end;
+            fireBufferEvent(e);
             
-            for(var l : listeners.getListeners(Listener.class))
-            {
-                l.splitRequested(this,d.getText(0,end),savedSelectionStart,end);
-            }
             /* Use Document API so that the editor does not request a viewport
              * change. */
             if(d.getLength()>end && d.getText(end,1).equals("\n")) end++;
@@ -603,10 +602,8 @@ class JdbcBufferController
         
         panel.add(resultscrollpane,resultviewConstraints);
         panel.revalidate();
-        for(var l : listeners.getListeners(Listener.class))
-        {
-            l.resultViewUpdated(this);
-        }
+        
+        fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     }
     
     void addResultSetPopup()
@@ -623,10 +620,7 @@ class JdbcBufferController
             resultview=null;
             panel.remove(1);
             panel.revalidate();
-            for(var l : listeners.getListeners(Listener.class))
-            {
-                l.resultViewClosed(JdbcBufferController.this);
-            }
+            fireBufferEvent(Type.RESULT_VIEW_CLOSED);
         });
         popup.add(item);
         var popuplistener = new MouseAdapter()
@@ -659,10 +653,7 @@ class JdbcBufferController
                 if(vp.getViewPosition().getY() + vp.getHeight() >= 
                         resultview.getHeight())
                 {
-                    for(var l : listeners.getListeners(Listener.class))
-                    {
-                        l.scrolledSouth(JdbcBufferController.this);
-                    }
+                    fireBufferEvent(Type.SCROLLED_SOUTH);
                 }
                 else
                 {
@@ -673,10 +664,7 @@ class JdbcBufferController
             {
                 if(vp.getViewPosition().getY() == 0)
                 {
-                    for(var l : listeners.getListeners(Listener.class))
-                    {
-                        l.scrolledNorth(JdbcBufferController.this);
-                    }
+                    fireBufferEvent(Type.SCROLLED_NORTH);
                 }
                 else
                 {
@@ -700,21 +688,18 @@ class JdbcBufferController
                     resultview.getTableHeader().getBounds();
             Point position = ((JViewport)resultview.getParent())
                 .getViewPosition();
-            for(Listener l : listeners.getListeners(Listener.class))
-            {
-                l.selectedRectChanged(
-                        JdbcBufferController.this,
-                        new Rectangle(
-                                (int)cellRect.getX(),
-                                (int)(rect.getHeight() + 
-                                      cellRect.getY() - 
-                                      position.getY() +
-                                      headerBounds.getHeight()),
-                                (int)cellRect.getWidth(),
-                                (int)cellRect.getHeight()
-                        )
-                );
-            }
+            var e = new JdbcBufferControllerEvent(JdbcBufferController.this,
+                    Type.SELECTED_RECT_CHANGED);
+            e.selectedRect = new Rectangle(
+                    (int)cellRect.getX(),
+                    (int)(rect.getHeight() + 
+                          cellRect.getY() - 
+                          position.getY() +
+                          headerBounds.getHeight()),
+                    (int)cellRect.getWidth(),
+                    (int)cellRect.getHeight()
+            );
+            fireBufferEvent(e);
         }
         
         @Override public void keyTyped(KeyEvent e) { }

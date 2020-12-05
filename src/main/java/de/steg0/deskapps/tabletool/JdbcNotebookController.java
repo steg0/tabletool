@@ -238,7 +238,7 @@ class JdbcNotebookController
             JdbcBufferController lastBuffer = buffers.get(buffers.size() - 1);
             if(lastBuffer.resultview != null)
             {
-                bufferListener.exitedSouth(buffers.get(buffers.size() - 1));
+                exitedSouth(buffers.get(buffers.size() - 1));
             }
             else
             {
@@ -283,108 +283,72 @@ class JdbcNotebookController
             new JdbcBufferController.Listener()
     {
         @Override
-        public void exitedSouth(JdbcBufferController source)
+        public void bufferActionPerformed(JdbcBufferControllerEvent e)
         {
-            int i=buffers.indexOf(source);
-            if(buffers.size() <= i+1)
+            JdbcBufferController source = e.getSource();
+            switch(e.type)
             {
+            case EXITED_NORTH:
+                int i=buffers.indexOf(source);
+                if(i > 0) 
+                {
+                    JdbcBufferController target = buffers.get(i-1);
+                    target.focusEditor(source.getCaretPositionInLine(),-1);
+                    selectedRectChanged(target,new Rectangle(0,
+                            (int)target.editor.getBounds().getHeight()-16,1,
+                            16));
+                }
+                break;
+                
+            case EXITED_SOUTH:
+                exitedSouth(source);
+                break;
+                
+            case SCROLLED_NORTH:
+                JScrollBar scrollbar = bufferPane.getVerticalScrollBar();
+                scrollbar.setValue(scrollbar.getValue()-16);
+                break;
+                
+            case SCROLLED_SOUTH:
+                scrollbar = bufferPane.getVerticalScrollBar();
+                scrollbar.setValue(scrollbar.getValue()+16);
+                break;
+                
+            case SELECTED_RECT_CHANGED:
+                selectedRectChanged(source,e.selectedRect);
+                break;
+                
+            case SPLIT_REQUESTED:
+                i=buffers.indexOf(source);
                 var newBufferController = new JdbcBufferController(
                         parent,logConsumer);
                 newBufferController.connection = source.connection;
                 newBufferController.setBackground(source.getBackground());
-                add(i+1,newBufferController);
+                add(i,newBufferController);
                 bufferPanel.revalidate();
+                newBufferController.focusEditor(null,null);
+                newBufferController.editor.append(e.text);
+                /* We don't have enough info here to restore the caret position.
+                 * This should be acceptable. */
+                newBufferController.editor.select(e.selectionStart,
+                        e.selectionEnd);
+                newBufferController.fetch(false);
+                break;
+                
+            case RESULT_VIEW_CLOSED:
+                i=buffers.indexOf(source);
+                if(i<buffers.size()-1)
+                {
+                    buffers.get(i+1).prepend(source);
+                    remove(i);
+                }
+            case RESULT_VIEW_UPDATED:
+                bufferPanel.repaint();
+                break;
+                
+            case DRY_FETCH:
+                connectionsSelector.requestFocusInWindow();
             }
-            buffers.get(i+1).focusEditor(source.getCaretPositionInLine(),0);
-            /* scroll relative to source, because if we added a buffer above,
-             * it's not yet laid out */
-            selectedRectChanged(source,new Rectangle(0,
-                    (int)source.panel.getBounds().getHeight(),1,16));
-        }
-
-        @Override
-        public void exitedNorth(JdbcBufferController source)
-        {
-            int i=buffers.indexOf(source);
-            if(i > 0) 
-            {
-                JdbcBufferController target = buffers.get(i-1);
-                target.focusEditor(source.getCaretPositionInLine(),-1);
-                selectedRectChanged(target,new Rectangle(0,
-                        (int)target.editor.getBounds().getHeight()-16,1,16));
-            }
-        }
-        
-        @Override
-        public void scrolledSouth(JdbcBufferController source)
-        {
-            JScrollBar scrollbar = bufferPane.getVerticalScrollBar();
-            scrollbar.setValue(scrollbar.getValue()+16);
-        }
-
-        @Override
-        public void scrolledNorth(JdbcBufferController source)
-        {
-            JScrollBar scrollbar = bufferPane.getVerticalScrollBar();
-            scrollbar.setValue(scrollbar.getValue()-16);
-        }
-
-        @Override
-        public void selectedRectChanged(JdbcBufferController source,
-                Rectangle rect)
-        {
-            Rectangle sourceRect = source.panel.getBounds();
-            JViewport viewport = bufferPane.getViewport();
-            Point position = viewport.getViewPosition();
-            bufferPane.getViewport().scrollRectToVisible(new Rectangle(
-                    (int)(sourceRect.getX() + rect.getX() - position.getX()),
-                    (int)(sourceRect.getY() + rect.getY() - position.getY()),
-                    (int)rect.getWidth(),
-                    (int)rect.getHeight()
-            ));
-        }
-
-        @Override
-        public void splitRequested(JdbcBufferController source,String text,
-                int selectionStart,int selectionEnd)
-        {
-            int i=buffers.indexOf(source);
-            var newBufferController = new JdbcBufferController(
-                    parent,logConsumer);
-            newBufferController.connection = source.connection;
-            newBufferController.setBackground(source.getBackground());
-            add(i,newBufferController);
-            bufferPanel.revalidate();
-            newBufferController.focusEditor(null,null);
-            newBufferController.editor.append(text);
-            /* We don't have enough info here to restore the caret position.
-             * This should be acceptable. */
-            newBufferController.editor.select(selectionStart,selectionEnd);
-            newBufferController.fetch(false);
-        }
-
-        @Override
-        public void resultViewClosed(JdbcBufferController source)
-        {
-            int i=buffers.indexOf(source);
-            if(i<buffers.size()-1)
-            {
-                buffers.get(i+1).prepend(source);
-                remove(i);
-            }
-            bufferPanel.repaint();
-        }
-
-        @Override
-        public void resultViewUpdated(JdbcBufferController source)
-        {
-            bufferPanel.repaint();
-        }
-
-        @Override
-        public void promptConnection()
-        {
-            connectionsSelector.requestFocusInWindow();
         }
     };
     
@@ -469,6 +433,38 @@ class JdbcNotebookController
         bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
+    void exitedSouth(JdbcBufferController source)
+    {
+        int i=buffers.indexOf(source);
+        if(buffers.size() <= i+1)
+        {
+            var newBufferController = new JdbcBufferController(parent,
+                    logConsumer);
+            newBufferController.connection = source.connection;
+            newBufferController.setBackground(source.getBackground());
+            add(i+1,newBufferController);
+            bufferPanel.revalidate();
+        }
+        buffers.get(i+1).focusEditor(source.getCaretPositionInLine(),0);
+        /* scroll relative to source, because if we added a buffer above, it's 
+         * not yet laid out */
+        selectedRectChanged(source,new Rectangle(0,
+                (int)source.panel.getBounds().getHeight(),1,16));
+    }
+
+    void selectedRectChanged(JdbcBufferController source,Rectangle rect)
+    {
+        Rectangle sourceRect = source.panel.getBounds();
+        JViewport viewport = bufferPane.getViewport();
+        Point position = viewport.getViewPosition();
+        bufferPane.getViewport().scrollRectToVisible(new Rectangle(
+                (int)(sourceRect.getX() + rect.getX() - position.getX()),
+                (int)(sourceRect.getY() + rect.getY() - position.getY()),
+                (int)rect.getWidth(),
+                (int)rect.getHeight()
+        ));
+    }
+
     public boolean store(boolean saveAs)
     {
         if(file==null || saveAs)
