@@ -31,7 +31,7 @@ class GroupableUndoDocument extends PlainDocument
 
     @Override
     public void replace(int offset,int length,String text,AttributeSet attrs)
-            throws BadLocationException
+    throws BadLocationException
     {
         if(length == 0)
         {
