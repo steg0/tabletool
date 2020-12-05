@@ -223,10 +223,15 @@ class JdbcNotebookController
             {
                 if(buffer.panel == component)
                 {
-                    int y = vpY - (int)buffer.panel.getLocation().getY();
+                    int bufferY = (int)buffer.panel.getLocation().getY();
+                    int y = vpY - bufferY;
                     if(e.getClickCount() == 3)
                     {
                         buffer.dragLineSelection(y,y);
+                    }
+                    else if(e.isShiftDown() && component == clickBuffer)
+                    {
+                        buffer.dragLineSelection(clickVpY - bufferY,y);
                     }
                     else
                     {
@@ -253,6 +258,7 @@ class JdbcNotebookController
         @Override
         public void mousePressed(MouseEvent e)
         {
+            if(e.isShiftDown()) return;
             int bufY = (int)bufferPane.getViewport().getViewPosition().getY();
             clickVpY = bufY + e.getY();
             logger.log(Level.FINE,"mousePressed,clickVpY={0}",clickVpY);
