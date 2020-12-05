@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
 
 /**
  * Represents the list of connections available to the runtime.
@@ -31,17 +32,20 @@ class Connections
         }
     }
 
-    ConnectionState[] connectionState;
-    PropertyHolder.ConnectionInfo[] connectionInfo;
-    ConnectionWorker[] connections;
-    Executor executor;
+    final ConnectionState[] connectionState;
+    final PropertyHolder.ConnectionInfo[] connectionInfo;
+    final ConnectionWorker[] connections;
+    final Executor executor;
+    final Pattern callablePattern;
     
-    Connections(PropertyHolder propertyHolder,Executor executor)
+    Connections(PropertyHolder propertyHolder,Executor executor,
+            Pattern callablePattern)
     {
         connectionInfo = propertyHolder.getConnections();
         this.executor = executor;
         connections = new ConnectionWorker[connectionInfo.length];
         connectionState = new ConnectionState[connectionInfo.length];
+        this.callablePattern = callablePattern;
 
         for(int i=0;i<connectionInfo.length;i++)
         {
@@ -66,7 +70,8 @@ class Connections
             jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
             connections[i] = new ConnectionWorker(
                     jdbcConnection,
-                    executor
+                    executor,
+                    callablePattern
             );
         }
         return connections[i];

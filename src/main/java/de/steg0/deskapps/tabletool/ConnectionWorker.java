@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 /**
  * A wrapper to run operations on top of a JDBC <code>Connection</code>.
@@ -18,11 +19,14 @@ class ConnectionWorker
 {
     final Connection connection;
     final Executor executor;
+    final Pattern callablePattern;
     
-    ConnectionWorker(Connection connection,Executor executor)
+    ConnectionWorker(Connection connection,Executor executor,
+            Pattern callablePattern)
     {
         this.connection=connection;
         this.executor=executor;
+        this.callablePattern=callablePattern;
     }
     
     void report(Consumer<String> log,String str)
@@ -97,12 +101,7 @@ class ConnectionWorker
         throws SQLException
         {
             String lc = text.toLowerCase();
-            if(lc.startsWith("begin") || 
-               lc.startsWith("declare") ||
-               lc.startsWith("create") ||
-               lc.startsWith("call") ||
-               lc.startsWith("{")
-            )
+            if(callablePattern.matcher(lc).matches())
             {
                 if(text.endsWith(";"))
                 {

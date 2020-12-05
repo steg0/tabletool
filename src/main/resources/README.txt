@@ -21,14 +21,16 @@ This example uses the serial GC, which is a recommendation for desktop applicati
 
 ▶ Property file format
 
-The configuration file supports the following keys:
+The configuration file supports the following – not mandatory – keys:
 
 ┌─────────────────────────────────────────────────────────────────────┐
   frame.x=100
   frame.y=100
   frame.w=700
   frame.h=450
-  default.bg=#dddddd
+  default.bg=#ffffff
+  scroll.increment=16
+  callable.pattern=^(begin|declare|create|call|\\{)
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
@@ -65,7 +67,7 @@ beyond the last row.
 
 ▶ Submitting blocks
 
-If a query begins with "{", "create", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
+If a query matches the regular expression defined by 〈callable.pattern〉, CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
 
 
 ▶ Update function for BLOBs

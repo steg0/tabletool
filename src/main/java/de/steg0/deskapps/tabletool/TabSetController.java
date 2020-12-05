@@ -54,7 +54,8 @@ implements KeyListener
         this.parent = parent;
         this.propertyHolder = propertyHolder;
         
-        connections = new Connections(propertyHolder,executor);
+        connections = new Connections(propertyHolder,executor,
+                propertyHolder.getCallablePattern());
     }
 
     JTabbedPane tabbedPane = new JTabbedPane();
