@@ -39,19 +39,32 @@ extends MouseAdapter
     @Override
     public void mousePressed(MouseEvent e)
     {
-        clickCount = e.getClickCount();
-        switch(clickCount)
+        switch(e.getClickCount())
         {
+        case 1:
+            if(e.isShiftDown() && clickCount > 1)
+            {
+                mouseDragged(e);
+            }
+            break;
         case 2:
+            clickCount = e.getClickCount();
             clickPos = textarea.viewToModel2D(e.getPoint());
             logger.log(Level.FINE,"selectWord,clickPos={0}",clickPos);
             selectWord();
             break;
         case 3:
+            clickCount = e.getClickCount();
             clickPos = textarea.viewToModel2D(e.getPoint());
             logger.log(Level.FINE,"selectLine,clickPos={0}",clickPos);
             selectLine();
         }
+    }
+    
+    @Override
+    public void mouseReleased(MouseEvent e)
+    {
+        if(textarea.getSelectedText() == null) clickCount = e.getClickCount();
     }
 
     @Override
