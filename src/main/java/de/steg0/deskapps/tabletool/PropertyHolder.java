@@ -51,6 +51,12 @@ class PropertyHolder
         );
     }
     
+    int getScrollIncrement()
+    {
+        return Integer.parseInt(
+                properties.getOrDefault("scroll.increment","16").toString());
+    }
+    
     Color getDefaultBackground()
     {
         if(!properties.containsKey("default.bg")) return null;

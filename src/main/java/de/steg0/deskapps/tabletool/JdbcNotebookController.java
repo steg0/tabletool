@@ -82,6 +82,7 @@ class JdbcNotebookController
             Connections.AUTOCOMMIT_DEFAULT);
     
     JScrollPane bufferPane;
+    int scrollIncrement;
     
     JTextArea log = new JTextArea();
     Consumer<String> logConsumer = (t) -> log.setText(t);
@@ -170,9 +171,10 @@ class JdbcNotebookController
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(.85);
         
+        scrollIncrement = propertyHolder.getScrollIncrement();
         bufferPane = new JScrollPane(bufferPanel);
-        bufferPane.getVerticalScrollBar().setUnitIncrement(16);
-        bufferPane.getHorizontalScrollBar().setUnitIncrement(16);
+        bufferPane.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
+        bufferPane.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
         var ml = new BufferPaneMouseListener();
         bufferPane.addMouseListener(ml);
         bufferPane.addMouseMotionListener(ml);
@@ -306,12 +308,12 @@ class JdbcNotebookController
                 
             case SCROLLED_NORTH:
                 JScrollBar scrollbar = bufferPane.getVerticalScrollBar();
-                scrollbar.setValue(scrollbar.getValue()-16);
+                scrollbar.setValue(scrollbar.getValue()-scrollIncrement);
                 break;
                 
             case SCROLLED_SOUTH:
                 scrollbar = bufferPane.getVerticalScrollBar();
-                scrollbar.setValue(scrollbar.getValue()+16);
+                scrollbar.setValue(scrollbar.getValue()+scrollIncrement);
                 break;
                 
             case SELECTED_RECT_CHANGED:
