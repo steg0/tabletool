@@ -223,19 +223,14 @@ class JdbcNotebookController
             {
                 if(buffer.panel == component)
                 {
-                    int bufferY = (int)buffer.panel.getLocation().getY();
+                    int y = vpY - (int)buffer.panel.getLocation().getY();
                     if(e.getClickCount() == 3)
                     {
-                        /* treat as mini drag if mouse didn't move */
-                        int height=buffer.getLineHeight();
-                        buffer.dragLineSelection(
-                                vpY - bufferY,
-                                vpY - bufferY + height
-                        );
+                        buffer.dragLineSelection(y,y);
                     }
                     else
                     {
-                        buffer.focusEditor(null,vpY - bufferY);
+                        buffer.focusEditor(null,y);
                     }
                     return;
                 }

@@ -285,23 +285,26 @@ class JdbcBufferController
         logger.log(Level.FINE,"dragLineSelection,y1={0}",y1);
         logger.log(Level.FINE,"dragLineSelection,y2={0}",y2);
         
-        int p1 = editor.viewToModel2D(new Point(0,y1));
-        int p2 = editor.viewToModel2D(new Point(0,y2));
-        
-        if(p1<0 || p2<0 || p1==p2) return;
-
         focusEditor(null,null);
-
-        if(p1<p2)
+        
+        int start,end;
+        
+        if(y1<y2)
         {
-            editor.select(p1,p2);
+            start = editor.viewToModel2D(new Point(0,y1));
+            end = editor.viewToModel2D(new Point(0,y2 + getLineHeight()));
+            
+            editor.select(start,end);
         }
         else
         {
-            editor.setSelectionStart(p2);
-            editor.setSelectionEnd(p1);
-            editor.setCaretPosition(p1);
-            editor.moveCaretPosition(p2);
+            start = editor.viewToModel2D(new Point(0,y2));
+            end = editor.viewToModel2D(new Point(0,y1 + getLineHeight()));
+
+            editor.setSelectionStart(start);
+            editor.setSelectionEnd(end);
+            editor.setCaretPosition(end);
+            editor.moveCaretPosition(start);
         }
     }
     
