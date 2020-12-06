@@ -302,7 +302,7 @@ class JdbcBufferController
         }
         else try
         {
-            y1 = (int)editor.modelToView2D(selectListener.clickPos).getCenterY();
+            y1=(int)editor.modelToView2D(selectListener.clickPos).getCenterY();
             clickPos = editor.viewToModel2D(new Point(0,y1));
         }
         catch(BadLocationException e)
