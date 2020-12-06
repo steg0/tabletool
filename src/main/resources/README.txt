@@ -28,7 +28,8 @@ The configuration file supports the following keys:
   frame.y=100
   frame.w=700
   frame.h=450
-  default.bg=#dddddd
+  default.bg=#ffffff
+  scroll.increment=16
   resultview.height=150
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>

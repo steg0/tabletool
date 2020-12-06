@@ -33,8 +33,8 @@ class PropertyHolder
     
     Dimension getDefaultFrameSize()
     {
-        String wstr = properties.getOrDefault("frame.w","550").toString();
-        String hstr = properties.getOrDefault("frame.h","300").toString();
+        String wstr = properties.getOrDefault("frame.w","700").toString();
+        String hstr = properties.getOrDefault("frame.h","450").toString();
         return new Dimension(
                 Integer.parseInt(wstr),
                 Integer.parseInt(hstr)
