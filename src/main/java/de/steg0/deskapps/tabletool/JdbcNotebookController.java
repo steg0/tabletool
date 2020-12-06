@@ -232,11 +232,11 @@ class JdbcNotebookController
                     {
                         buffer.dragLineSelection(y,y);
                     }
-                    else if(e.isShiftDown() && component == clickBuffer)
+                    else if(e.isShiftDown() && buffer.editor.hasFocus())
                     {
                         buffer.dragLineSelection(-1,y);
                     }
-                    else
+                    else if(!e.isShiftDown())
                     {
                         buffer.focusEditor(null,y);
                         buffer.startLineSelection(y);

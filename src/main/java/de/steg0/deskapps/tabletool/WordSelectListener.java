@@ -46,6 +46,11 @@ extends MouseAdapter
             {
                 mouseDragged(e);
             }
+            else
+            {
+                clickCount = e.getClickCount();
+                clickPos = textarea.viewToModel2D(e.getPoint());
+            }
             break;
         case 2:
             clickCount = e.getClickCount();

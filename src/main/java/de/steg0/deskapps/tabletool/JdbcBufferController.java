@@ -297,12 +297,12 @@ class JdbcBufferController
         if(y1 >= 0)
         {
             clickPos = editor.viewToModel2D(new Point(0,y1)); 
-            selectListener.clickCount = 3;
             selectListener.clickPos = clickPos;
         }
         else try
         {
             y1=(int)editor.modelToView2D(selectListener.clickPos).getCenterY();
+            logger.log(Level.FINE,"point Y from selectListener: {0}",y1);
             clickPos = editor.viewToModel2D(new Point(0,y1));
         }
         catch(BadLocationException e)
@@ -310,6 +310,7 @@ class JdbcBufferController
             return;
         }
         
+        selectListener.clickCount = 3;
         selectListener.dragPos = editor.viewToModel2D(new Point(0,y2));
         
         if(selectListener.clickPos < selectListener.dragPos)
