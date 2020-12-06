@@ -70,15 +70,19 @@ extends MouseAdapter
     @Override
     public void mouseDragged(MouseEvent e)
     {
+        dragPos = textarea.viewToModel2D(e.getPoint());
+        updateSelection();
+    }
+    
+    void updateSelection()
+    {
         switch(clickCount)
         {
         case 2:
-            dragPos = textarea.viewToModel2D(e.getPoint());
             logger.log(Level.FINE,"updateWordSelection,dragPos={0}",dragPos);
             updateWordSelection();
             break;
         case 3:
-            dragPos = textarea.viewToModel2D(e.getPoint());
             logger.log(Level.FINE,"updateLineSelection,dragPos={0}",dragPos);
             updateLineSelection();
         }

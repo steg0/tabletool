@@ -66,10 +66,7 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
-    
-    {
-        new WordSelectListener(editor);
-    }
+    WordSelectListener selectListener = new WordSelectListener(editor);
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
@@ -277,7 +274,15 @@ class JdbcBufferController
         {
             setCaretPositionInLine(characterX);
         }
+        
         editor.requestFocusInWindow();
+    }
+ 
+    void startLineSelection(int y)
+    {
+        logger.log(Level.FINE,"startLineSelection,y1={0}",y);
+        selectListener.clickPos = editor.viewToModel2D(new Point(0,y));
+        selectListener.clickCount = 1;
     }
     
     void dragLineSelection(int y1,int y2)
@@ -287,23 +292,42 @@ class JdbcBufferController
         
         focusEditor(null,null);
         
-        int start,end;
+        int clickPos;
         
-        if(y1<y2)
+        if(y1 >= 0)
         {
-            start = editor.viewToModel2D(new Point(0,y1));
-            end = editor.viewToModel2D(new Point(0,y2 + getLineHeight()));
+            clickPos = editor.viewToModel2D(new Point(0,y1)); 
+            selectListener.clickCount = 3;
+            selectListener.clickPos = clickPos;
+        }
+        else try
+        {
+            y1 = (int)editor.modelToView2D(selectListener.clickPos).getCenterY();
+            clickPos = editor.viewToModel2D(new Point(0,y1));
+        }
+        catch(BadLocationException e)
+        {
+            return;
+        }
+        
+        selectListener.dragPos = editor.viewToModel2D(new Point(0,y2));
+        
+        if(selectListener.clickPos < selectListener.dragPos)
+        {
+            int start = clickPos;
+            int end = editor.viewToModel2D(new Point(0,y2 + getLineHeight()));
             
-            editor.select(start,end);
+            editor.select(start,Math.max(0,end-1));
         }
         else
         {
-            start = editor.viewToModel2D(new Point(0,y2));
-            end = editor.viewToModel2D(new Point(0,y1 + getLineHeight()));
+            int start = selectListener.dragPos;
+            int end = y1<0? clickPos :
+                editor.viewToModel2D(new Point(0,y1 + getLineHeight()));
 
             editor.setSelectionStart(start);
-            editor.setSelectionEnd(end);
-            editor.setCaretPosition(end);
+            editor.setSelectionEnd(Math.max(0,end-1));
+            editor.setCaretPosition(Math.max(0,end-1));
             editor.moveCaretPosition(start);
         }
     }

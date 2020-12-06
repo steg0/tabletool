@@ -212,6 +212,9 @@ class JdbcNotebookController
 
     class BufferPaneMouseListener extends MouseAdapter
     {
+        int clickVpY;
+        Component clickBuffer;
+        
         @Override
         public void mouseClicked(MouseEvent e)
         {
@@ -231,11 +234,12 @@ class JdbcNotebookController
                     }
                     else if(e.isShiftDown() && component == clickBuffer)
                     {
-                        buffer.dragLineSelection(clickVpY - bufferY,y);
+                        buffer.dragLineSelection(-1,y);
                     }
                     else
                     {
                         buffer.focusEditor(null,y);
+                        buffer.startLineSelection(y);
                     }
                     return;
                 }
@@ -251,9 +255,6 @@ class JdbcNotebookController
                 lastBuffer.focusEditor(null,vpY - bufferY);
             }
         }
-        
-        int clickVpY;
-        Component clickBuffer;
         
         @Override
         public void mousePressed(MouseEvent e)
