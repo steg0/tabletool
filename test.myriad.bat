@@ -1,4 +1,4 @@
-%JAVA_HOME%\bin\java %JAVA_OPTS% -XX:+UseSerialGC ^
+%JAVA_HOME%\bin\java %JAVA_OPTS% -ea -XX:+UseSerialGC ^
     -Dfile.encoding=UTF-8 ^
     -Djava.util.logging.config.file=logging.properties ^
     -p %USERPROFILE%\.m2\repository\com\oracle\ojdbc10\19.3\ojdbc10-19.3.jar;%USERPROFILE%\.m2\repository\com\ibm\db2\jcc\11.1.4.4\jcc-11.1.4.4.jar;p:\jdbc_sqlj\db2jcc4.jar;target\classes ^
