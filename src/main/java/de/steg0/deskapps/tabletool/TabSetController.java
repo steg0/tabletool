@@ -431,15 +431,18 @@ implements KeyListener
             }
         }
     }
+    
+    int lastClicked=-1;
 
     @Override
     public void mouseClicked(MouseEvent e)
     {
+        if(tabbedPane.getSelectedIndex() == lastClicked) return;
+        lastClicked = tabbedPane.getSelectedIndex();
         if(!tabbedPane.hasFocus())
         {
-             JdbcNotebookController notebook = notebooks.get(
-                     tabbedPane.getSelectedIndex());
-             if(notebook.hasSavedFocusPosition) notebook.restoreFocus();
+            JdbcNotebookController notebook = notebooks.get(lastClicked);
+            if(notebook.hasSavedFocusPosition) notebook.restoreFocus();
         }
     }
 }
