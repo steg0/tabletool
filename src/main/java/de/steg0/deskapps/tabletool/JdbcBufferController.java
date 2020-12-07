@@ -317,18 +317,18 @@ class JdbcBufferController
         {
             int start = clickPos;
             int end = editor.viewToModel2D(new Point(0,y2 + getLineHeight()));
-            
-            editor.select(start,Math.max(0,end-1));
+            if(end>0 && end<editor.getText().length()) end--;
+            editor.select(start,end);
         }
         else
         {
             int start = selectListener.dragPos;
             int end = y1<0? clickPos :
                 editor.viewToModel2D(new Point(0,y1 + getLineHeight()));
-
+            if(end>0 && end<editor.getText().length()) end--;
             editor.setSelectionStart(start);
-            editor.setSelectionEnd(Math.max(0,end-1));
-            editor.setCaretPosition(Math.max(0,end-1));
+            editor.setSelectionEnd(end);
+            editor.setCaretPosition(end);
             editor.moveCaretPosition(start);
         }
     }
