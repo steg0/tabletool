@@ -273,6 +273,11 @@ class JdbcNotebookController
             clickVpY = bufY + e.getY();
             logger.log(Level.FINE,"mousePressed,clickVpY={0}",clickVpY);
             clickBuffer = bufferPanel.getComponentAt(new Point(0,clickVpY));
+            if(!buffers.stream().anyMatch((b) -> b.panel==clickBuffer))
+            {
+                logger.fine("Click beyond last buffer");
+                clickBuffer=buffers.get(buffers.size() - 1).panel;
+            }
         }
         
         @Override
