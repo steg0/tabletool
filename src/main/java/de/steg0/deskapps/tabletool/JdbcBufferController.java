@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,11 +46,11 @@ import de.steg0.deskapps.tabletool.JdbcBufferControllerEvent.Type;
 class JdbcBufferController
 {
     static final MessageFormat FETCH_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched and ResultSet {1} at {2}\n");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched in {1} ms and ResultSet {2} at {3}\n");
     static final MessageFormat FETCH_ALL_LOG_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched and ResultSet {1} at {2}\n");
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched in {1} ms and ResultSet {2} at {3}\n");
     static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected at {1}\n");
+            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
 
     static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -571,14 +572,14 @@ class JdbcBufferController
         editor.setCaretPosition(savedCaretPosition);
     }
 
-    Consumer<Integer> updateCountConsumer = (i) ->
+    BiConsumer<Integer,Long> updateCountConsumer = (i,t) ->
     {
-        Object[] logargs = {i,new Date().toString()};
+        Object[] logargs = {i,t,new Date().toString()};
         log.accept(UPDATE_LOG_FORMAT.format(logargs));
         restoreCaretPosition();
     };
     
-    Consumer<ResultSetTableModel> resultConsumer = (rsm) ->
+    BiConsumer<ResultSetTableModel,Long> resultConsumer = (rsm,t) ->
     {
         restoreCaretPosition();
 
@@ -586,6 +587,7 @@ class JdbcBufferController
         
         Object[] logargs = {
                 rsm.getRowCount(),
+                t,
                 rsm.resultSetClosed? "closed" : "open",
                 new Date().toString()
         };

@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -46,8 +47,8 @@ class ConnectionWorker
     void submit(
             String sql,
             int fetchsize,
-            Consumer<ResultSetTableModel> resultConsumer,
-            Consumer<Integer> updateCountConsumer,
+            BiConsumer<ResultSetTableModel,Long> resultConsumer,
+            BiConsumer<Integer,Long> updateCountConsumer,
             Consumer<String> log
     )
     {
@@ -57,16 +58,18 @@ class ConnectionWorker
         sqlRunnable.fetchsize = fetchsize;
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
+        sqlRunnable.ts = System.currentTimeMillis();
         executor.execute(sqlRunnable);
     }
     
     class SqlRunnable implements Runnable
     {
-        Consumer<ResultSetTableModel> resultConsumer;
-        Consumer<Integer> updateCountConsumer;
+        BiConsumer<ResultSetTableModel,Long> resultConsumer;
+        BiConsumer<Integer,Long> updateCountConsumer;
         Consumer<String> log;
         String sql;
         int fetchsize;
+        long ts;
 
         public void run()
         {
@@ -130,7 +133,8 @@ class ConnectionWorker
         throws SQLException
         {
             Integer count = statement.getUpdateCount();
-            invokeLater(() -> updateCountConsumer.accept(count));
+            long now = System.currentTimeMillis();
+            invokeLater(() -> updateCountConsumer.accept(count,now-ts));
             statement.close();
         }
         
@@ -139,7 +143,8 @@ class ConnectionWorker
         {
             lastReportedResult = new ResultSetTableModel();
             lastReportedResult.update(statement,fetchsize);
-            invokeLater(() -> resultConsumer.accept(lastReportedResult));
+            long now = System.currentTimeMillis();
+            invokeLater(() -> resultConsumer.accept(lastReportedResult,now-ts));
         }
     }
 
