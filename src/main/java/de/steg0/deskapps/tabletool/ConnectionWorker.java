@@ -226,7 +226,7 @@ class ConnectionWorker
         });
     }
     
-    void setAutoCommit(boolean enabled,Consumer<String> log)
+    void setAutoCommit(boolean enabled,Consumer<String> log,Runnable cb)
     {
         executor.execute(() ->
         {
@@ -237,6 +237,7 @@ class ConnectionWorker
                     connection.setAutoCommit(enabled);
                     report(log,"Autocommit set to "+enabled+" at "+
                             new Date());
+                    invokeLater(cb);
                 }
                 catch(SQLException e)
                 {

@@ -388,6 +388,16 @@ implements KeyListener
             tabbedPane.setTitleAt(selectedIndex,
                     "*"+tabbedPane.getTitleAt(selectedIndex));
         }
+
+        @Override
+        public void autocommitChanged(ConnectionWorker connection,
+                boolean enabled)
+        {
+            for(var notebook : notebooks)
+            {
+                notebook.reportAutocommitChanged(connection,enabled);
+            }
+        }
     };
 
     @Override public void keyTyped(KeyEvent e) { }

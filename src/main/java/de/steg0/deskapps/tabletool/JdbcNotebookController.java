@@ -59,6 +59,7 @@ class JdbcNotebookController
     interface Listener extends EventListener
     {
         void disconnected(ConnectionWorker connection);
+        void autocommitChanged(ConnectionWorker connection,boolean enabled);
         void bufferChanged();
     }
     
@@ -154,8 +155,16 @@ class JdbcNotebookController
         
         autocommitCb.addActionListener((e) -> 
         {
-            onConnection((c) -> c.setAutoCommit(
-                    autocommitCb.isSelected(),logConsumer));
+            onConnection((c) -> 
+            {
+                c.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
+                {
+                    for(Listener l : listeners.getListeners(Listener.class))
+                    {
+                        l.autocommitChanged(c,autocommitCb.isSelected());
+                    }
+                });
+            });
         });
         connectionPanel.add(autocommitCb);
         
@@ -577,7 +586,13 @@ class JdbcNotebookController
         {
             var item = (Connections.ConnectionState)event.getItem();
             var connection = connections.getConnection(item);
-            connection.setAutoCommit(autocommitCb.isSelected(),logConsumer);
+            connection.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
+            {
+                for(Listener l : listeners.getListeners(Listener.class))
+                {
+                    l.autocommitChanged(connection,autocommitCb.isSelected());
+                }
+            });
             for(JdbcBufferController buffer : buffers)
             {
                 buffer.connection = connection;
@@ -613,4 +628,9 @@ class JdbcNotebookController
         setBackground(null);
     }
     
+    void reportAutocommitChanged(ConnectionWorker connection,boolean enabled)
+    {
+        if(buffers.get(0).connection != connection) return;
+        autocommitCb.setSelected(enabled);
+    }
 }
