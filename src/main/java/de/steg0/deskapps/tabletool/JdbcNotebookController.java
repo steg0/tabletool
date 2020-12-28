@@ -395,9 +395,8 @@ class JdbcNotebookController
         public void removeUpdate(DocumentEvent e)
         {
             insertUpdate(e);
-            JTextArea editor = buffer.editor;
-            if(editor.getSelectionStart()==editor.getSelectionEnd()) return;
-            ExtendTextDamageEvent.send(editor,e);
+            if(e.getLength() == 1) return;
+            ExtendTextDamageEvent.send(buffer.editor,e);
         }
 
         @Override public void changedUpdate(DocumentEvent e) { }
