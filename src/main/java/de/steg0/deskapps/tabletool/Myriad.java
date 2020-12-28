@@ -185,6 +185,7 @@ extends WindowAdapter
                 propertiesfile = args[++optind];
                 break;
             case "--":
+                optind++;
                 break ARGS;
             }
         }
