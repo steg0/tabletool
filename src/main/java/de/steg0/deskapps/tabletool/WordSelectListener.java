@@ -11,12 +11,20 @@ import java.util.logging.Logger;
 import javax.swing.JTextArea;
 
 /**
- * As
- * <a href="https://stackoverflow.com/questions/60029617/java-swing-double-click-drag-to-select-whole-words"
+ * As <a href=
+ * "https://stackoverflow.com/questions/60029617/java-swing-double-click-drag-to-select-whole-words"
  * >StackOverflow 60029617</a> shows, it is not required to subclass
- * <code>DefaultCaret</code> to override double-click behavior. While in
- * the event loop we can override the default selection in a listener. This
- * class also does it for triple-click.
+ * <code>DefaultCaret</code> to override double-click behavior. While in the
+ * event loop we can override the default selection in a listener. This class
+ * also does it for triple-click.
+ * 
+ * <p>
+ * 
+ * The number of clicks used to start the selection, as well as character
+ * positions, are maintained in the instance to be used by
+ * {@link JdbcNotebookController} too. The reason for this is that a mouse
+ * operation might also have been started in the right panel area next to the
+ * editor. Such actions should interoperate as well as possible.
  */
 class WordSelectListener
 extends MouseAdapter
@@ -32,8 +40,23 @@ extends MouseAdapter
         textarea.addMouseMotionListener(this);
     }
 
+    /**
+     * <table border>
+     * <tr><td>1</td><td>extend selection by characters at a time</td></tr>
+     * <tr><td>2</td><td>extend selection by words at a time (defined by
+     * Java identifier characters)</td></tr>
+     * <tr><td>3</td><td>extend selection by lines at a time</td></tr>
+     * </table>
+     */
     int clickCount;
+    /**
+     * The position, in character index, where the selection was started.
+     */
     int clickPos;
+    /**
+     * The position, in character index, where the mouse drag operation extends
+     * to.
+     */
     int dragPos;
 
     @Override
