@@ -11,7 +11,7 @@ import javax.swing.text.Element;
  * longest line, by listing all elements for add and remove.
  * <p>
  * The motivation behind this is the following observed behavior when
- * testing Myriad with JDK 13 on nt2:
+ * testing Tabtype with JDK 13 on nt2:
  * <ol>
  * <li>
  * Type the following text in the text area:

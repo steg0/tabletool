@@ -229,7 +229,7 @@ class CellDisplayController
             try(var is = new BufferedInputStream(blob.getBinaryStream()))
             {
                 String suffix = SuffixGuess.fromStream(is);
-                var tmpfile = File.createTempFile("myriadblob",suffix);
+                var tmpfile = File.createTempFile("ttblob",suffix);
                 tmpfile.deleteOnExit();
                 try(var os = new BufferedOutputStream(
                         new FileOutputStream(tmpfile)))
