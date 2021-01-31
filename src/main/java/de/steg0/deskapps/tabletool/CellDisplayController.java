@@ -84,7 +84,7 @@ class CellDisplayController
     void show(ResultSet resultset,Object value,int column)
     throws SQLException,IOException
     {
-        var textarea = new JTextArea(10,72);
+        var textarea = new JTextArea(17,72);
         textarea.setEditable(false);
         
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
