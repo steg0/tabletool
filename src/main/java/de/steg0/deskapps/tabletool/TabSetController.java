@@ -251,6 +251,7 @@ implements KeyListener
                 {
                     tabbedPane.setTitleAt(index,notebook.file.getName());
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
+                    addRecent(notebook.file);
                 }
             }
         },
