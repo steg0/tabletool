@@ -7,6 +7,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,7 +46,7 @@ extends WindowAdapter
     void showJdbcBuffer()
     {
         String title = (workspace!=null? workspace.getName()+" - " : "") + 
-                "Tabtype";
+                "Tabtype " + ManagementFactory.getRuntimeMXBean().getName();
         frame = new JFrame(title);
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
