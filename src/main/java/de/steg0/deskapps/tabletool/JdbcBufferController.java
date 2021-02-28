@@ -706,7 +706,7 @@ class JdbcBufferController
                 }
             }
         }
-    };
+    }
     
     KeyListener resultsetKeyListener = new KeyListener()
     {
