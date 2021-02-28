@@ -335,6 +335,16 @@ class JdbcNotebookController
                 scrollbar.setValue(scrollbar.getValue()+scrollIncrement);
                 break;
                 
+            case SCROLLED_EAST:
+                scrollbar = bufferPane.getHorizontalScrollBar();
+                scrollbar.setValue(scrollbar.getValue()+scrollIncrement);
+                break;
+                
+            case SCROLLED_WEST:
+                scrollbar = bufferPane.getHorizontalScrollBar();
+                scrollbar.setValue(scrollbar.getValue()-scrollIncrement);
+                break;
+                
             case SELECTED_RECT_CHANGED:
                 selectedRectChanged(source,e.selectedRect);
                 break;

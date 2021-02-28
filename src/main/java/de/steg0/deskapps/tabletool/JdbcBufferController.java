@@ -684,7 +684,12 @@ class JdbcBufferController
             JViewport vp = (JViewport)resultview.getParent();
             if(wr > 0)
             {
-                if(vp.getViewPosition().getY() + vp.getHeight() >= 
+                if(e.isShiftDown() && vp.getViewPosition().getX() + 
+                        vp.getWidth() >= resultview.getWidth())
+                {
+                    fireBufferEvent(Type.SCROLLED_EAST);
+                }
+                else if(vp.getViewPosition().getY() + vp.getHeight() >= 
                         resultview.getHeight())
                 {
                     fireBufferEvent(Type.SCROLLED_SOUTH);
@@ -696,7 +701,11 @@ class JdbcBufferController
             }
             else if(wr < 0)
             {
-                if(vp.getViewPosition().getY() == 0)
+                if(e.isShiftDown() && vp.getViewPosition().getX() == 0)
+                {
+                    fireBufferEvent(Type.SCROLLED_WEST);
+                }
+                else if(vp.getViewPosition().getY() == 0)
                 {
                     fireBufferEvent(Type.SCROLLED_NORTH);
                 }
