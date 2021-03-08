@@ -454,7 +454,7 @@ class JdbcBufferController
             }
             else
             {
-                if(newText.length()>0) newText.append("\n");
+                if(linesRead>1) newText.append("\n");
                 newText.append(line);
             }
         }
