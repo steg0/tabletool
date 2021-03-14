@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.CTRL_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
@@ -59,9 +60,45 @@ implements KeyListener
 
     JTabbedPane tabbedPane = new JTabbedPane();
     
+    class SelectTabAction extends AbstractAction
+    {
+        int tabindex;
+        SelectTabAction(int tabindex)
+        {
+            this.tabindex = tabindex;
+        }
+        @Override public void actionPerformed(ActionEvent e)
+        {
+            tabbedPane.setSelectedIndex(tabindex);
+        }
+    }
+    
     {
         tabbedPane.addKeyListener(this);
         tabbedPane.addMouseListener(this);
+        
+        var im = tabbedPane.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_1,CTRL_MASK),"Select Tab 1");
+        im.put(getKeyStroke(KeyEvent.VK_2,CTRL_MASK),"Select Tab 2");
+        im.put(getKeyStroke(KeyEvent.VK_3,CTRL_MASK),"Select Tab 3");
+        im.put(getKeyStroke(KeyEvent.VK_4,CTRL_MASK),"Select Tab 4");
+        im.put(getKeyStroke(KeyEvent.VK_5,CTRL_MASK),"Select Tab 5");
+        im.put(getKeyStroke(KeyEvent.VK_6,CTRL_MASK),"Select Tab 6");
+        im.put(getKeyStroke(KeyEvent.VK_7,CTRL_MASK),"Select Tab 7");
+        im.put(getKeyStroke(KeyEvent.VK_8,CTRL_MASK),"Select Tab 8");
+        im.put(getKeyStroke(KeyEvent.VK_9,CTRL_MASK),"Select Tab 9");
+        im.put(getKeyStroke(KeyEvent.VK_0,CTRL_MASK),"Select Tab 10");
+        var am = tabbedPane.getActionMap();
+        am.put("Select Tab 1",new SelectTabAction(0));
+        am.put("Select Tab 2",new SelectTabAction(1));
+        am.put("Select Tab 3",new SelectTabAction(2));
+        am.put("Select Tab 4",new SelectTabAction(3));
+        am.put("Select Tab 5",new SelectTabAction(4));
+        am.put("Select Tab 6",new SelectTabAction(5));
+        am.put("Select Tab 7",new SelectTabAction(6));
+        am.put("Select Tab 8",new SelectTabAction(7));
+        am.put("Select Tab 9",new SelectTabAction(8));
+        am.put("Select Tab 10",new SelectTabAction(9));
         
         /* https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path */
         tabbedPane.setDropTarget(new DropTarget()
@@ -276,11 +313,11 @@ implements KeyListener
 
         item = new JMenuItem(addAction);
         item.setMnemonic(KeyEvent.VK_N);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,ActionEvent.CTRL_MASK));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,CTRL_MASK));
         menu.add(item);
         
         item = new JMenuItem(loadAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,ActionEvent.CTRL_MASK));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_O);
         menu.add(item);
 
@@ -288,7 +325,7 @@ implements KeyListener
         menu.add(item);
         
         item = new JMenuItem(saveAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,ActionEvent.CTRL_MASK));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_S);
         menu.add(item);
 
@@ -297,7 +334,7 @@ implements KeyListener
         menu.add(item);
 
         item = new JMenuItem(closeAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,ActionEvent.CTRL_MASK));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_C);
         menu.add(item);
 
