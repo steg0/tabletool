@@ -121,7 +121,7 @@ class JdbcNotebookController
         NumberFormat format = NumberFormat.getIntegerInstance();
         NumberFormatter numberFormatter = new NumberFormatter(format);
         fetchsizeField = new JFormattedTextField(numberFormatter);
-        fetchsizeField.setColumns(4);
+        fetchsizeField.setColumns(5);
         fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
         connectionPanel.add(fetchsizeField);
