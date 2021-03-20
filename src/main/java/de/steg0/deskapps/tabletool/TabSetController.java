@@ -30,6 +30,7 @@ import java.util.concurrent.Executors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -77,7 +78,7 @@ implements KeyListener
         tabbedPane.addKeyListener(this);
         tabbedPane.addMouseListener(this);
         
-        var im = tabbedPane.getInputMap();
+        var im = tabbedPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         im.put(getKeyStroke(KeyEvent.VK_1,CTRL_MASK),"Select Tab 1");
         im.put(getKeyStroke(KeyEvent.VK_2,CTRL_MASK),"Select Tab 2");
         im.put(getKeyStroke(KeyEvent.VK_3,CTRL_MASK),"Select Tab 3");
