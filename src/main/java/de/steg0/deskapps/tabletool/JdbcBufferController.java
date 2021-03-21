@@ -1,5 +1,9 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.awt.event.ActionEvent.SHIFT_MASK;
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -9,6 +13,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -27,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -40,6 +47,7 @@ import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 
 import de.steg0.deskapps.tabletool.JdbcBufferControllerEvent.Type;
 
@@ -71,7 +79,12 @@ class JdbcBufferController
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
-    UndoManagerProxy undoManagerProxy = new UndoManagerProxy(editor); 
+    
+    UndoManager undoManager = new UndoManager();
+    {
+        editor.getDocument().addUndoableEditListener(undoManager);
+    }
+    
     JTable resultview;
     int resultviewHeight;
     
@@ -90,6 +103,20 @@ class JdbcBufferController
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
+        
+        var im = editor.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
+                "Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
+        im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
+        im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
+        var am = editor.getActionMap();
+        am.put("Execute",executeAction);
+        am.put("Execute/Split",executeSplitAction);
+        am.put("Toggle Comment",toggleCommentAction);
+        am.put("Undo",undoAction);
+        am.put("Redo",redoAction);
     }
     
     void setBackground(Color background)
@@ -103,17 +130,45 @@ class JdbcBufferController
         return editor.getBackground();
     }
 
+    Action
+        executeAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                fetch(false);
+            }
+        },
+        executeSplitAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                fetch(true);
+            }
+        },
+        toggleCommentAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                togglePrefix("--",null);
+            }
+        },
+        undoAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(undoManager.canUndo()) undoManager.undo();
+            }
+        },
+        redoAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(undoManager.canRedo()) undoManager.redo();
+            }
+        };
+    
     KeyListener editorKeyListener = new KeyListener()
     {
-        @Override
-        public void keyReleased(KeyEvent event)
-        {
-            switch(event.getKeyCode())
-            {
-            case KeyEvent.VK_ENTER:
-                if(event.isControlDown()) fetch(event.isShiftDown());
-            }
-        }
         @Override
         public void keyPressed(KeyEvent event)
         { 
@@ -125,7 +180,7 @@ class JdbcBufferController
                 case KeyEvent.VK_DOWN:
                 case KeyEvent.VK_PAGE_DOWN:
                     if(event.isShiftDown()) break;
-                    if(editor.getLineOfOffset(caret) == 
+                    if(editor.getLineOfOffset(caret) ==
                        editor.getLineCount()-1 &&
                        resultview != null)
                     {
@@ -150,21 +205,12 @@ class JdbcBufferController
                         event.consume();
                     }
                     break;
-                case KeyEvent.VK_SLASH:
-                    if(event.isControlDown()) togglePrefix("--",null);
-                    break;
                 case KeyEvent.VK_TAB:
                     if(editor.getSelectionEnd()!=editor.getSelectionStart())
                     {
                         togglePrefix("\t",!event.isShiftDown());
                         event.consume();
                     }
-                    break;
-                case KeyEvent.VK_Z:
-                    if(event.isControlDown()) undoManagerProxy.tryUndo();
-                    break;
-                case KeyEvent.VK_Y:
-                    if(event.isControlDown()) undoManagerProxy.tryRedo();
                 }
             }            
             catch(BadLocationException e)
@@ -172,6 +218,7 @@ class JdbcBufferController
                 assert false : e.getMessage();
             }
         }
+        @Override public void keyReleased(KeyEvent e) { }
         @Override public void keyTyped(KeyEvent e) { }
     };
     
@@ -464,7 +511,8 @@ class JdbcBufferController
             document.removeUndoableEditListener(l);
         }
         editor.setText(newText.toString());
-        undoManagerProxy = new UndoManagerProxy(editor);
+        UndoManager undoManager = new UndoManager();
+        editor.getDocument().addUndoableEditListener(undoManager);
         return linesRead;
     }
     
