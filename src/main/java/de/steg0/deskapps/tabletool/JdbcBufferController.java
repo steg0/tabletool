@@ -510,8 +510,9 @@ class JdbcBufferController
         {
             document.removeUndoableEditListener(l);
         }
+        editor.getDocument().removeUndoableEditListener(undoManager);
         editor.setText(newText.toString());
-        UndoManager undoManager = new UndoManager();
+        undoManager = new UndoManager();
         editor.getDocument().addUndoableEditListener(undoManager);
         return linesRead;
     }
