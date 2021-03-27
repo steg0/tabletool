@@ -48,6 +48,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+Shift+Enter - like Ctrl+Enter, but always create a new result table.
 • Ctrl+Tab - select the next result table.
 • Ctrl+Shift+Tab - select the previous result table.
+• Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+/ - comment/uncomment.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
