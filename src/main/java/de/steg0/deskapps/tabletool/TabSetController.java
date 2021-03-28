@@ -74,6 +74,21 @@ implements KeyListener
         }
     }
     
+    class ZoomAction extends AbstractAction
+    {
+        double factor;
+        ZoomAction(double factor)
+        {
+            this.factor = factor;
+        }
+        @Override public void actionPerformed(ActionEvent e)
+        {
+            int selected = tabbedPane.getSelectedIndex();
+            JdbcNotebookController notebook = notebooks.get(selected);
+            notebook.zoom(factor);
+        }
+    }
+
     {
         tabbedPane.addKeyListener(this);
         tabbedPane.addMouseListener(this);
@@ -89,6 +104,8 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_8,CTRL_MASK),"Select Tab 8");
         im.put(getKeyStroke(KeyEvent.VK_9,CTRL_MASK),"Select Tab 9");
         im.put(getKeyStroke(KeyEvent.VK_0,CTRL_MASK),"Select Tab 10");
+        im.put(getKeyStroke(KeyEvent.VK_EQUALS,CTRL_MASK),"Zoom+");
+        im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK),"Zoom-");
         var am = tabbedPane.getActionMap();
         am.put("Select Tab 1",new SelectTabAction(0));
         am.put("Select Tab 2",new SelectTabAction(1));
@@ -100,6 +117,8 @@ implements KeyListener
         am.put("Select Tab 8",new SelectTabAction(7));
         am.put("Select Tab 9",new SelectTabAction(8));
         am.put("Select Tab 10",new SelectTabAction(9));
+        am.put("Zoom+",new ZoomAction(1.3));
+        am.put("Zoom-",new ZoomAction(1.0/1.3));
         
         /* https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path */
         tabbedPane.setDropTarget(new DropTarget()

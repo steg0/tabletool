@@ -7,6 +7,7 @@ import static javax.swing.KeyStroke.getKeyStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -26,6 +27,7 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -130,6 +132,44 @@ class JdbcBufferController
         return editor.getBackground();
     }
 
+    Stack<Integer> sizes=new Stack<>();
+    
+    void zoom(double factor)
+    {
+        int currentSize = editor.getFont().getSize(),
+            newSize;
+        if(!sizes.isEmpty() &&(
+                (double)currentSize/sizes.peek() < 1 && factor > 1 ||
+                (double)currentSize/sizes.peek() > 1 && factor < 1)
+        )
+        {
+            newSize = sizes.pop();
+        }
+        else
+        {
+            sizes.push(currentSize); /* assuming all elements have the same */
+            newSize = (int)(currentSize * factor); /* default size in Swing */
+
+        }
+        Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
+        editor.setFont(f2);
+        setResultViewFontSize(newSize);
+    }
+    
+    void setResultViewFontSize(int newSize)
+    {
+        if(resultview==null) return;
+        Font rf = resultview.getFont(),
+             rf2 = new Font(rf.getName(),rf.getStyle(),newSize);
+        resultview.setFont(rf2);
+        var header = resultview.getTableHeader();
+        Font hf = header.getFont(),
+             hf2 = new Font(hf.getName(),hf.getStyle(),newSize);
+        resultview.getTableHeader().setFont(hf2);
+        
+        TableSizer.sizeColumns(resultview,getLineHeight());
+    }
+    
     Action
         executeAction = new AbstractAction()
         {
@@ -166,6 +206,7 @@ class JdbcBufferController
                 if(undoManager.canRedo()) undoManager.redo();
             }
         };
+
     
     KeyListener editorKeyListener = new KeyListener()
     {
@@ -655,7 +696,7 @@ class JdbcBufferController
         if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
-        TableSizer.sizeColumns(resultview);
+        setResultViewFontSize(editor.getFont().getSize());
         
         new CellDisplayController(parent,resultview,log);
         addResultSetPopup();

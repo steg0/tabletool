@@ -212,6 +212,11 @@ class JdbcNotebookController
         for(JdbcBufferController buffer : buffers) buffer.setBackground(bg);
     }
     
+    void zoom(double factor)
+    {
+        for(JdbcBufferController buffer : buffers) buffer.zoom(factor);
+    }
+    
     EventListenerList listeners = new EventListenerList();
     
     void addListener(Listener l)
