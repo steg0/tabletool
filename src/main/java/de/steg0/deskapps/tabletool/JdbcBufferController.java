@@ -21,6 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
@@ -44,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
@@ -166,8 +168,16 @@ class JdbcBufferController
         Font hf = header.getFont(),
              hf2 = new Font(hf.getName(),hf.getStyle(),newSize);
         resultview.getTableHeader().setFont(hf2);
-        
-        TableSizer.sizeColumns(resultview,getLineHeight());
+        int lineHeight = (int)hf2.getMaxCharBounds(new FontRenderContext(
+                null,false,false)).getHeight();
+        TableSizer.sizeColumns(resultview);
+        resultview.setRowHeight(lineHeight);
+        Dimension preferredSize = resultview.getPreferredSize();
+        var viewportSize = new Dimension((int)preferredSize.getWidth(),
+                (int)Math.min(resultviewHeight,preferredSize.getHeight()));
+        logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
+                "lineHeight={1}",new Object[]{viewportSize,lineHeight});
+        resultview.setPreferredScrollableViewportSize(viewportSize);
     }
     
     Action
@@ -700,11 +710,6 @@ class JdbcBufferController
         
         new CellDisplayController(parent,resultview,log);
         addResultSetPopup();
-        
-        Dimension preferredSize = resultview.getPreferredSize();
-        resultview.setPreferredScrollableViewportSize(new Dimension(
-                (int)preferredSize.getWidth(),
-                (int)Math.min(resultviewHeight,preferredSize.getHeight())));
         
         resultview.setCellSelectionEnabled(true);
         

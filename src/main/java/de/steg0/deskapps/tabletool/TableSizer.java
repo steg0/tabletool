@@ -20,7 +20,7 @@ class TableSizer
      * But let's first see whether JTable copes with it in some usable way
      * or not.
      */
-    static void sizeColumns(JTable t,int lineHeight)
+    static void sizeColumns(JTable t)
     {
         int c=0;
         for(final Enumeration<TableColumn> e=
@@ -49,6 +49,5 @@ class TableSizer
             }
             col.setPreferredWidth(mWidth);
         }
-        if(lineHeight>1) t.setRowHeight(lineHeight);
     }
 }
