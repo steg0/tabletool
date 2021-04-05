@@ -11,9 +11,9 @@ An example command line is:
     -Dfile.encoding=Cp1252 \
     -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
     -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar \
-    -jar myriad-<Version>.jar \
-    -config $HOME/Documents/myriad.properties \
-    $HOME/Documents/workspace.myr.xml
+    -jar tabtype.jar \
+    -config $HOME/Documents/tabtype.properties \
+    $HOME/Documents/workspace.tt.xml
 └─────────────────────────────────────────────────────────────────────┘
 
 This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
@@ -48,6 +48,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+Shift+Enter - like Ctrl+Enter, but always create a new result table.
 • Ctrl+Tab - select the next result table.
 • Ctrl+Shift+Tab - select the previous result table.
+• Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+/ - comment/uncomment.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.

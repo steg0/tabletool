@@ -1,32 +1,42 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.awt.event.ActionEvent.SHIFT_MASK;
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -35,11 +45,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.undo.UndoManager;
 
 import de.steg0.deskapps.tabletool.JdbcBufferControllerEvent.Type;
 
@@ -71,7 +83,12 @@ class JdbcBufferController
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
-    UndoManagerProxy undoManagerProxy = new UndoManagerProxy(editor); 
+    
+    UndoManager undoManager = new UndoManager();
+    {
+        editor.getDocument().addUndoableEditListener(undoManager);
+    }
+    
     JTable resultview;
     int resultviewHeight;
     
@@ -90,6 +107,20 @@ class JdbcBufferController
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
+        
+        var im = editor.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
+                "Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
+        im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
+        im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
+        var am = editor.getActionMap();
+        am.put("Execute",executeAction);
+        am.put("Execute/Split",executeSplitAction);
+        am.put("Toggle Comment",toggleCommentAction);
+        am.put("Undo",undoAction);
+        am.put("Redo",redoAction);
     }
     
     void setBackground(Color background)
@@ -103,17 +134,92 @@ class JdbcBufferController
         return editor.getBackground();
     }
 
+    Stack<Integer> sizes=new Stack<>();
+    
+    void zoom(double factor)
+    {
+        int currentSize = editor.getFont().getSize(),
+            newSize;
+        if(!sizes.isEmpty() &&(
+                (double)currentSize/sizes.peek() < 1 && factor > 1 ||
+                (double)currentSize/sizes.peek() > 1 && factor < 1)
+        )
+        {
+            newSize = sizes.pop();
+        }
+        else
+        {
+            sizes.push(currentSize); /* assuming all elements have the same */
+            newSize = (int)(currentSize * factor); /* default size in Swing */
+
+        }
+        Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
+        editor.setFont(f2);
+        setResultViewFontSize(newSize);
+    }
+    
+    void setResultViewFontSize(int newSize)
+    {
+        if(resultview==null) return;
+        Font rf = resultview.getFont(),
+             rf2 = new Font(rf.getName(),rf.getStyle(),newSize);
+        resultview.setFont(rf2);
+        var header = resultview.getTableHeader();
+        Font hf = header.getFont(),
+             hf2 = new Font(hf.getName(),hf.getStyle(),newSize);
+        resultview.getTableHeader().setFont(hf2);
+        int lineHeight = (int)hf2.getMaxCharBounds(new FontRenderContext(
+                null,false,false)).getHeight();
+        TableSizer.sizeColumns(resultview);
+        resultview.setRowHeight(lineHeight);
+        Dimension preferredSize = resultview.getPreferredSize();
+        var viewportSize = new Dimension((int)preferredSize.getWidth(),
+                (int)Math.min(resultviewHeight,preferredSize.getHeight()));
+        logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
+                "lineHeight={1}",new Object[]{viewportSize,lineHeight});
+        resultview.setPreferredScrollableViewportSize(viewportSize);
+    }
+    
+    Action
+        executeAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                fetch(false);
+            }
+        },
+        executeSplitAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                fetch(true);
+            }
+        },
+        toggleCommentAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                togglePrefix("--",null);
+            }
+        },
+        undoAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(undoManager.canUndo()) undoManager.undo();
+            }
+        },
+        redoAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(undoManager.canRedo()) undoManager.redo();
+            }
+        };
+
+    
     KeyListener editorKeyListener = new KeyListener()
     {
-        @Override
-        public void keyReleased(KeyEvent event)
-        {
-            switch(event.getKeyCode())
-            {
-            case KeyEvent.VK_ENTER:
-                if(event.isControlDown()) fetch(event.isShiftDown());
-            }
-        }
         @Override
         public void keyPressed(KeyEvent event)
         { 
@@ -125,7 +231,7 @@ class JdbcBufferController
                 case KeyEvent.VK_DOWN:
                 case KeyEvent.VK_PAGE_DOWN:
                     if(event.isShiftDown()) break;
-                    if(editor.getLineOfOffset(caret) == 
+                    if(editor.getLineOfOffset(caret) ==
                        editor.getLineCount()-1 &&
                        resultview != null)
                     {
@@ -150,21 +256,12 @@ class JdbcBufferController
                         event.consume();
                     }
                     break;
-                case KeyEvent.VK_SLASH:
-                    if(event.isControlDown()) togglePrefix("--",null);
-                    break;
                 case KeyEvent.VK_TAB:
                     if(editor.getSelectionEnd()!=editor.getSelectionStart())
                     {
                         togglePrefix("\t",!event.isShiftDown());
                         event.consume();
                     }
-                    break;
-                case KeyEvent.VK_Z:
-                    if(event.isControlDown()) undoManagerProxy.tryUndo();
-                    break;
-                case KeyEvent.VK_Y:
-                    if(event.isControlDown()) undoManagerProxy.tryRedo();
                 }
             }            
             catch(BadLocationException e)
@@ -172,6 +269,7 @@ class JdbcBufferController
                 assert false : e.getMessage();
             }
         }
+        @Override public void keyReleased(KeyEvent e) { }
         @Override public void keyTyped(KeyEvent e) { }
     };
     
@@ -454,7 +552,7 @@ class JdbcBufferController
             }
             else
             {
-                if(newText.length()>0) newText.append("\n");
+                if(linesRead>1) newText.append("\n");
                 newText.append(line);
             }
         }
@@ -463,8 +561,10 @@ class JdbcBufferController
         {
             document.removeUndoableEditListener(l);
         }
+        editor.getDocument().removeUndoableEditListener(undoManager);
         editor.setText(newText.toString());
-        undoManagerProxy = new UndoManagerProxy(editor);
+        undoManager = new UndoManager();
+        editor.getDocument().addUndoableEditListener(undoManager);
         return linesRead;
     }
     
@@ -606,15 +706,10 @@ class JdbcBufferController
         if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
-        TableSizer.sizeColumns(resultview);
+        setResultViewFontSize(editor.getFont().getSize());
         
         new CellDisplayController(parent,resultview,log);
         addResultSetPopup();
-        
-        Dimension preferredSize = resultview.getPreferredSize();
-        resultview.setPreferredScrollableViewportSize(new Dimension(
-                (int)preferredSize.getWidth(),
-                (int)Math.min(resultviewHeight,preferredSize.getHeight())));
         
         resultview.setCellSelectionEnabled(true);
         
@@ -684,7 +779,12 @@ class JdbcBufferController
             JViewport vp = (JViewport)resultview.getParent();
             if(wr > 0)
             {
-                if(vp.getViewPosition().getY() + vp.getHeight() >= 
+                if(e.isShiftDown() && vp.getViewPosition().getX() + 
+                        vp.getWidth() >= resultview.getWidth())
+                {
+                    fireBufferEvent(Type.SCROLLED_EAST);
+                }
+                else if(vp.getViewPosition().getY() + vp.getHeight() >= 
                         resultview.getHeight())
                 {
                     fireBufferEvent(Type.SCROLLED_SOUTH);
@@ -696,7 +796,11 @@ class JdbcBufferController
             }
             else if(wr < 0)
             {
-                if(vp.getViewPosition().getY() == 0)
+                if(e.isShiftDown() && vp.getViewPosition().getX() == 0)
+                {
+                    fireBufferEvent(Type.SCROLLED_WEST);
+                }
+                else if(vp.getViewPosition().getY() == 0)
                 {
                     fireBufferEvent(Type.SCROLLED_NORTH);
                 }
@@ -706,7 +810,7 @@ class JdbcBufferController
                 }
             }
         }
-    };
+    }
     
     KeyListener resultsetKeyListener = new KeyListener()
     {

@@ -7,6 +7,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import javax.swing.JOptionPane;
  * Consult the README.txt file available in the package to find out
  * about operation and invocation options.
  */
-public class Myriad
+public class Tabtype
 extends WindowAdapter
 {
 
@@ -28,13 +29,13 @@ extends WindowAdapter
     File properties,workspace,sqlFiles[];
     TabSetController controller;
     
-    Myriad(String propertiesfile,String workspacefile)
+    Tabtype(String propertiesfile,String workspacefile)
     {
         if(propertiesfile!=null) properties = new File(propertiesfile);
         if(workspacefile!=null) workspace = new File(workspacefile);
     }
     
-    Myriad(String propertiesfile,String[] sqlFiles)
+    Tabtype(String propertiesfile,String[] sqlFiles)
     {
         if(propertiesfile!=null) properties = new File(propertiesfile);
         this.sqlFiles=Arrays.stream(sqlFiles)
@@ -45,7 +46,7 @@ extends WindowAdapter
     void showJdbcBuffer()
     {
         String title = (workspace!=null? workspace.getName()+" - " : "") + 
-                "Myriad";
+                "Tabtype " + ManagementFactory.getRuntimeMXBean().getName();
         frame = new JFrame(title);
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
@@ -185,27 +186,28 @@ extends WindowAdapter
                 propertiesfile = args[++optind];
                 break;
             case "--":
+                optind++;
                 break ARGS;
             }
         }
         
-        Myriad m;
+        Tabtype m;
         if(optind<args.length)
         {
             String firstdoc=args[optind];
             if(firstdoc.toLowerCase().endsWith(".xml"))
             {
-                m = new Myriad(propertiesfile,firstdoc);
+                m = new Tabtype(propertiesfile,firstdoc);
             }
             else
             {
-                m = new Myriad(propertiesfile,
+                m = new Tabtype(propertiesfile,
                         Arrays.copyOfRange(args,optind,args.length));
             }
         }
         else
         {
-            m = new Myriad(propertiesfile,(String)null);
+            m = new Tabtype(propertiesfile,(String)null);
         }
         m.showJdbcBuffer();
     }

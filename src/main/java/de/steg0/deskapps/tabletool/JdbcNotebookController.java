@@ -121,7 +121,7 @@ class JdbcNotebookController
         NumberFormat format = NumberFormat.getIntegerInstance();
         NumberFormatter numberFormatter = new NumberFormatter(format);
         fetchsizeField = new JFormattedTextField(numberFormatter);
-        fetchsizeField.setColumns(4);
+        fetchsizeField.setColumns(5);
         fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
         connectionPanel.add(fetchsizeField);
@@ -210,6 +210,11 @@ class JdbcNotebookController
         bufferPanel.setBackground(bg);
         log.setBackground(bg);
         for(JdbcBufferController buffer : buffers) buffer.setBackground(bg);
+    }
+    
+    void zoom(double factor)
+    {
+        for(JdbcBufferController buffer : buffers) buffer.zoom(factor);
     }
     
     EventListenerList listeners = new EventListenerList();
@@ -333,6 +338,16 @@ class JdbcNotebookController
             case SCROLLED_SOUTH:
                 scrollbar = bufferPane.getVerticalScrollBar();
                 scrollbar.setValue(scrollbar.getValue()+scrollIncrement);
+                break;
+                
+            case SCROLLED_EAST:
+                scrollbar = bufferPane.getHorizontalScrollBar();
+                scrollbar.setValue(scrollbar.getValue()+scrollIncrement);
+                break;
+                
+            case SCROLLED_WEST:
+                scrollbar = bufferPane.getHorizontalScrollBar();
+                scrollbar.setValue(scrollbar.getValue()-scrollIncrement);
                 break;
                 
             case SELECTED_RECT_CHANGED:

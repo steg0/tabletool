@@ -10,6 +10,8 @@ class JdbcBufferControllerEvent extends EventObject
         EXITED_SOUTH,
         SCROLLED_NORTH,
         SCROLLED_SOUTH,
+        SCROLLED_EAST,
+        SCROLLED_WEST,
         SELECTED_RECT_CHANGED,
         SPLIT_REQUESTED,
         RESULT_VIEW_CLOSED,

@@ -41,7 +41,7 @@ class CellDisplayController
     final JFrame parent;
 
     JPanel panel = new JPanel(new BorderLayout());
-    JDialog dialog;
+    JFrame dialog;
     
     CellDisplayController(JFrame parent,JTable source,Consumer<String> log)
     {
@@ -84,7 +84,7 @@ class CellDisplayController
     void show(ResultSet resultset,Object value,int column)
     throws SQLException,IOException
     {
-        var textarea = new JTextArea(10,72);
+        var textarea = new JTextArea(17,72);
         textarea.setEditable(false);
         
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -145,8 +145,7 @@ class CellDisplayController
         }
         textarea.setCaretPosition(0);
         
-        dialog = new JDialog(parent,dialogtitle,true);
-
+        dialog = new JFrame(dialogtitle);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().setLayout(new BorderLayout());
         
@@ -229,7 +228,7 @@ class CellDisplayController
             try(var is = new BufferedInputStream(blob.getBinaryStream()))
             {
                 String suffix = SuffixGuess.fromStream(is);
-                var tmpfile = File.createTempFile("myriadblob",suffix);
+                var tmpfile = File.createTempFile("ttblob",suffix);
                 tmpfile.deleteOnExit();
                 try(var os = new BufferedOutputStream(
                         new FileOutputStream(tmpfile)))
