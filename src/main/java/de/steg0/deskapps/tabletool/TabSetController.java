@@ -212,10 +212,10 @@ implements KeyListener
     {
         JMenu menu = new JMenu("Recent");
         
-        List<String> paths = new ArrayList<>(new LinkedHashSet<>(recents));
+        List<String> paths = new ArrayList<>(recents);
         Collections.reverse(paths);
         int count=0;
-        for(var path : paths)
+        for(var path : new LinkedHashSet<>(paths))
         {
             if(count++>20) break;
             var menuItem = new JMenuItem(path);
