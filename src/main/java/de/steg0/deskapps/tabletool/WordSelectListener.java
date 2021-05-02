@@ -80,14 +80,12 @@ extends MouseAdapter
             clickPos = textarea.viewToModel2D(e.getPoint());
             logger.log(Level.FINE,"selectWord,clickPos={0}",clickPos);
             selectWord();
-            e.consume();
             break;
         case 3:
             clickCount = e.getClickCount();
             clickPos = textarea.viewToModel2D(e.getPoint());
             logger.log(Level.FINE,"selectLine,clickPos={0}",clickPos);
             selectLine();
-            e.consume();
         }
     }
     
