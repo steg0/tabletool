@@ -38,6 +38,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 class TabSetController
 extends MouseAdapter
@@ -205,6 +206,9 @@ implements KeyListener
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         if(notebooks.size()==0) add(true);
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        SwingUtilities.invokeLater(
+                () -> notebooks.get(selectedIndex).restoreFocus());
     }
     
     Deque<String> recents = new LinkedList<>();
