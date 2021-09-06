@@ -73,7 +73,7 @@ class JdbcBufferController
     
     Logger logger = Logger.getLogger("tabletool.editor");
 
-    final JFrame parent;
+    final JFrame cellDisplay;
 
     JPanel panel = new JPanel(new GridBagLayout());
     
@@ -93,10 +93,10 @@ class JdbcBufferController
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame parent,Consumer<String> updateLog,
+    JdbcBufferController(JFrame cellDisplay,Consumer<String> updateLog,
             int resultviewHeight)
     {
-        this.parent = parent;
+        this.cellDisplay = cellDisplay;
         this.resultviewHeight = resultviewHeight;
         this.log = updateLog;
         
@@ -707,7 +707,7 @@ class JdbcBufferController
         resultview = new JTable(rsm);
         setResultViewFontSize(editor.getFont().getSize());
         
-        new CellDisplayController(parent,resultview,log);
+        new CellDisplayController(cellDisplay,resultview,log);
         addResultSetPopup();
         
         resultview.setCellSelectionEnabled(true);

@@ -46,7 +46,7 @@ implements KeyListener
 {
     int MAX_RECENTS_SIZE=500;
     
-    JFrame parent;
+    JFrame parent,cellDisplay=new JFrame();
     PropertyHolder propertyHolder;
     
     Connections connections;
@@ -56,6 +56,8 @@ implements KeyListener
     {
         this.parent = parent;
         this.propertyHolder = propertyHolder;
+        
+        cellDisplay.setLocationRelativeTo(parent.getContentPane());
         
         connections = new Connections(propertyHolder,executor);
     }
@@ -166,7 +168,7 @@ implements KeyListener
     JdbcNotebookController add(boolean unnamed)
     {
         var notebook = new JdbcNotebookController(
-                parent,
+                cellDisplay,
                 propertyHolder,
                 connections
         );
