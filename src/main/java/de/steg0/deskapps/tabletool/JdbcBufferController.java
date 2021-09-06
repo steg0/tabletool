@@ -503,7 +503,7 @@ class JdbcBufferController
     }
     
     /**blocking */
-    void copyAsHtml()
+    void openAsHtml()
     {
         var htmlbuf = new StringBuilder();
         htmlbuf.append("<pre>");
@@ -513,9 +513,7 @@ class JdbcBufferController
         });
         htmlbuf.append("</pre>");
         htmlbuf.append(getResultSetTableModel().toHtml());
-        var selection = new HtmlSelection(htmlbuf.toString());
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection,null);
+        HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
     
     void store(Writer w)
@@ -738,8 +736,8 @@ class JdbcBufferController
     {
         var popup = new JPopupMenu();
         JMenuItem item;
-        item = new JMenuItem("Copy as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> copyAsHtml());
+        item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
+        item.addActionListener((e) -> openAsHtml());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
         item.addActionListener((e) ->
