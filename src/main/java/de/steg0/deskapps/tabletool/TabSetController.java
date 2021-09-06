@@ -71,6 +71,7 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             tabbedPane.setSelectedIndex(tabindex);
+            notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
         }
     }
     
