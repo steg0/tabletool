@@ -75,11 +75,11 @@ extends WindowAdapter
         frame.setVisible(true);
     }
     
-    List<Image> getIcons()
+    static List<Image> getIcons()
     {
-        var icon16 = new ImageIcon(getClass().getResource("icon16.png"));
-        var icon32 = new ImageIcon(getClass().getResource("icon32.png"));
-        var icon = new ImageIcon(getClass().getResource("icon.png"));
+        var icon16 = new ImageIcon(Tabtype.class.getResource("icon16.png"));
+        var icon32 = new ImageIcon(Tabtype.class.getResource("icon32.png"));
+        var icon = new ImageIcon(Tabtype.class.getResource("icon.png"));
         return List.of(icon16.getImage(),icon32.getImage(),icon.getImage());
     }
     

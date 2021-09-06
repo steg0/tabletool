@@ -146,6 +146,7 @@ class CellDisplayController
         textarea.setCaretPosition(0);
         
         dialog = new JFrame(dialogtitle);
+        dialog.setIconImages(Tabtype.getIcons());
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().setLayout(new BorderLayout());
         
