@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -418,6 +419,7 @@ class JdbcNotebookController
     };
 
     /**Adds a buffer to the panel and wires listeners. */
+    @SuppressWarnings("unchecked")
     void add(int index,JdbcBufferController c)
     {
         c.addListener(bufferListener);
@@ -436,7 +438,11 @@ class JdbcNotebookController
             public void focusGained(FocusEvent e) { }
         });
         c.fetchsize = Integer.parseInt(fetchsizeField.getText());
-        if(buffers.size()>0) c.editor.setFont(buffers.get(0).editor.getFont());
+        if(buffers.size()>0)
+        {
+            c.editor.setFont(buffers.get(0).editor.getFont());
+            c.sizes = (Stack<Integer>)buffers.get(0).sizes.clone();
+        }
         
         buffers.add(index,c);
         
