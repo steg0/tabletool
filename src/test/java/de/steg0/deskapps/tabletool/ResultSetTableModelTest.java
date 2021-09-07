@@ -1,9 +1,10 @@
 package de.steg0.deskapps.tabletool;
 
 import static de.steg0.deskapps.tabletool.ResultSetTableModel.sanitizeForCsv;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
+
 
 public class ResultSetTableModelTest
 {
