@@ -78,7 +78,9 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             tabbedPane.setSelectedIndex(tabindex);
-            notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
+            JdbcNotebookController c = notebooks.get(
+                    tabbedPane.getSelectedIndex());
+            if(c.hasSavedFocusPosition) c.restoreFocus();
         }
     }
     
@@ -212,9 +214,11 @@ implements KeyListener
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         if(notebooks.size()==0) add(true);
-        int selectedIndex = tabbedPane.getSelectedIndex();
-        SwingUtilities.invokeLater(
-                () -> notebooks.get(selectedIndex).restoreFocus());
+        SwingUtilities.invokeLater(() -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            JdbcNotebookController c = notebooks.get(selectedIndex);
+            if(c.hasSavedFocusPosition) c.restoreFocus();
+        });
     }
     
     Deque<String> recents = new LinkedList<>();
