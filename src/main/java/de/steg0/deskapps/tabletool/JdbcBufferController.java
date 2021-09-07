@@ -148,7 +148,6 @@ class JdbcBufferController
         {
             sizes.push(currentSize); /* assuming all elements have the same */
             newSize = (int)(currentSize * factor); /* default size in Swing */
-
         }
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
