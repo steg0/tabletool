@@ -4,6 +4,7 @@ import static java.awt.event.ActionEvent.CTRL_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -57,7 +58,10 @@ implements KeyListener
         this.parent = parent;
         this.propertyHolder = propertyHolder;
         
-        cellDisplay.setLocationRelativeTo(parent.getContentPane());
+        Point parentLocation = parent.getLocation();
+        cellDisplay.setLocation(
+                (int)parentLocation.getX()+30,
+                (int)parentLocation.getY()+30);
         
         connections = new Connections(propertyHolder,executor);
     }
