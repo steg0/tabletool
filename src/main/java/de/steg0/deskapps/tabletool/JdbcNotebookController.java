@@ -44,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
@@ -215,7 +216,16 @@ class JdbcNotebookController
     
     void zoom(double factor)
     {
-        for(JdbcBufferController buffer : buffers) buffer.zoom(factor);
+        for(JdbcBufferController buffer : buffers)
+        {
+            buffer.zoom(factor);
+
+            if(buffer.editor.isFocusOwner())
+            {
+                SwingUtilities.invokeLater(() -> selectedRectChanged(buffer,
+                        new Rectangle(0,0,1,buffer.getLineHeight())));
+            }
+        }
     }
     
     EventListenerList listeners = new EventListenerList();
