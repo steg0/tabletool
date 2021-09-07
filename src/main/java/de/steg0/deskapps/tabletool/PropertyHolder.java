@@ -60,7 +60,7 @@ class PropertyHolder
     int getResultviewHeight()
     {
         return Integer.parseInt(
-                properties.getOrDefault("resultview.height","150").toString());
+                properties.getOrDefault("resultview.height","12").toString());
     }
     
     Color getDefaultBackground()

@@ -170,7 +170,8 @@ class JdbcBufferController
         resultview.setRowHeight(lineHeight);
         Dimension preferredSize = resultview.getPreferredSize();
         var viewportSize = new Dimension((int)preferredSize.getWidth(),
-                (int)Math.min(resultviewHeight,preferredSize.getHeight()));
+                (int)Math.min(resultviewHeight*lineHeight,
+                        preferredSize.getHeight()));
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
         resultview.setPreferredScrollableViewportSize(viewportSize);
