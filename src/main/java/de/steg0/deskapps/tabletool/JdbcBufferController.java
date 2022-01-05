@@ -13,8 +13,10 @@ import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -35,6 +37,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -43,6 +46,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
@@ -84,6 +89,20 @@ class JdbcBufferController
     UndoManager undoManager = new UndoManager();
     {
         editor.getDocument().addUndoableEditListener(undoManager);
+        Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+        Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
+        editor.setBorder(unfocusedBorder);
+        editor.addFocusListener(new FocusListener()
+        {
+            @Override public void focusGained(FocusEvent e)
+            {
+                editor.setBorder(focusedBorder);
+            }
+            @Override public void focusLost(FocusEvent e)
+            {
+                editor.setBorder(unfocusedBorder);
+            }
+        });
     }
     
     JTable resultview;
