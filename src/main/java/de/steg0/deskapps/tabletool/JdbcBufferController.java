@@ -87,6 +87,7 @@ class JdbcBufferController
     final Color defaultBackground = editor.getBackground();
     
     UndoManager undoManager = new UndoManager();
+    
     {
         editor.getDocument().addUndoableEditListener(undoManager);
         Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
