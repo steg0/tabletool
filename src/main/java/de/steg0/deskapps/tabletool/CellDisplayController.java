@@ -176,7 +176,7 @@ class CellDisplayController
         
         cellDisplay.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
         
-        cellDisplay.pack();
+        if(!cellDisplay.isVisible()) cellDisplay.pack();
         cellDisplay.setVisible(true);
     }
 
