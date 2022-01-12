@@ -38,14 +38,13 @@ import javax.swing.JTextArea;
 
 class CellDisplayController
 {
-    final JFrame parent;
+    final JFrame cellDisplay;
 
     JPanel panel = new JPanel(new BorderLayout());
-    JFrame dialog;
     
-    CellDisplayController(JFrame parent,JTable source,Consumer<String> log)
+    CellDisplayController(JFrame cellDisplay,JTable source,Consumer<String> log)
     {
-        this.parent = parent;
+        this.cellDisplay = cellDisplay;
         
         source.addMouseListener(new MouseAdapter()
         {
@@ -144,10 +143,12 @@ class CellDisplayController
             dialogtitle = "Scalar value display";
         }
         textarea.setCaretPosition(0);
-        
-        dialog = new JFrame(dialogtitle);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.getContentPane().setLayout(new BorderLayout());
+
+        cellDisplay.setTitle(dialogtitle);
+        cellDisplay.getContentPane().removeAll();
+        cellDisplay.setIconImages(Tabtype.getIcons());
+        cellDisplay.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
+        cellDisplay.getContentPane().setLayout(new BorderLayout());
         
         textarea.addKeyListener(new KeyListener()
         {
@@ -160,24 +161,23 @@ class CellDisplayController
                 switch(e.getKeyCode())
                 {
                 case KeyEvent.VK_ESCAPE:
-                    dialog.dispose();
+                    cellDisplay.setVisible(false);
                 }
             }
         });
         
         var scrollpane = new JScrollPane(textarea);
 
-        dialog.getContentPane().add(scrollpane);
+        cellDisplay.getContentPane().add(scrollpane);
         
         var closeButton = new JButton("Close");
-        closeButton.addActionListener((e) -> dialog.dispose());
+        closeButton.addActionListener((e) -> cellDisplay.setVisible(false));
         buttonPanel.add(closeButton);
         
-        dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
+        cellDisplay.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
         
-        dialog.pack();
-        dialog.setLocationRelativeTo(parent.getContentPane());
-        dialog.setVisible(true);
+        if(!cellDisplay.isVisible()) cellDisplay.pack();
+        cellDisplay.setVisible(true);
     }
 
     static class HexDump
@@ -242,7 +242,7 @@ class CellDisplayController
             catch(SQLException e)
             {
                 JOptionPane.showMessageDialog(
-                        parent,
+                        cellDisplay,
                         "Error opening: "+SQLExceptionPrinter.toString(e),
                         "Error opening",
                         JOptionPane.ERROR_MESSAGE);
@@ -250,7 +250,7 @@ class CellDisplayController
             catch(Exception e)
             {
                 JOptionPane.showMessageDialog(
-                        parent,
+                        cellDisplay,
                         "Error opening: "+e.getMessage(),
                         "Error opening",
                         JOptionPane.ERROR_MESSAGE);
@@ -267,7 +267,7 @@ class CellDisplayController
         public void actionPerformed(ActionEvent event)
         {
             var filechooser = new JFileChooser();
-            int returnVal = filechooser.showSaveDialog(parent);
+            int returnVal = filechooser.showSaveDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
             try(InputStream is = blob.getBinaryStream();
@@ -280,7 +280,7 @@ class CellDisplayController
             catch(SQLException e)
             {
                 JOptionPane.showMessageDialog(
-                        parent,
+                        cellDisplay,
                         "Error exporting: "+SQLExceptionPrinter.toString(e),
                         "Error exporting",
                         JOptionPane.ERROR_MESSAGE);
@@ -288,7 +288,7 @@ class CellDisplayController
             catch(IOException e)
             {
                 JOptionPane.showMessageDialog(
-                        parent,
+                        cellDisplay,
                         "Error exporting: "+e.getMessage(),
                         "Error exporting",
                         JOptionPane.ERROR_MESSAGE);
@@ -307,7 +307,7 @@ class CellDisplayController
         public void actionPerformed(ActionEvent event)
         {
             var filechooser = new JFileChooser();
-            int returnVal = filechooser.showOpenDialog(parent);
+            int returnVal = filechooser.showOpenDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
             
@@ -329,7 +329,7 @@ class CellDisplayController
             catch(SQLException e)
             {
                 JOptionPane.showMessageDialog(
-                        parent,
+                        cellDisplay,
                         "Error importing: "+SQLExceptionPrinter.toString(e),
                         "Error importing",
                         JOptionPane.ERROR_MESSAGE);
@@ -337,12 +337,12 @@ class CellDisplayController
             catch(Exception e)
             {
                 JOptionPane.showMessageDialog(
-                        parent,
+                        cellDisplay,
                         "Error importing: "+e.getMessage(),
                         "Error importing",
                         JOptionPane.ERROR_MESSAGE);
             }
-            dialog.dispose();
+            cellDisplay.setVisible(true);
         }
     }
     

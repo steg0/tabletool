@@ -122,17 +122,30 @@ implements TableModel,AutoCloseable
         w.write('\n');
     }
     
-    
     static String sanitizeForCsv(String strval)
     {
-        boolean comma=strval.contains(","),nl=strval.contains("\n");
-        if(comma||nl)
+        StringBuilder out=null;
+        for(int i=0;i<strval.length();i++)
         {
-            if(comma) strval = strval.replaceAll("\\\"","\"\"");
-            if(nl) strval = strval.replaceAll("\n","\n--");
-            strval = '"' + strval + '"';
+            switch(strval.charAt(i))
+            {
+            case ',':
+                if(out==null) out=new StringBuilder(strval.substring(0,i));
+                out.append(',');
+                break;
+            case '"':
+                if(out==null) out=new StringBuilder(strval.substring(0,i));
+                out.append("\"\"");
+                break;
+            case '\n':
+                if(out==null) out=new StringBuilder(strval.substring(0,i));
+                out.append("\n--");
+                break;
+            default:
+                if(out!=null) out.append(strval.charAt(i));
+            }
         }
-        return strval;
+        return out==null? strval : "\"" + out + "\"";
     }
 
     void load(LineNumberReader r)

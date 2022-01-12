@@ -4,6 +4,7 @@ import static java.awt.event.ActionEvent.CTRL_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -38,6 +39,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 
 class TabSetController
 extends MouseAdapter
@@ -45,7 +47,7 @@ implements KeyListener
 {
     int MAX_RECENTS_SIZE=500;
     
-    JFrame parent;
+    JFrame parent,cellDisplay=new JFrame();
     PropertyHolder propertyHolder;
     
     Connections connections;
@@ -55,6 +57,11 @@ implements KeyListener
     {
         this.parent = parent;
         this.propertyHolder = propertyHolder;
+        
+        Point parentLocation = parent.getLocation();
+        cellDisplay.setLocation(
+                (int)parentLocation.getX()+30,
+                (int)parentLocation.getY()+30);
         
         connections = new Connections(propertyHolder,executor);
     }
@@ -71,6 +78,9 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             tabbedPane.setSelectedIndex(tabindex);
+            JdbcNotebookController c = notebooks.get(
+                    tabbedPane.getSelectedIndex());
+            if(c.hasSavedFocusPosition) c.restoreFocus();
         }
     }
     
@@ -164,7 +174,7 @@ implements KeyListener
     JdbcNotebookController add(boolean unnamed)
     {
         var notebook = new JdbcNotebookController(
-                parent,
+                cellDisplay,
                 propertyHolder,
                 connections
         );
@@ -204,6 +214,11 @@ implements KeyListener
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         if(notebooks.size()==0) add(true);
+        SwingUtilities.invokeLater(() -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            JdbcNotebookController c = notebooks.get(selectedIndex);
+            if(c.hasSavedFocusPosition) c.restoreFocus();
+        });
     }
     
     Deque<String> recents = new LinkedList<>();
@@ -212,10 +227,10 @@ implements KeyListener
     {
         JMenu menu = new JMenu("Recent");
         
-        List<String> paths = new ArrayList<>(new LinkedHashSet<>(recents));
+        List<String> paths = new ArrayList<>(recents);
         Collections.reverse(paths);
         int count=0;
-        for(var path : paths)
+        for(var path : new LinkedHashSet<>(paths))
         {
             if(count++>20) break;
             var menuItem = new JMenuItem(path);

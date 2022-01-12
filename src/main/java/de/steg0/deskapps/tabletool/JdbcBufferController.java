@@ -12,11 +12,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -45,7 +46,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
@@ -74,7 +76,7 @@ class JdbcBufferController
     
     Logger logger = Logger.getLogger("tabletool.editor");
 
-    final JFrame parent;
+    final JFrame cellDisplay;
 
     JPanel panel = new JPanel(new GridBagLayout());
     
@@ -85,8 +87,23 @@ class JdbcBufferController
     final Color defaultBackground = editor.getBackground();
     
     UndoManager undoManager = new UndoManager();
+    
     {
         editor.getDocument().addUndoableEditListener(undoManager);
+        Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+        Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
+        editor.setBorder(unfocusedBorder);
+        editor.addFocusListener(new FocusListener()
+        {
+            @Override public void focusGained(FocusEvent e)
+            {
+                editor.setBorder(focusedBorder);
+            }
+            @Override public void focusLost(FocusEvent e)
+            {
+                editor.setBorder(unfocusedBorder);
+            }
+        });
     }
     
     JTable resultview;
@@ -94,10 +111,10 @@ class JdbcBufferController
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame parent,Consumer<String> updateLog,
+    JdbcBufferController(JFrame cellDisplay,Consumer<String> updateLog,
             int resultviewHeight)
     {
-        this.parent = parent;
+        this.cellDisplay = cellDisplay;
         this.resultviewHeight = resultviewHeight;
         this.log = updateLog;
         
@@ -151,7 +168,6 @@ class JdbcBufferController
         {
             sizes.push(currentSize); /* assuming all elements have the same */
             newSize = (int)(currentSize * factor); /* default size in Swing */
-
         }
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
@@ -174,7 +190,8 @@ class JdbcBufferController
         resultview.setRowHeight(lineHeight);
         Dimension preferredSize = resultview.getPreferredSize();
         var viewportSize = new Dimension((int)preferredSize.getWidth(),
-                (int)Math.min(resultviewHeight,preferredSize.getHeight()));
+                (int)Math.min(resultviewHeight*lineHeight,
+                        preferredSize.getHeight()));
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
         resultview.setPreferredScrollableViewportSize(viewportSize);
@@ -504,7 +521,7 @@ class JdbcBufferController
     }
     
     /**blocking */
-    void copyAsHtml()
+    void openAsHtml()
     {
         var htmlbuf = new StringBuilder();
         htmlbuf.append("<pre>");
@@ -514,9 +531,7 @@ class JdbcBufferController
         });
         htmlbuf.append("</pre>");
         htmlbuf.append(getResultSetTableModel().toHtml());
-        var selection = new HtmlSelection(htmlbuf.toString());
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection,null);
+        HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
     
     void store(Writer w)
@@ -708,7 +723,7 @@ class JdbcBufferController
         resultview = new JTable(rsm);
         setResultViewFontSize(editor.getFont().getSize());
         
-        new CellDisplayController(parent,resultview,log);
+        new CellDisplayController(cellDisplay,resultview,log);
         addResultSetPopup();
         
         resultview.setCellSelectionEnabled(true);
@@ -739,8 +754,8 @@ class JdbcBufferController
     {
         var popup = new JPopupMenu();
         JMenuItem item;
-        item = new JMenuItem("Copy as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> copyAsHtml());
+        item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
+        item.addActionListener((e) -> openAsHtml());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
         item.addActionListener((e) ->

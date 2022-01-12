@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +44,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
@@ -65,7 +67,7 @@ class JdbcNotebookController
     
     Logger logger = Logger.getLogger("tabletool.editor");
     
-    final JFrame parent;
+    final JFrame cellDisplay;
     final PropertyHolder propertyHolder;
     
     File file;
@@ -100,11 +102,11 @@ class JdbcNotebookController
     JPanel notebookPanel = new JPanel(new GridBagLayout());
     
     JdbcNotebookController(
-            JFrame parent,
+            JFrame cellDisplay,
             PropertyHolder propertyHolder,
             Connections connections)
     {
-        this.parent = parent;
+        this.cellDisplay = cellDisplay;
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         
@@ -176,7 +178,7 @@ class JdbcNotebookController
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
         resultviewHeight = propertyHolder.getResultviewHeight();
-        var buffer = new JdbcBufferController(parent,logConsumer,
+        var buffer = new JdbcBufferController(cellDisplay,logConsumer,
                 resultviewHeight);
         add(0,buffer);
 
@@ -214,7 +216,16 @@ class JdbcNotebookController
     
     void zoom(double factor)
     {
-        for(JdbcBufferController buffer : buffers) buffer.zoom(factor);
+        for(JdbcBufferController buffer : buffers)
+        {
+            buffer.zoom(factor);
+
+            if(buffer.editor.isFocusOwner())
+            {
+                SwingUtilities.invokeLater(() -> selectedRectChanged(buffer,
+                        new Rectangle(0,0,1,buffer.getLineHeight())));
+            }
+        }
     }
     
     EventListenerList listeners = new EventListenerList();
@@ -357,7 +368,7 @@ class JdbcNotebookController
             case SPLIT_REQUESTED:
                 i=buffers.indexOf(source);
                 var newBufferController = new JdbcBufferController(
-                        parent,logConsumer,resultviewHeight);
+                        cellDisplay,logConsumer,resultviewHeight);
                 newBufferController.connection = source.connection;
                 newBufferController.setBackground(source.getBackground());
                 add(i,newBufferController);
@@ -418,6 +429,7 @@ class JdbcNotebookController
     };
 
     /**Adds a buffer to the panel and wires listeners. */
+    @SuppressWarnings("unchecked")
     void add(int index,JdbcBufferController c)
     {
         c.addListener(bufferListener);
@@ -436,6 +448,11 @@ class JdbcNotebookController
             public void focusGained(FocusEvent e) { }
         });
         c.fetchsize = Integer.parseInt(fetchsizeField.getText());
+        if(buffers.size()>0)
+        {
+            c.editor.setFont(buffers.get(0).editor.getFont());
+            c.sizes = (Stack<Integer>)buffers.get(0).sizes.clone();
+        }
         
         buffers.add(index,c);
         
@@ -473,7 +490,7 @@ class JdbcNotebookController
         int i=buffers.indexOf(source);
         if(buffers.size() <= i+1)
         {
-            var newBufferController = new JdbcBufferController(parent,
+            var newBufferController = new JdbcBufferController(cellDisplay,
                     logConsumer,resultviewHeight);
             newBufferController.connection = source.connection;
             newBufferController.setBackground(source.getBackground());
@@ -556,7 +573,7 @@ class JdbcNotebookController
         while(linesRead>0)
         {
             var newBufferController = new JdbcBufferController(
-                    parent,logConsumer,resultviewHeight);
+                    cellDisplay,logConsumer,resultviewHeight);
             newBufferController.setBackground(buffers.get(0).getBackground());
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);
