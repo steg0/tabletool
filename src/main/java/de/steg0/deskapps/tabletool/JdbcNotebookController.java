@@ -537,6 +537,12 @@ class JdbcNotebookController
             }
             this.file=file;
         }
+        if(unsaved&&file.exists())
+        {
+            var bakfile=new File(file.getPath()+'~');
+            bakfile.delete();
+            file.renameTo(bakfile);
+        }
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
