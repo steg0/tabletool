@@ -195,7 +195,8 @@ extends WindowAdapter
         if(optind<args.length)
         {
             String firstdoc=args[optind];
-            if(firstdoc.toLowerCase().endsWith(".xml"))
+            if(firstdoc.toLowerCase().endsWith(".xml") || 
+               firstdoc.toLowerCase().endsWith(".tabtype"))
             {
                 m = new Tabtype(propertiesfile,firstdoc);
             }
