@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -129,13 +130,26 @@ class CellDisplayController
             loadButton.addActionListener(importAction);
             buttonPanel.add(loadButton);
 
-            var dump = new HexDump(blob,16*0x100);
+            try(var is = blob.getBinaryStream())
+            {
+                var dump = new HexDump(is,16*0x100);
+                textarea.setFont(new Font(
+                        Font.MONOSPACED,
+                        Font.PLAIN,
+                        textarea.getFont().getSize()));
+                textarea.setText(dump.dump);
+                dialogtitle = "BLOB bytes 0 to "+dump.length+" of "+blob.length();
+            }
+        }
+        else if(value instanceof byte[] b)
+        {
+            var dump = new HexDump(new ByteArrayInputStream(b),b.length);
             textarea.setFont(new Font(
                     Font.MONOSPACED,
                     Font.PLAIN,
                     textarea.getFont().getSize()));
             textarea.setText(dump.dump);
-            dialogtitle = "BLOB bytes 0 to "+dump.length+" of "+blob.length();
+            dialogtitle = "byte["+b.length+"] display";
         }
         else
         {
@@ -185,35 +199,32 @@ class CellDisplayController
         String dump;
         int length;
         
-        HexDump(Blob blob,int maxlength)
-        throws SQLException,IOException
+        HexDump(InputStream is,int maxlength)
+        throws IOException
         {
-            try(InputStream is = blob.getBinaryStream())
+            var hex=new StringBuilder();
+            var plain=new StringBuilder();
+            int i=0;
+            for(;i<maxlength;i++)
             {
-                var hex=new StringBuilder();
-                var plain=new StringBuilder();
-                int i=0;
-                for(;i<maxlength;i++)
+                int b=is.read();
+                if(b==-1)
                 {
-                    int b=is.read();
-                    if(b==-1)
-                    {
-                        for(int j=0;j<16-i%16;j++) hex.append("   ");
-                        hex.append(plain);
-                        break;
-                    }
-                    if(i%16==0)
-                    {
-                        if(i>0) hex.append(plain).append('\n');
-                        plain.setLength(0);
-                        hex.append(String.format("%04x ",i));
-                    }
-                    hex.append(String.format("%02x ",b));
-                    plain.append(b>=0&&b<32?'.':(char)b);
+                    for(int j=0;j<16-i%16;j++) hex.append("   ");
+                    hex.append(plain);
+                    break;
                 }
-                dump=hex.toString();
-                length=i;
+                if(i%16==0)
+                {
+                    if(i>0) hex.append(plain).append('\n');
+                    plain.setLength(0);
+                    hex.append(String.format("%04x ",i));
+                }
+                hex.append(String.format("%02x ",b));
+                plain.append(b>=0&&b<32?'.':(char)b);
             }
+            dump=hex.toString();
+            length=i;
         }
     }
     
