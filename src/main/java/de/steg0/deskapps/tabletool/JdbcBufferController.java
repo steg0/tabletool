@@ -776,7 +776,7 @@ class JdbcBufferController
             @Override
             public void mouseReleased(MouseEvent e) {
                 mousePressed(e);
-            }            
+            }
         };
         resultview.addMouseListener(popuplistener);
         resultview.getTableHeader().addMouseListener(popuplistener);
