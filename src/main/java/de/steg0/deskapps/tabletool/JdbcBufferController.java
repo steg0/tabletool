@@ -454,7 +454,11 @@ class JdbcBufferController
          * change. */
         try
         {
-            editor.getDocument().insertString(0,c.editor.getText() + "\n",null);
+            if(editor.getText().length()>0)
+            {
+                editor.getDocument().insertString(0,"\n",null);
+            }
+            editor.getDocument().insertString(0,c.editor.getText(),null);
         }
         catch(BadLocationException e)
         {
