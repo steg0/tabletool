@@ -617,8 +617,9 @@ class JdbcBufferController
             e.selectionEnd = end;
             fireBufferEvent(e);
             
-            /* Use Document API so that the editor does not request a viewport
-             * change. */
+            /* Split now so that the user cannot edit anything inbetween,
+             * which would mess up our offsets. Use Document API so that
+             * the editor does not request a viewport change. */
             if(d.getLength()>end && d.getText(end,1).equals("\n")) end++;
             editor.getDocument().remove(0,end);
 
@@ -693,8 +694,20 @@ class JdbcBufferController
         restoreCaretPosition();
     };
     
+    /**
+     * The first argument is the result data; <code>null</code> means there is
+     * nothing to display, which can lead to the buffer being closed.
+     */
     BiConsumer<ResultSetTableModel,Long> resultConsumer = (rsm,t) ->
     {
+        /* In case of a possible fresh split, close again if there is
+         * nothing to display */
+        if(rsm==null)
+        {
+            if(resultview==null) closeBuffer();
+            return;
+        }
+
         restoreCaretPosition();
 
         addResultSetTable(rsm);
@@ -748,6 +761,18 @@ class JdbcBufferController
         
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     }
+
+    void closeBuffer()
+    {
+        closeCurrentResultSet();
+        resultview=null;
+        if(panel.getComponentCount()>1)
+        {
+            panel.remove(1);
+            panel.revalidate();
+        }
+        fireBufferEvent(Type.RESULT_VIEW_CLOSED);
+    }
     
     void addResultSetPopup()
     {
@@ -757,14 +782,7 @@ class JdbcBufferController
         item.addActionListener((e) -> openAsHtml());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
-        item.addActionListener((e) ->
-        {
-            closeCurrentResultSet();
-            resultview=null;
-            panel.remove(1);
-            panel.revalidate();
-            fireBufferEvent(Type.RESULT_VIEW_CLOSED);
-        });
+        item.addActionListener((e) -> closeBuffer());
         popup.add(item);
         var popuplistener = new MouseAdapter()
         {

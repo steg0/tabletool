@@ -387,6 +387,7 @@ class JdbcNotebookController
                 if(i<buffers.size()-1)
                 {
                     buffers.get(i+1).prepend(source);
+                    buffers.get(i+1).focusEditor(null,null);
                     remove(i);
                 }
             case RESULT_VIEW_UPDATED:
