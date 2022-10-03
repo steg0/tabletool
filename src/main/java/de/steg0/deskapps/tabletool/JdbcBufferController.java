@@ -128,12 +128,14 @@ class JdbcBufferController
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
                 "Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
         var am = editor.getActionMap();
         am.put("Execute",executeAction);
         am.put("Execute/Split",executeSplitAction);
+        am.put("Show Completions",showCompletionPopupAction);
         am.put("Toggle Comment",toggleCommentAction);
         am.put("Undo",undoAction);
         am.put("Redo",redoAction);
@@ -209,6 +211,23 @@ class JdbcBufferController
             @Override public void actionPerformed(ActionEvent e)
             {
                 fetch(true);
+            }
+        },
+        showCompletionPopupAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(connection == null)
+                {
+                    log.accept("No connection available at "+new Date());
+                    fireBufferEvent(Type.DRY_FETCH);
+                    return;
+                }
+                var resultConsumer =
+                    new MenuResultConsumer(JdbcBufferController.this,0,0);
+                connection.submit(
+                        "select 1 from sysibm.sysdummy1 union select 2 from sysibm.sysdummy1;",
+                        10,resultConsumer,updateCountConsumer,log);
             }
         },
         toggleCommentAction = new AbstractAction()
