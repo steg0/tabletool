@@ -259,7 +259,6 @@ class JdbcBufferController
                 if(undoManager.canRedo()) undoManager.redo();
             }
         };
-
     
     KeyListener editorKeyListener = new KeyListener()
     {
