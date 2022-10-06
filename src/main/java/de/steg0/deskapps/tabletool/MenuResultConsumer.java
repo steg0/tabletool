@@ -25,7 +25,7 @@ class MenuResultConsumer implements BiConsumer<ResultSetTableModel,Long>
         for(int i=0;i<m.getRowCount()&&i<10;i++)
         {
             String completion = String.valueOf(m.getValueAt(i,0));
-            item = new JMenuItem(completion.replaceFirst("^.{30}(.*)$","$1"));
+            item = new JMenuItem(completion.replaceFirst("^.{80}(.*)$","$1"));
             item.addActionListener((e) -> buffer.editor.insert(completion,0));
             popup.add(item);
         }
