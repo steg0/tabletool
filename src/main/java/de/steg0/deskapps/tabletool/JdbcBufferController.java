@@ -225,6 +225,10 @@ class JdbcBufferController
                 }
                 try
                 {
+                    selectListener.clickPos = editor.getCaretPosition();
+                    selectListener.selectWord();
+                    String text = editor.getSelectedText();
+                    logger.fine("Completing text: "+text);
                     var xy = editor.modelToView2D(editor.getCaretPosition());
                     var resultConsumer =
                         new MenuResultConsumer(JdbcBufferController.this,

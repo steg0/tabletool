@@ -19,6 +19,8 @@ class MenuResultConsumer implements BiConsumer<ResultSetTableModel,Long>
 
     public void accept(ResultSetTableModel m,Long count)
     {
+        if(m==null) return;
+        
         var popup = new JPopupMenu();
         JMenuItem item;
 
