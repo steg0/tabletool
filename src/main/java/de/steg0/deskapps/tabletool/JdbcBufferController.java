@@ -223,11 +223,19 @@ class JdbcBufferController
                     fireBufferEvent(Type.DRY_FETCH);
                     return;
                 }
-                var resultConsumer =
-                    new MenuResultConsumer(JdbcBufferController.this,0,0);
-                connection.submit(
-                        "select 1 from sysibm.sysdummy1 union select 2 from sysibm.sysdummy1;",
-                        10,resultConsumer,updateCountConsumer,log);
+                try
+                {
+                    var xy = editor.modelToView2D(editor.getCaretPosition());
+                    var resultConsumer =
+                        new MenuResultConsumer(JdbcBufferController.this,
+                                (int)xy.getCenterX(),(int)xy.getCenterY());
+                    connection.submit(
+                            "select 1 from sysibm.sysdummy1 union select 2 from sysibm.sysdummy1;",
+                            10,resultConsumer,updateCountConsumer,log);
+                }
+                catch(BadLocationException ignored)
+                {
+                }
             }
         },
         toggleCommentAction = new AbstractAction()
