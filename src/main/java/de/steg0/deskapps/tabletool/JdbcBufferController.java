@@ -200,8 +200,6 @@ class JdbcBufferController
         resultview.setPreferredScrollableViewportSize(viewportSize);
     }
     
-    String completionTemplate = "@@selection@@";
-
     Action
         executeAction = new AbstractAction()
         {
@@ -242,9 +240,11 @@ class JdbcBufferController
                     var resultConsumer =
                         new MenuResultConsumer(JdbcBufferController.this,
                                 (int)xy.getCenterX(),(int)xy.getCenterY());
+                    String sql = configSource.getCompletionTemplate()
+                        .replaceAll("@@selection@@",text);
+                    logger.fine("Completion using SQL: "+sql);
                     connection.submit(
-                            completionTemplate.replaceAll("@@selection@@",text),
-                            10,resultConsumer,updateCountConsumer,log);
+                            sql,10,resultConsumer,updateCountConsumer,log);
                 }
                 catch(BadLocationException ignored)
                 {
