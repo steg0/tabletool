@@ -28,8 +28,8 @@ class MenuResultConsumer implements BiConsumer<ResultSetTableModel,Long>
         {
             String completion = String.valueOf(m.getValueAt(i,0));
             item = new JMenuItem(completion.replaceFirst("^.{80}(.*)$","$1"));
-            item.addActionListener((e) -> buffer.editor.insert(completion,
-                buffer.editor.getCaretPosition()));
+            item.addActionListener((e) -> buffer.editor.replaceSelection(
+                    completion));
             popup.add(item);
         }
 

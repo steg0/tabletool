@@ -118,7 +118,8 @@ extends MouseAdapter
 
     int getWordStartPos(String text,int initPos)
     {
-        int i = initPos;
+        if(text.length()==0) return 0;
+        int i = min(initPos,text.length()-1);
         while(i >= 0 && (
               Character.isJavaIdentifierStart(text.charAt(i)) ||
               Character.isJavaIdentifierPart(text.charAt(i))))

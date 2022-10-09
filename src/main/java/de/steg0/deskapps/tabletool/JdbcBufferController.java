@@ -107,14 +107,16 @@ class JdbcBufferController
     
     JTable resultview;
     int resultviewHeight;
+    JdbcBufferConfigSource configSource;
     
     Consumer<String> log;
     
     JdbcBufferController(JFrame cellDisplay,Consumer<String> updateLog,
-            int resultviewHeight)
+            int resultviewHeight,JdbcBufferConfigSource configSource)
     {
         this.cellDisplay = cellDisplay;
         this.resultviewHeight = resultviewHeight;
+        this.configSource = configSource;
         this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
@@ -198,6 +200,8 @@ class JdbcBufferController
         resultview.setPreferredScrollableViewportSize(viewportSize);
     }
     
+    String completionTemplate = "@@selection@@";
+
     Action
         executeAction = new AbstractAction()
         {
@@ -225,16 +229,21 @@ class JdbcBufferController
                 }
                 try
                 {
-                    selectListener.clickPos = editor.getCaretPosition();
-                    selectListener.selectWord();
                     String text = editor.getSelectedText();
+                    if(text == null)
+                    {
+                        selectListener.clickPos = editor.getCaretPosition();
+                        selectListener.selectWord();
+                        text = editor.getSelectedText();
+                    }
+                    if(text == null) return;
                     logger.fine("Completing text: "+text);
                     var xy = editor.modelToView2D(editor.getCaretPosition());
                     var resultConsumer =
                         new MenuResultConsumer(JdbcBufferController.this,
                                 (int)xy.getCenterX(),(int)xy.getCenterY());
                     connection.submit(
-                            "select 1 from sysibm.sysdummy1 union select 2 from sysibm.sysdummy1;",
+                            completionTemplate.replaceAll("@@selection@@",text),
                             10,resultConsumer,updateCountConsumer,log);
                 }
                 catch(BadLocationException ignored)
