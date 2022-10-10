@@ -239,7 +239,7 @@ class JdbcBufferController
                     var xy = editor.modelToView2D(editor.getCaretPosition());
                     var resultConsumer =
                         new MenuResultConsumer(JdbcBufferController.this,
-                                (int)xy.getCenterX(),(int)xy.getCenterY());
+                                (int)xy.getCenterX(),(int)xy.getCenterY(),log);
                     String sql = configSource.getCompletionTemplate()
                         .replaceAll("@@selection@@",text);
                     logger.fine("Completion using SQL: "+sql);
