@@ -17,6 +17,5 @@ class JdbcBufferConfigSource
         Connections.ConnectionState connectionState = 
             (Connections.ConnectionState)connectionListModel.getSelectedItem();
         return connectionState.info().completionTemplate;
-    }
-    
+    }   
 }
