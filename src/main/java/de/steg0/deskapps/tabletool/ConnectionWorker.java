@@ -99,33 +99,55 @@ class ConnectionWorker
         void getResult(String text)
         throws SQLException
         {
-            String lc = text.toLowerCase();
-            if(lc.startsWith("begin") || 
-               lc.startsWith("declare") ||
-               lc.startsWith("create") ||
-               lc.startsWith("call") ||
-               lc.startsWith("{")
-            )
+            try
             {
-                if(text.endsWith(";"))
+                String lc = text.toLowerCase();
+                if(lc.startsWith("begin") || 
+                    lc.startsWith("declare") ||
+                    lc.startsWith("create") ||
+                    lc.startsWith("call") ||
+                    lc.startsWith("{")
+                )
                 {
-                    String noSemicolon = lc.substring(0,text.length()-1);
-                    if(!noSemicolon.trim().endsWith("end")) text = text
-                            .substring(0,text.length()-1);
+                    if(text.endsWith(";"))
+                    {
+                        String noSemicolon = lc.substring(0,text.length()-1);
+                        if(!noSemicolon.trim().endsWith("end")) text = text
+                                .substring(0,text.length()-1);
+                    }
+                    CallableStatement st = connection.prepareCall(text);
+                    if(st.execute(text))
+                    {
+                        reportResult(st);
+                    }
+                    else
+                    {
+                        reportNullResult();
+                        displayUpdateCount(st);
+                    }
                 }
-                CallableStatement st = connection.prepareCall(text);
-                if(st.execute()) reportResult(st);
-                else displayUpdateCount(st);
+                else
+                {
+                    Statement st = connection.createStatement(
+                            ResultSet.TYPE_FORWARD_ONLY,
+                            ResultSet.CONCUR_UPDATABLE
+                    );
+                    if(text.endsWith(";")) text = text.substring(0,text.length()-1);
+                    if(st.execute(text))
+                    {
+                        reportResult(st);
+                    }
+                    else
+                    {
+                        reportNullResult();
+                        displayUpdateCount(st);
+                    }
+                }
             }
-            else
+            catch(SQLException e)
             {
-                Statement st = connection.createStatement(
-                        ResultSet.TYPE_FORWARD_ONLY,
-                        ResultSet.CONCUR_UPDATABLE
-                );
-                if(text.endsWith(";")) text = text.substring(0,text.length()-1);
-                if(st.execute(text)) reportResult(st);
-                else displayUpdateCount(st);
+                reportNullResult();
+                throw e;
             }
         }
         
@@ -138,6 +160,11 @@ class ConnectionWorker
             statement.close();
         }
         
+        void reportNullResult()
+        {
+            invokeLater(() -> resultConsumer.accept(null,0L));
+        }
+
         void reportResult(Statement statement)
         throws SQLException
         {

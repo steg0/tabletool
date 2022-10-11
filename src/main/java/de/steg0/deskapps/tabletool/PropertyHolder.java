@@ -73,7 +73,7 @@ class PropertyHolder
     {
         static final String PROPERTY_PREFIX = "connections.";
         
-        String name,url,username,password;
+        String name,url,username,password,completionTemplate;
         Color background;
         
         ConnectionInfo(String nameKey)
@@ -83,6 +83,8 @@ class PropertyHolder
             url=String.valueOf(properties.get(prefix+".url"));
             username=String.valueOf(properties.get(prefix+".username"));
             password=String.valueOf(properties.get(prefix+".password"));
+            completionTemplate=String.valueOf(properties.get(prefix+
+                    ".completionTemplate"));
             if(properties.containsKey(prefix+".bg"))
             {
                 background=Color.decode(String.valueOf(properties.get(

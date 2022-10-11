@@ -45,8 +45,10 @@ extends WindowAdapter
     
     void showJdbcBuffer()
     {
-        String title = (workspace!=null? workspace.getName()+" - " : "") + 
-                "Tabtype " + ManagementFactory.getRuntimeMXBean().getName();
+        String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
+            "(.)\\.[^.]+$","$1")+" - " : "");
+        String jvmName = ManagementFactory.getRuntimeMXBean().getName();
+        String title = wsprefix + "Tabtype " + jvmName;
         frame = new JFrame(title);
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
@@ -195,7 +197,8 @@ extends WindowAdapter
         if(optind<args.length)
         {
             String firstdoc=args[optind];
-            if(firstdoc.toLowerCase().endsWith(".xml"))
+            if(firstdoc.toLowerCase().endsWith(".xml") || 
+               firstdoc.toLowerCase().endsWith(".tabtype"))
             {
                 m = new Tabtype(propertiesfile,firstdoc);
             }

@@ -4,13 +4,12 @@
   <groupId>de.steg0.deskapps.tabletool</groupId>
   <artifactId>tabtype</artifactId>
   <packaging>jar</packaging>
-  <version>0.29-SNAPSHOT</version>
+  <version>0.31-SNAPSHOT</version>
   <name>tabtype</name>
   <url>http://www.steg0.eu</url>
 
   <properties>
-    <maven.compiler.source>13</maven.compiler.source>
-    <maven.compiler.target>13</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
     <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>

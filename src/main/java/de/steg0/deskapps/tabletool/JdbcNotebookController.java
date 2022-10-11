@@ -69,6 +69,7 @@ class JdbcNotebookController
     
     final JFrame cellDisplay;
     final PropertyHolder propertyHolder;
+    final JdbcBufferConfigSource bufferConfigSource;
     
     File file;
     boolean unsaved;
@@ -109,6 +110,8 @@ class JdbcNotebookController
         this.cellDisplay = cellDisplay;
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
+        this.bufferConfigSource = new JdbcBufferConfigSource(propertyHolder,
+                this.connections);
         
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -179,7 +182,7 @@ class JdbcNotebookController
         
         resultviewHeight = propertyHolder.getResultviewHeight();
         var buffer = new JdbcBufferController(cellDisplay,logConsumer,
-                resultviewHeight);
+                resultviewHeight,bufferConfigSource);
         add(0,buffer);
 
         var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -368,7 +371,8 @@ class JdbcNotebookController
             case SPLIT_REQUESTED:
                 i=buffers.indexOf(source);
                 var newBufferController = new JdbcBufferController(
-                        cellDisplay,logConsumer,resultviewHeight);
+                        cellDisplay,logConsumer,resultviewHeight,
+                        bufferConfigSource);
                 newBufferController.connection = source.connection;
                 newBufferController.setBackground(source.getBackground());
                 add(i,newBufferController);
@@ -387,6 +391,7 @@ class JdbcNotebookController
                 if(i<buffers.size()-1)
                 {
                     buffers.get(i+1).prepend(source);
+                    buffers.get(i+1).focusEditor(null,null);
                     remove(i);
                 }
             case RESULT_VIEW_UPDATED:
@@ -491,7 +496,7 @@ class JdbcNotebookController
         if(buffers.size() <= i+1)
         {
             var newBufferController = new JdbcBufferController(cellDisplay,
-                    logConsumer,resultviewHeight);
+                    logConsumer,resultviewHeight,bufferConfigSource);
             newBufferController.connection = source.connection;
             newBufferController.setBackground(source.getBackground());
             add(i+1,newBufferController);
@@ -537,6 +542,12 @@ class JdbcNotebookController
             }
             this.file=file;
         }
+        if(unsaved&&file.exists())
+        {
+            var bakfile=new File(file.getPath()+'~');
+            bakfile.delete();
+            file.renameTo(bakfile);
+        }
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
@@ -573,7 +584,8 @@ class JdbcNotebookController
         while(linesRead>0)
         {
             var newBufferController = new JdbcBufferController(
-                    cellDisplay,logConsumer,resultviewHeight);
+                    cellDisplay,logConsumer,resultviewHeight,
+                    bufferConfigSource);
             newBufferController.setBackground(buffers.get(0).getBackground());
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);

@@ -47,7 +47,6 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
@@ -108,14 +107,16 @@ class JdbcBufferController
     
     JTable resultview;
     int resultviewHeight;
+    JdbcBufferConfigSource configSource;
     
     Consumer<String> log;
     
     JdbcBufferController(JFrame cellDisplay,Consumer<String> updateLog,
-            int resultviewHeight)
+            int resultviewHeight,JdbcBufferConfigSource configSource)
     {
         this.cellDisplay = cellDisplay;
         this.resultviewHeight = resultviewHeight;
+        this.configSource = configSource;
         this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
@@ -129,12 +130,14 @@ class JdbcBufferController
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
                 "Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
         var am = editor.getActionMap();
         am.put("Execute",executeAction);
         am.put("Execute/Split",executeSplitAction);
+        am.put("Show Completions",showCompletionPopupAction);
         am.put("Toggle Comment",toggleCommentAction);
         am.put("Undo",undoAction);
         am.put("Redo",redoAction);
@@ -212,6 +215,42 @@ class JdbcBufferController
                 fetch(true);
             }
         },
+        showCompletionPopupAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(connection == null)
+                {
+                    log.accept("No connection available at "+new Date());
+                    fireBufferEvent(Type.DRY_FETCH);
+                    return;
+                }
+                try
+                {
+                    String text = editor.getSelectedText();
+                    if(text == null)
+                    {
+                        selectListener.clickPos = editor.getCaretPosition();
+                        selectListener.selectWord();
+                        text = editor.getSelectedText();
+                    }
+                    if(text == null) return;
+                    logger.fine("Completing text: "+text);
+                    var xy = editor.modelToView2D(editor.getCaretPosition());
+                    var resultConsumer =
+                        new MenuResultConsumer(JdbcBufferController.this,
+                                (int)xy.getCenterX(),(int)xy.getCenterY(),log);
+                    String sql = configSource.getCompletionTemplate()
+                        .replaceAll("@@selection@@",text);
+                    logger.fine("Completion using SQL: "+sql);
+                    connection.submit(
+                            sql,10,resultConsumer,updateCountConsumer,log);
+                }
+                catch(BadLocationException ignored)
+                {
+                }
+            }
+        },
         toggleCommentAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -233,7 +272,6 @@ class JdbcBufferController
                 if(undoManager.canRedo()) undoManager.redo();
             }
         };
-
     
     KeyListener editorKeyListener = new KeyListener()
     {
@@ -455,7 +493,11 @@ class JdbcBufferController
          * change. */
         try
         {
-            editor.getDocument().insertString(0,c.editor.getText() + "\n",null);
+            if(editor.getText().length()>0)
+            {
+                editor.getDocument().insertString(0,"\n",null);
+            }
+            editor.getDocument().insertString(0,c.editor.getText(),null);
         }
         catch(BadLocationException e)
         {
@@ -618,8 +660,9 @@ class JdbcBufferController
             e.selectionEnd = end;
             fireBufferEvent(e);
             
-            /* Use Document API so that the editor does not request a viewport
-             * change. */
+            /* Split now so that the user cannot edit anything inbetween,
+             * which would mess up our offsets. Use Document API so that
+             * the editor does not request a viewport change. */
             if(d.getLength()>end && d.getText(end,1).equals("\n")) end++;
             editor.getDocument().remove(0,end);
 
@@ -694,8 +737,20 @@ class JdbcBufferController
         restoreCaretPosition();
     };
     
+    /**
+     * The first argument is the result data; <code>null</code> means there is
+     * nothing to display, which can lead to the buffer being closed.
+     */
     BiConsumer<ResultSetTableModel,Long> resultConsumer = (rsm,t) ->
     {
+        /* In case of a possible fresh split, close again if there is
+         * nothing to display */
+        if(rsm==null)
+        {
+            if(resultview==null) closeBuffer();
+            return;
+        }
+
         restoreCaretPosition();
 
         addResultSetTable(rsm);
@@ -749,6 +804,18 @@ class JdbcBufferController
         
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     }
+
+    void closeBuffer()
+    {
+        closeCurrentResultSet();
+        resultview=null;
+        if(panel.getComponentCount()>1)
+        {
+            panel.remove(1);
+            panel.revalidate();
+        }
+        fireBufferEvent(Type.RESULT_VIEW_CLOSED);
+    }
     
     void addResultSetPopup()
     {
@@ -758,14 +825,7 @@ class JdbcBufferController
         item.addActionListener((e) -> openAsHtml());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
-        item.addActionListener((e) ->
-        {
-            closeCurrentResultSet();
-            resultview=null;
-            panel.remove(1);
-            panel.revalidate();
-            fireBufferEvent(Type.RESULT_VIEW_CLOSED);
-        });
+        item.addActionListener((e) -> closeBuffer());
         popup.add(item);
         var popuplistener = new MouseAdapter()
         {
@@ -777,7 +837,7 @@ class JdbcBufferController
             @Override
             public void mouseReleased(MouseEvent e) {
                 mousePressed(e);
-            }            
+            }
         };
         resultview.addMouseListener(popuplistener);
         resultview.getTableHeader().addMouseListener(popuplistener);

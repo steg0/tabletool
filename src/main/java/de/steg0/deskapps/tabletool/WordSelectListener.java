@@ -119,13 +119,13 @@ extends MouseAdapter
     int getWordStartPos(String text,int initPos)
     {
         int i = initPos;
-        while(i >= 0 && (
-              Character.isJavaIdentifierStart(text.charAt(i)) ||
-              Character.isJavaIdentifierPart(text.charAt(i))))
+        while(i > 0 && (
+              Character.isJavaIdentifierStart(text.charAt(i-1)) ||
+              Character.isJavaIdentifierPart(text.charAt(i-1))))
         {
             i--;
         }
-        return i + 1;
+        return i;
     }
 
     int getWordEndPos(String text,int initPos)
