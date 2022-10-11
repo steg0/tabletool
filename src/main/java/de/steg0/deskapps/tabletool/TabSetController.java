@@ -4,6 +4,7 @@ import static java.awt.event.ActionEvent.CTRL_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -333,6 +334,25 @@ implements KeyListener
             {
                 removeSelected();
             }
+        },
+        openPropertiesAction = new AbstractAction("Edit Properties")
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                try
+                {
+                    Desktop.getDesktop().open(propertyHolder.propertiesfile);
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            tabbedPane,
+                            "Error opening "+propertyHolder.propertiesfile+
+                            ": "+e.getMessage(),
+                            "Error opening properties",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
         };
     
     void recreateMenuBar()
@@ -371,6 +391,13 @@ implements KeyListener
         item = new JMenuItem(closeAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_W,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
+
+        item = new JMenuItem(openPropertiesAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_COMMA,CTRL_MASK));
+        item.setMnemonic(KeyEvent.VK_P);
+        item.setEnabled(propertyHolder.propertiesfile != null &&
+                Desktop.isDesktopSupported());
         menu.add(item);
 
         menubar.add(menu);
