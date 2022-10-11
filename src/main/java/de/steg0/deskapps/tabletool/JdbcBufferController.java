@@ -237,14 +237,16 @@ class JdbcBufferController
                     if(text == null) return;
                     logger.fine("Completing text: "+text);
                     var xy = editor.modelToView2D(editor.getCaretPosition());
+                    int maxresults = 16;
                     var resultConsumer =
                         new MenuResultConsumer(JdbcBufferController.this,
-                                (int)xy.getCenterX(),(int)xy.getCenterY(),log);
+                                (int)xy.getCenterX(),(int)xy.getCenterY(),
+                                log,maxresults);
                     String sql = configSource.getCompletionTemplate()
                         .replaceAll("@@selection@@",text);
                     logger.fine("Completion using SQL: "+sql);
-                    connection.submit(
-                            sql,10,resultConsumer,updateCountConsumer,log);
+                    connection.submit(sql,maxresults,resultConsumer,
+                            updateCountConsumer,log);
                 }
                 catch(BadLocationException ignored)
                 {
