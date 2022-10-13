@@ -608,7 +608,7 @@ class JdbcNotebookController
     
     PropertyChangeListener fetchSizeListener = (e) ->
     {
-        int  fetchsize = Integer.parseInt(fetchsizeField.getText());
+        int fetchsize = Integer.parseInt(fetchsizeField.getText());
         for(JdbcBufferController buffer : buffers)
         {
             buffer.fetchsize = fetchsize;
