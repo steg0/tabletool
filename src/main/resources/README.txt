@@ -35,6 +35,9 @@ The configuration file supports the following keys:
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
   connections.<Name 1>.bg=#eeeedd
+  connections.<Name 1>.completionTemplate=\
+      select table_name from user_tables \
+      where lower(table_name) like lower('@@selection@@%')
 └─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
@@ -52,6 +55,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+/ - comment/uncomment.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
+• F8 - execute completion template for word under cursor or selection.
 
 To navigate across a result table, use Up/Down arrow keys.
 
@@ -62,8 +66,7 @@ A right click on the result table brings up a popup menu which allows closing th
 Ⓐ a subsequent query is submitted over the connection; and, as mentioned,
 Ⓑ the result table is closed (either with the popup action or by closing the tab).
 
-Some JDBC drivers close ResultSets automatically when the cursor moves
-beyond the last row.
+Some JDBC drivers close ResultSets automatically when the cursor moves beyond the last row.
 
 
 ▶ Submitting blocks
