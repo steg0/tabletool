@@ -353,6 +353,30 @@ implements KeyListener
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
+        },
+        commitAction = new AbstractAction("Commit")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).commit();
+            }
+        },
+        rollbackAction = new AbstractAction("Rollback")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).rollback();
+            }
+        },
+        disconnectAction = new AbstractAction("Disconnect")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).disconnect();
+            }
         };
     
     void recreateMenuBar()
@@ -401,7 +425,24 @@ implements KeyListener
         menu.add(item);
 
         menubar.add(menu);
+
+        menu = new JMenu("Connection");
+        menu.setMnemonic(KeyEvent.VK_C);
+
+        item = new JMenuItem(commitAction);
+        item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
         
+        item = new JMenuItem(rollbackAction);
+        item.setMnemonic(KeyEvent.VK_R);
+        menu.add(item);
+        
+        item = new JMenuItem(disconnectAction);
+        item.setMnemonic(KeyEvent.VK_D);
+        menu.add(item);
+        
+        menubar.add(menu);
+
         menu = new JMenu("Help");
         menu.setMnemonic(KeyEvent.VK_H);
         

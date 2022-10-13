@@ -131,31 +131,13 @@ class JdbcNotebookController
         fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
         connectionPanel.add(fetchsizeField);
         
-        commitButton.addActionListener((e) -> 
-        {
-            onConnection((c) -> c.commit(logConsumer));
-        });
+        commitButton.addActionListener((e) -> commit());
         connectionPanel.add(commitButton);
         
-        rollbackButton.addActionListener((e) -> 
-        {
-            onConnection((c) -> c.rollback(logConsumer));
-        });
+        rollbackButton.addActionListener((e) -> rollback());
         connectionPanel.add(rollbackButton);
         
-        disconnectButton.addActionListener((e) ->
-        {
-            onConnection((c) -> 
-            {
-                c.disconnect(logConsumer,() ->
-                {
-                    for(Listener l : listeners.getListeners(Listener.class))
-                    {
-                        l.disconnected(c);
-                    }
-                });
-            });
-        });
+        disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
         autocommitCb.addActionListener((e) -> 
@@ -207,7 +189,7 @@ class JdbcNotebookController
         
         setBackground(null);
     }
-    
+
     void setBackground(Color bg)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
@@ -593,6 +575,30 @@ class JdbcNotebookController
         unsaved=false;
         bufferPanel.revalidate();
         buffers.get(0).focusEditor(0,0);
+    }
+    
+    void commit()
+    {
+        onConnection((c) -> c.commit(logConsumer));
+    }
+
+    void rollback()
+    {
+        onConnection((c) -> c.rollback(logConsumer));
+    }
+
+    void disconnect()
+    {
+        onConnection((c) -> 
+        {
+            c.disconnect(logConsumer,() ->
+            {
+                for(Listener l : listeners.getListeners(Listener.class))
+                {
+                    l.disconnected(c);
+                }
+            });
+        });
     }
     
     void restoreFocus()
