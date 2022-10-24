@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.ALT_MASK;
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
@@ -100,6 +101,117 @@ implements KeyListener
         }
     }
 
+    Action
+        addAction = new AbstractAction("New")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                add(true);
+            }
+        },
+        loadAction = new AbstractAction("Load...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                load(null);
+            }
+        },
+        saveAction = new AbstractAction("Save")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                boolean newBuffer=notebook.file==null;
+                if(notebook.store(false))
+                {
+                    tabbedPane.setTitleAt(index,notebook.file.getName());
+                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
+                    if(newBuffer) addRecent(notebook.file);
+                }
+            }
+        },
+        saveAsAction = new AbstractAction("Save As...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                if(notebook.store(true))
+                {
+                    tabbedPane.setTitleAt(index,notebook.file.getName());
+                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
+                    addRecent(notebook.file);
+                }
+            }
+        },
+        closeAction = new AbstractAction("Close")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                removeSelected();
+            }
+        },
+        openPropertiesAction = new AbstractAction("Edit Properties")
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                try
+                {
+                    Desktop.getDesktop().open(propertyHolder.propertiesfile);
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            tabbedPane,
+                            "Error opening "+propertyHolder.propertiesfile+
+                            ": "+e.getMessage(),
+                            "Error opening properties",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        },
+        increaseFetchsizeAction = new AbstractAction("Fetchsize+")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).increaseFetchsize();
+            }
+        },
+        decreaseFetchsizeAction = new AbstractAction("Fetchsize-")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).decreaseFetchsize();
+            }
+        },
+        commitAction = new AbstractAction("Commit")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).commit();
+            }
+        },
+        rollbackAction = new AbstractAction("Rollback")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).rollback();
+            }
+        },
+        disconnectAction = new AbstractAction("Disconnect")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).disconnect();
+            }
+        };
+
     {
         tabbedPane.addKeyListener(this);
         tabbedPane.addMouseListener(this);
@@ -117,6 +229,8 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_0,CTRL_MASK),"Select Tab 10");
         im.put(getKeyStroke(KeyEvent.VK_EQUALS,CTRL_MASK),"Zoom+");
         im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK),"Zoom-");
+        im.put(getKeyStroke(KeyEvent.VK_UP,ALT_MASK),"Fetchsize+");
+        im.put(getKeyStroke(KeyEvent.VK_DOWN,ALT_MASK),"Fetchsize-");
         var am = tabbedPane.getActionMap();
         am.put("Select Tab 1",new SelectTabAction(0));
         am.put("Select Tab 2",new SelectTabAction(1));
@@ -130,6 +244,8 @@ implements KeyListener
         am.put("Select Tab 10",new SelectTabAction(9));
         am.put("Zoom+",new ZoomAction(1.3));
         am.put("Zoom-",new ZoomAction(1.0/1.3));
+        am.put("Fetchsize+",increaseFetchsizeAction);
+        am.put("Fetchsize-",decreaseFetchsizeAction);
         
         /* https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path */
         tabbedPane.setDropTarget(new DropTarget()
@@ -283,101 +399,6 @@ implements KeyListener
     {
         return !notebooks.stream().noneMatch((n) -> n.unsaved); 
     }
-    
-    Action
-        addAction = new AbstractAction("New")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                add(true);
-            }
-        },
-        loadAction = new AbstractAction("Load...")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                load(null);
-            }
-        },
-        saveAction = new AbstractAction("Save")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook=notebooks.get(index);
-                boolean newBuffer=notebook.file==null;
-                if(notebook.store(false))
-                {
-                    tabbedPane.setTitleAt(index,notebook.file.getName());
-                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
-                    if(newBuffer) addRecent(notebook.file);
-                }
-            }
-        },
-        saveAsAction = new AbstractAction("Save As...")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook=notebooks.get(index);
-                if(notebook.store(true))
-                {
-                    tabbedPane.setTitleAt(index,notebook.file.getName());
-                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
-                    addRecent(notebook.file);
-                }
-            }
-        },
-        closeAction = new AbstractAction("Close")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                removeSelected();
-            }
-        },
-        openPropertiesAction = new AbstractAction("Edit Properties")
-        {
-            @Override public void actionPerformed(ActionEvent event)
-            {
-                try
-                {
-                    Desktop.getDesktop().open(propertyHolder.propertiesfile);
-                }
-                catch(IOException e)
-                {
-                    JOptionPane.showMessageDialog(
-                            tabbedPane,
-                            "Error opening "+propertyHolder.propertiesfile+
-                            ": "+e.getMessage(),
-                            "Error opening properties",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        },
-        commitAction = new AbstractAction("Commit")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).commit();
-            }
-        },
-        rollbackAction = new AbstractAction("Rollback")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).rollback();
-            }
-        },
-        disconnectAction = new AbstractAction("Disconnect")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).disconnect();
-            }
-        };
     
     void recreateMenuBar()
     {

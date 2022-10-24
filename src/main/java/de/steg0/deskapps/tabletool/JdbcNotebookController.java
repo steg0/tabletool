@@ -56,7 +56,7 @@ import javax.swing.text.NumberFormatter;
  */
 class JdbcNotebookController
 {
-    static final int DEFAULT_FETCH_SIZE = 300;
+    static final int DEFAULT_FETCH_SIZE = 10;
     
     interface Listener extends EventListener
     {
@@ -125,6 +125,7 @@ class JdbcNotebookController
         
         NumberFormat format = NumberFormat.getIntegerInstance();
         NumberFormatter numberFormatter = new NumberFormatter(format);
+        numberFormatter.setMinimum(1);
         fetchsizeField = new JFormattedTextField(numberFormatter);
         fetchsizeField.setColumns(5);
         fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
@@ -576,7 +577,7 @@ class JdbcNotebookController
         bufferPanel.revalidate();
         buffers.get(0).focusEditor(0,0);
     }
-    
+
     void commit()
     {
         onConnection((c) -> c.commit(logConsumer));
@@ -606,9 +607,31 @@ class JdbcNotebookController
         buffers.get(lastFocusedBuffer).focusEditor(null,null);
     }
     
+    void increaseFetchsize()
+    {
+        int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
+        if(fetchsize >= 10000) return;
+        if(fetchsize >= 1000) fetchsize = 10000;
+        else if(fetchsize >= 100) fetchsize = 1000;
+        else if(fetchsize >= 10) fetchsize = 100;
+        else fetchsize = 10;
+        fetchsizeField.setValue(fetchsize);
+    }
+
+    void decreaseFetchsize()
+    {
+        int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
+        if(fetchsize <= 10) fetchsize = 1;
+        else if(fetchsize <= 100) fetchsize = 10;
+        else if(fetchsize <= 1000) fetchsize = 100;
+        else if(fetchsize <= 10000) fetchsize = 1000;
+        else fetchsize = 10000;
+        fetchsizeField.setValue(fetchsize);
+    }
+    
     PropertyChangeListener fetchSizeListener = (e) ->
     {
-        int fetchsize = Integer.parseInt(fetchsizeField.getText());
+        int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         for(JdbcBufferController buffer : buffers)
         {
             buffer.fetchsize = fetchsize;
