@@ -35,10 +35,10 @@ class ConnectionWorker
     
     /**
      * @param resultConsumer where a Statement will be pushed to right after
-     * <code>execute()</code> om the Swing event thread, if execute() returned
+     * <code>execute()</code> on the Swing event thread, if execute() returned
      * <code>true</code> 
      * @param resultConsumer where an update count will be pushed to right after
-     * <code>execute()</code> om the Swing event thread, if execute() returned
+     * <code>execute()</code> on the Swing event thread, if execute() returned
      * <code>false</code> 
      * on the Swing event thread once available
      * @param log where log messages will be pushed to on the Swing event thread
