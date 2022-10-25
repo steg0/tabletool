@@ -10,9 +10,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class PropertyHolder
 {
+    Logger logger = Logger.getLogger("tabletool.properties");
+
     File propertiesfile;
     Properties properties = new Properties();
     
@@ -68,10 +72,11 @@ class PropertyHolder
         if(!properties.containsKey("default.bg")) return null;
         return Color.decode(properties.getProperty("default.bg").toString());
     }
-    
+
     class ConnectionInfo
     {
-        static final String PROPERTY_PREFIX = "connections.";
+        static final String CONNECTIONS_PREFIX = "connections.";
+        static final String DRIVERS_PREFIX = "drivers.";
         
         String name,url,username,password,completionTemplate;
         Color background;
@@ -79,12 +84,30 @@ class PropertyHolder
         ConnectionInfo(String nameKey)
         {
             name=nameKey;
-            String prefix=PROPERTY_PREFIX+nameKey;
+            logger.fine("Initializing ConnectionInfo: "+nameKey);
+            String prefix=CONNECTIONS_PREFIX+nameKey;
             url=String.valueOf(properties.get(prefix+".url"));
             username=String.valueOf(properties.get(prefix+".username"));
             password=String.valueOf(properties.get(prefix+".password"));
-            completionTemplate=String.valueOf(properties.get(prefix+
-                    ".completionTemplate"));
+
+            if(properties.containsKey(prefix+".completionTemplate"))
+            {
+                completionTemplate=String.valueOf(properties.get(prefix+
+                        ".completionTemplate"));
+            }
+            else
+            {
+                String driverSpec = url.replaceFirst(
+                        "^jdbc\\:([a-z]+)\\:.*$","$1");
+                logger.fine("Looking up completionTemplate "+
+                        "for driver "+driverSpec);
+                if(properties.containsKey(
+                    DRIVERS_PREFIX+driverSpec+".completionTemplate"))
+                {
+                    completionTemplate=String.valueOf(properties.get(
+                        DRIVERS_PREFIX+driverSpec+".completionTemplate"));
+                }
+            }
             if(properties.containsKey(prefix+".bg"))
             {
                 background=Color.decode(String.valueOf(properties.get(
@@ -98,7 +121,7 @@ class PropertyHolder
         return properties
             .keySet().stream()
             .filter((k) -> String.valueOf(k).startsWith(
-                    ConnectionInfo.PROPERTY_PREFIX))
+                    ConnectionInfo.CONNECTIONS_PREFIX))
             .collect(groupingBy(PropertyHolder::getConnectionNameKey))
             .keySet().stream()
             .sorted()
@@ -109,7 +132,7 @@ class PropertyHolder
     static String getConnectionNameKey(Object propertyKey)
     {
         String s = String.valueOf(propertyKey).substring(
-                ConnectionInfo.PROPERTY_PREFIX.length());
+                ConnectionInfo.CONNECTIONS_PREFIX.length());
         return s.substring(0,s.lastIndexOf("."));
     }
 }

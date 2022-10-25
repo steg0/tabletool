@@ -219,6 +219,14 @@ class JdbcBufferController
         {
             @Override public void actionPerformed(ActionEvent e)
             {
+                String completionTemplate = configSource
+                    .getCompletionTemplate();
+                if(completionTemplate == null)
+                {
+                    log.accept("No completionTemplate available at "+
+                            new Date());
+                    return;
+                }
                 if(connection == null)
                 {
                     log.accept("No connection available at "+new Date());
@@ -242,8 +250,8 @@ class JdbcBufferController
                         new MenuResultConsumer(JdbcBufferController.this,
                                 (int)xy.getCenterX(),(int)xy.getCenterY(),
                                 log,maxresults);
-                    String sql = configSource.getCompletionTemplate()
-                        .replaceAll("@@selection@@",text);
+                    String sql = completionTemplate.replaceAll(
+                            "@@selection@@",text);
                     logger.fine("Completion using SQL: "+sql);
                     connection.submit(sql,maxresults,resultConsumer,
                             updateCountConsumer,log);
