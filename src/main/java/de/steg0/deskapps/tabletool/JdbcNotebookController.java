@@ -89,11 +89,32 @@ class JdbcNotebookController
     int scrollIncrement;
     
     JTextArea log = new JTextArea();
-    Consumer<String> logConsumer = (t) -> log.setText(t);
-    
+    JSplitPane logBufferPane;
+
+    void resize()
+    {
+        int lines = Math.min(10,log.getLineCount());
+        int lineheight = log.getFontMetrics(log.getFont()).getHeight();
+        int logheight = lineheight * lines;
+        logger.log(Level.FINE,"logheight: {0}",logheight);
+        int dividerSize = logBufferPane.getDividerSize();
+        logger.log(Level.FINE,"dividerSize: {0}",dividerSize);
+        int logBufferHeight = logBufferPane.getHeight();
+        logger.log(Level.FINE,"logBufferHeight: {0}",logBufferHeight);
+        logBufferPane.setDividerLocation(logBufferHeight - logheight - 
+                dividerSize - (int)(lineheight * .4));
+    }
+
     {
         log.setEditable(false);
+        log.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { resize(); }
+            @Override public void removeUpdate(DocumentEvent e) { resize(); }
+            @Override public void changedUpdate(DocumentEvent e) { resize(); }
+        });
     }
+    
+    Consumer<String> logConsumer = (t) -> log.setText(t);
     
     List<JdbcBufferController> buffers = new ArrayList<>();
     int lastFocusedBuffer;
@@ -168,7 +189,7 @@ class JdbcNotebookController
                 resultviewHeight,bufferConfigSource);
         add(0,buffer);
 
-        var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(.85);
         
         scrollIncrement = propertyHolder.getScrollIncrement();
