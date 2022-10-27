@@ -190,7 +190,7 @@ class JdbcNotebookController
         add(0,buffer);
 
         logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        logBufferPane.setResizeWeight(.85);
+        logBufferPane.setResizeWeight(1);
         
         scrollIncrement = propertyHolder.getScrollIncrement();
         bufferPane = new JScrollPane(bufferPanel);
