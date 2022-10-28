@@ -56,7 +56,7 @@ import javax.swing.text.NumberFormatter;
  */
 class JdbcNotebookController
 {
-    static final int DEFAULT_FETCH_SIZE = 300;
+    static final int DEFAULT_FETCH_SIZE = 10;
     
     interface Listener extends EventListener
     {
@@ -89,11 +89,32 @@ class JdbcNotebookController
     int scrollIncrement;
     
     JTextArea log = new JTextArea();
-    Consumer<String> logConsumer = (t) -> log.setText(t);
-    
+    JSplitPane logBufferPane;
+
+    void resize()
+    {
+        int lines = Math.min(10,log.getLineCount());
+        int lineheight = log.getFontMetrics(log.getFont()).getHeight();
+        int logheight = lineheight * lines;
+        logger.log(Level.FINE,"logheight: {0}",logheight);
+        int dividerSize = logBufferPane.getDividerSize();
+        logger.log(Level.FINE,"dividerSize: {0}",dividerSize);
+        int logBufferHeight = logBufferPane.getHeight();
+        logger.log(Level.FINE,"logBufferHeight: {0}",logBufferHeight);
+        logBufferPane.setDividerLocation(logBufferHeight - logheight - 
+                dividerSize - (int)(lineheight * .4));
+    }
+
     {
         log.setEditable(false);
+        log.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { resize(); }
+            @Override public void removeUpdate(DocumentEvent e) { resize(); }
+            @Override public void changedUpdate(DocumentEvent e) { resize(); }
+        });
     }
+    
+    Consumer<String> logConsumer = (t) -> log.setText(t);
     
     List<JdbcBufferController> buffers = new ArrayList<>();
     int lastFocusedBuffer;
@@ -125,37 +146,20 @@ class JdbcNotebookController
         
         NumberFormat format = NumberFormat.getIntegerInstance();
         NumberFormatter numberFormatter = new NumberFormatter(format);
+        numberFormatter.setMinimum(1);
         fetchsizeField = new JFormattedTextField(numberFormatter);
         fetchsizeField.setColumns(5);
         fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
         connectionPanel.add(fetchsizeField);
         
-        commitButton.addActionListener((e) -> 
-        {
-            onConnection((c) -> c.commit(logConsumer));
-        });
+        commitButton.addActionListener((e) -> commit());
         connectionPanel.add(commitButton);
         
-        rollbackButton.addActionListener((e) -> 
-        {
-            onConnection((c) -> c.rollback(logConsumer));
-        });
+        rollbackButton.addActionListener((e) -> rollback());
         connectionPanel.add(rollbackButton);
         
-        disconnectButton.addActionListener((e) ->
-        {
-            onConnection((c) -> 
-            {
-                c.disconnect(logConsumer,() ->
-                {
-                    for(Listener l : listeners.getListeners(Listener.class))
-                    {
-                        l.disconnected(c);
-                    }
-                });
-            });
-        });
+        disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
         autocommitCb.addActionListener((e) -> 
@@ -185,8 +189,8 @@ class JdbcNotebookController
                 resultviewHeight,bufferConfigSource);
         add(0,buffer);
 
-        var logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        logBufferPane.setResizeWeight(.85);
+        logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        logBufferPane.setResizeWeight(1);
         
         scrollIncrement = propertyHolder.getScrollIncrement();
         bufferPane = new JScrollPane(bufferPanel);
@@ -207,7 +211,7 @@ class JdbcNotebookController
         
         setBackground(null);
     }
-    
+
     void setBackground(Color bg)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
@@ -594,15 +598,61 @@ class JdbcNotebookController
         bufferPanel.revalidate();
         buffers.get(0).focusEditor(0,0);
     }
+
+    void commit()
+    {
+        onConnection((c) -> c.commit(logConsumer));
+    }
+
+    void rollback()
+    {
+        onConnection((c) -> c.rollback(logConsumer));
+    }
+
+    void disconnect()
+    {
+        onConnection((c) -> 
+        {
+            c.disconnect(logConsumer,() ->
+            {
+                for(Listener l : listeners.getListeners(Listener.class))
+                {
+                    l.disconnected(c);
+                }
+            });
+        });
+    }
     
     void restoreFocus()
     {
         buffers.get(lastFocusedBuffer).focusEditor(null,null);
     }
     
+    void increaseFetchsize()
+    {
+        int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
+        if(fetchsize >= 10000) return;
+        if(fetchsize >= 1000) fetchsize = 10000;
+        else if(fetchsize >= 100) fetchsize = 1000;
+        else if(fetchsize >= 10) fetchsize = 100;
+        else fetchsize = 10;
+        fetchsizeField.setValue(fetchsize);
+    }
+
+    void decreaseFetchsize()
+    {
+        int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
+        if(fetchsize <= 10) fetchsize = 1;
+        else if(fetchsize <= 100) fetchsize = 10;
+        else if(fetchsize <= 1000) fetchsize = 100;
+        else if(fetchsize <= 10000) fetchsize = 1000;
+        else fetchsize = 10000;
+        fetchsizeField.setValue(fetchsize);
+    }
+    
     PropertyChangeListener fetchSizeListener = (e) ->
     {
-        int  fetchsize = Integer.parseInt(fetchsizeField.getText());
+        int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         for(JdbcBufferController buffer : buffers)
         {
             buffer.fetchsize = fetchsize;

@@ -219,6 +219,14 @@ class JdbcBufferController
         {
             @Override public void actionPerformed(ActionEvent e)
             {
+                String completionTemplate = configSource
+                    .getCompletionTemplate();
+                if(completionTemplate == null)
+                {
+                    log.accept("No completionTemplate available at "+
+                            new Date());
+                    return;
+                }
                 if(connection == null)
                 {
                     log.accept("No connection available at "+new Date());
@@ -237,14 +245,16 @@ class JdbcBufferController
                     if(text == null) return;
                     logger.fine("Completing text: "+text);
                     var xy = editor.modelToView2D(editor.getCaretPosition());
+                    int maxresults = 16;
                     var resultConsumer =
                         new MenuResultConsumer(JdbcBufferController.this,
-                                (int)xy.getCenterX(),(int)xy.getCenterY(),log);
-                    String sql = configSource.getCompletionTemplate()
-                        .replaceAll("@@selection@@",text);
+                                (int)xy.getCenterX(),(int)xy.getCenterY(),
+                                log,maxresults);
+                    String sql = completionTemplate.replaceAll(
+                            "@@selection@@",text);
                     logger.fine("Completion using SQL: "+sql);
-                    connection.submit(
-                            sql,10,resultConsumer,updateCountConsumer,log);
+                    connection.submit(sql,maxresults,resultConsumer,
+                            updateCountConsumer,log);
                 }
                 catch(BadLocationException ignored)
                 {
@@ -286,6 +296,7 @@ class JdbcBufferController
                 case KeyEvent.VK_DOWN:
                 case KeyEvent.VK_PAGE_DOWN:
                     if(event.isShiftDown()) break;
+                    if(event.isAltDown()) break;
                     if(editor.getLineOfOffset(caret) ==
                        editor.getLineCount()-1 &&
                        resultview != null)
@@ -301,6 +312,7 @@ class JdbcBufferController
                 case KeyEvent.VK_UP:
                 case KeyEvent.VK_PAGE_UP:
                     if(event.isShiftDown()) break;
+                    if(event.isAltDown()) break;
                     if(editor.getLineOfOffset(caret) == 0)
                     {
                         fireBufferEvent(Type.EXITED_NORTH);
