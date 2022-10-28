@@ -55,29 +55,50 @@ class CellDisplayController
                 if(event.getClickCount() == 2)
                 {
                     int row = source.rowAtPoint(event.getPoint()),
-                        col = source.columnAtPoint(event.getPoint());
-                    var rsm = (ResultSetTableModel)source.getModel();
-                    Object cellcontent = source.getValueAt(row,col);
-                    try
-                    {
-                        show(rsm.rs,cellcontent,col+1);
-                    }
-                    catch(SQLException e)
-                    {
-                        log.accept(SQLExceptionPrinter.toString(e));
-                    }
-                    catch(IOException e)
-                    {
-                        StringBuilder b=new StringBuilder();
-                        b.append("IOException occured at ");
-                        b.append(new Date());
-                        b.append(":\n");
-                        b.append(e.getMessage());
-                        log.accept(b.toString());
-                    }
+                        col = source.columnAtPoint(event.getPoint());        
+                    showForSource(source,row,col,log);
                 }               
             }
         });
+        source.addKeyListener(new KeyListener() {
+            @Override public void keyPressed(KeyEvent event) {
+                
+                switch(event.getKeyCode())
+                {
+                case KeyEvent.VK_ENTER:
+                    showForSource(source,source.getSelectedRow(),
+                            source.getSelectedColumn(),log);
+                    event.consume();
+                }
+            }
+
+            @Override public void keyTyped(KeyEvent e) { }
+            @Override public void keyReleased(KeyEvent e) { }    
+        });
+    }
+
+    void showForSource(JTable source,int row,int col,
+            Consumer<String> log)
+    {
+        var rsm = (ResultSetTableModel)source.getModel();
+        Object cellcontent = source.getValueAt(row,col);
+        try
+        {
+            show(rsm.rs,cellcontent,col+1);
+        }
+        catch(SQLException e)
+        {
+            log.accept(SQLExceptionPrinter.toString(e));
+        }
+        catch(IOException e)
+        {
+            StringBuilder b=new StringBuilder();
+            b.append("IOException occured at ");
+            b.append(new Date());
+            b.append(":\n");
+            b.append(e.getMessage());
+            log.accept(b.toString());
+        }
     }
     
     /**blocking*/
