@@ -47,10 +47,11 @@ More than one connection definition can occur in the file as long as the name pa
 
 While editing SQL in a notebook, the following keys are supported:
 
+• Alt+Up, Alt+Down - increase/decrease fetch size.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
 • Ctrl+Shift+Enter - like Ctrl+Enter, but always create a new result table.
-• Ctrl+Tab - select the next result table.
-• Ctrl+Shift+Tab - select the previous result table.
+• Ctrl+Tab - select the next result table or buffer section.
+• Ctrl+Shift+Tab - select the previous result table or buffer section.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+/ - comment/uncomment.
 • Ctrl+Z, Ctrl+Y - undo, redo.
