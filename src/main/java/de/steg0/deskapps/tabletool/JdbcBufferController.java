@@ -217,7 +217,7 @@ class JdbcBufferController
         },
         showCompletionPopupAction = new AbstractAction()
         {
-            @Override public void actionPerformed(ActionEvent e)
+            @Override public void actionPerformed(ActionEvent event)
             {
                 String completionTemplate = configSource
                     .getCompletionTemplate();
@@ -256,8 +256,9 @@ class JdbcBufferController
                     connection.submit(sql,maxresults,resultConsumer,
                             updateCountConsumer,log);
                 }
-                catch(BadLocationException ignored)
+                catch(BadLocationException e)
                 {
+                    assert false : e.getMessage();
                 }
             }
         },
