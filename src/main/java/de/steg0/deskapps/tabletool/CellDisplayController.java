@@ -164,6 +164,7 @@ class CellDisplayController
         }
         else if(value instanceof byte[] b)
         {
+            textarea.setEditable(false);
             var dump = new HexDump(new ByteArrayInputStream(b),b.length);
             textarea.setFont(new Font(
                     Font.MONOSPACED,
