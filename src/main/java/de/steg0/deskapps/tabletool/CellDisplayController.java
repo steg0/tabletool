@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -121,6 +122,15 @@ class CellDisplayController
                 b.append('\n');
             }
             textarea.setText(b.toString());
+
+            var updateButton = new JButton("Update");
+            var updateAction = new ClobUpdateAction();
+            updateAction.textarea = textarea;
+            updateAction.resultset = resultset;
+            updateAction.column = column;
+            updateButton.addActionListener(updateAction);
+            buttonPanel.add(updateButton);
+
             dialogtitle = "CLOB display";
         }
         else if(value instanceof Blob)
@@ -176,6 +186,18 @@ class CellDisplayController
         else
         {
             if(value!=null) textarea.setText(value.toString());
+
+            if(resultset!=null)
+            {
+                var updateButton = new JButton("Update");
+                var updateAction = new UpdateAction();
+                updateAction.textarea = textarea;
+                updateAction.resultset = resultset;
+                updateAction.column = column;
+                updateButton.addActionListener(updateAction);
+                buttonPanel.add(updateButton);
+            }
+
             dialogtitle = "Scalar value display";
         }
         textarea.setCaretPosition(0);
@@ -379,4 +401,58 @@ class CellDisplayController
         }
     }
     
+    class UpdateAction implements ActionListener
+    {
+        JTextArea textarea;
+        ResultSet resultset;
+        int column;
+        
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            try
+            {
+                resultset.updateString(column,textarea.getText());
+                resultset.updateRow();
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        cellDisplay,
+                        "Error updating: "+SQLExceptionPrinter.toString(e),
+                        "Error updating",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            cellDisplay.setVisible(true);
+        }
+    }
+    
+    class ClobUpdateAction implements ActionListener
+    {
+        JTextArea textarea;
+        ResultSet resultset;
+        int column;
+        
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            try
+            {
+                resultset.updateClob(column,new StringReader(
+                        textarea.getText()));
+                resultset.updateRow();
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        cellDisplay,
+                        "Error updating: "+SQLExceptionPrinter.toString(e),
+                        "Error updating",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            cellDisplay.setVisible(true);
+        }
+    }
 }
