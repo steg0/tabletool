@@ -106,7 +106,6 @@ class CellDisplayController
     throws SQLException,IOException
     {
         var textarea = new JTextArea(17,72);
-        textarea.setEditable(false);
         
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
@@ -126,6 +125,7 @@ class CellDisplayController
         }
         else if(value instanceof Blob)
         {
+            textarea.setEditable(false);
             var blob = (Blob)value;
             
             if(Desktop.isDesktopSupported())
