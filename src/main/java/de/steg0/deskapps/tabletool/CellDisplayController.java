@@ -37,6 +37,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 class CellDisplayController
 {
@@ -224,6 +226,26 @@ class CellDisplayController
                 }
             }
         });
+
+        textarea.getDocument().addDocumentListener(
+                new DocumentListener()
+                {
+                    @Override
+                    public void insertUpdate(DocumentEvent e)
+                    {
+                        changedUpdate(e);
+                    }
+                    @Override
+                    public void removeUpdate(DocumentEvent e)
+                    {
+                        changedUpdate(e);
+                    }
+                    @Override
+                    public void changedUpdate(DocumentEvent e)
+                    {
+                        cellDisplay.setTitle("*"+dialogtitle);
+                    }
+                });
         
         var scrollpane = new JScrollPane(textarea);
 
