@@ -190,6 +190,7 @@ class CellDisplayController
             if(resultset!=null)
             {
                 var updateButton = new JButton("Update");
+                updateButton.setMnemonic(KeyEvent.VK_U);
                 var updateAction = new UpdateAction();
                 updateAction.textarea = textarea;
                 updateAction.resultset = resultset;
@@ -229,6 +230,7 @@ class CellDisplayController
         cellDisplay.getContentPane().add(scrollpane);
         
         var closeButton = new JButton("Close");
+        closeButton.setMnemonic(KeyEvent.VK_C);
         closeButton.addActionListener((e) -> cellDisplay.setVisible(false));
         buttonPanel.add(closeButton);
         
