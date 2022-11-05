@@ -421,7 +421,7 @@ class CellDisplayController
                         "Error importing",
                         JOptionPane.ERROR_MESSAGE);
             }
-            cellDisplay.setVisible(true);
+            cellDisplay.setVisible(false);
         }
     }
     
@@ -448,7 +448,7 @@ class CellDisplayController
                         "Error updating",
                         JOptionPane.ERROR_MESSAGE);
             }
-            cellDisplay.setVisible(true);
+            cellDisplay.setVisible(false);
         }
     }
     
@@ -476,7 +476,7 @@ class CellDisplayController
                         "Error updating",
                         JOptionPane.ERROR_MESSAGE);
             }
-            cellDisplay.setVisible(true);
+            cellDisplay.setVisible(false);
         }
     }
 }
