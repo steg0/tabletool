@@ -56,6 +56,8 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+/ - comment/uncomment.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
+• F1 - execute info template for word under cursor or selection.
+• F2 - insert snippets into word under cursor or selection.
 • F8 - execute completion template for word under cursor or selection.
 
 To navigate across a result table, use Up/Down arrow keys.

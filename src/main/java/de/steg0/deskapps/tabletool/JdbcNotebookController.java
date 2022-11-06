@@ -67,7 +67,7 @@ class JdbcNotebookController
     
     Logger logger = Logger.getLogger("tabletool.editor");
     
-    final JFrame cellDisplay;
+    final JFrame cellDisplay,infoDisplay;
     final PropertyHolder propertyHolder;
     final JdbcBufferConfigSource bufferConfigSource;
     
@@ -125,10 +125,12 @@ class JdbcNotebookController
     
     JdbcNotebookController(
             JFrame cellDisplay,
+            JFrame infoDisplay,
             PropertyHolder propertyHolder,
             Connections connections)
     {
         this.cellDisplay = cellDisplay;
+        this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         this.bufferConfigSource = new JdbcBufferConfigSource(propertyHolder,
@@ -185,8 +187,8 @@ class JdbcNotebookController
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
         resultviewHeight = propertyHolder.getResultviewHeight();
-        var buffer = new JdbcBufferController(cellDisplay,logConsumer,
-                resultviewHeight,bufferConfigSource);
+        var buffer = new JdbcBufferController(cellDisplay,infoDisplay,
+                logConsumer,resultviewHeight,bufferConfigSource);
         add(0,buffer);
 
         logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -375,7 +377,7 @@ class JdbcNotebookController
             case SPLIT_REQUESTED:
                 i=buffers.indexOf(source);
                 var newBufferController = new JdbcBufferController(
-                        cellDisplay,logConsumer,resultviewHeight,
+                        cellDisplay,infoDisplay,logConsumer,resultviewHeight,
                         bufferConfigSource);
                 newBufferController.connection = source.connection;
                 newBufferController.setBackground(source.getBackground());
@@ -500,7 +502,8 @@ class JdbcNotebookController
         if(buffers.size() <= i+1)
         {
             var newBufferController = new JdbcBufferController(cellDisplay,
-                    logConsumer,resultviewHeight,bufferConfigSource);
+                    infoDisplay,logConsumer,resultviewHeight,
+                    bufferConfigSource);
             newBufferController.connection = source.connection;
             newBufferController.setBackground(source.getBackground());
             add(i+1,newBufferController);
@@ -588,7 +591,7 @@ class JdbcNotebookController
         while(linesRead>0)
         {
             var newBufferController = new JdbcBufferController(
-                    cellDisplay,logConsumer,resultviewHeight,
+                    cellDisplay,infoDisplay,logConsumer,resultviewHeight,
                     bufferConfigSource);
             newBufferController.setBackground(buffers.get(0).getBackground());
             linesRead = newBufferController.load(r);
