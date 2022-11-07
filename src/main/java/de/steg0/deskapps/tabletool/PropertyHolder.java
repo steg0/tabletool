@@ -154,7 +154,7 @@ class PropertyHolder
     {
         String s = String.valueOf(propertyKey).substring(
                 ConnectionInfo.CONNECTIONS_PREFIX.length());
-        return s.substring(0,s.lastIndexOf("."));
+        return s.substring(0,s.indexOf("."));
     }
 
     Map<String,String> getSnippetsForDriver(String driverName)
