@@ -25,8 +25,10 @@ class SnippetPopup
         for(Map.Entry<String,String> snippet : snippets.entrySet())
         {
             String name = snippet.getKey();
+            String selectedText = buffer.editor.getSelectedText();
+            if(selectedText == null) selectedText = "";
             String completion = snippet.getValue().replaceAll("@@selection@@",
-                    buffer.editor.getSelectedText());
+                    selectedText);
             item = new JMenuItem(name);
             item.addActionListener((e) -> buffer.editor.replaceSelection(
                     completion));
