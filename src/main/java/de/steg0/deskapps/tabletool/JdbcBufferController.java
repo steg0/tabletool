@@ -24,6 +24,7 @@ import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -679,6 +680,21 @@ class JdbcBufferController
         htmlbuf.append(getResultSetTableModel().toHtml());
         HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
+
+    /**blocking*/
+    void openAsCsv()
+    {
+        var sw = new StringWriter();
+        try
+        {
+            getResultSetTableModel().store(sw,false);
+        }
+        catch(IOException e)
+        {
+            assert false: e.getMessage();
+        }
+        CsvExporter.openTemp(cellDisplay,sw.toString());
+    }
     
     void store(Writer w)
     throws IOException
@@ -688,7 +704,7 @@ class JdbcBufferController
         if(rsm != null)
         {
             w.write('\n');
-            rsm.store(w);
+            rsm.store(w,true);
         }
     }
     
@@ -955,6 +971,9 @@ class JdbcBufferController
         JMenuItem item;
         item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
         item.addActionListener((e) -> openAsHtml());
+        popup.add(item);
+        item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
+        item.addActionListener((e) -> openAsCsv());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
         item.addActionListener((e) -> closeBuffer());
