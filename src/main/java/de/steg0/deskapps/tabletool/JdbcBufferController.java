@@ -183,6 +183,19 @@ class JdbcBufferController
         editor.setFont(f2);
         setResultViewFontSize(resultview,newSize);
     }
+
+    int searchNext(int loc,String text)
+    {
+        int index = editor.getText().indexOf(text,loc);
+        if(index>=0)
+        {
+            logger.log(Level.FINE,"Found at location: {0}",index);
+            editor.requestFocusInWindow();
+            editor.setSelectionEnd(index+text.length());
+            editor.setSelectionStart(index);
+        }
+        return index;
+    }
     
     void setResultViewFontSize(JTable resultview,int newSize)
     {

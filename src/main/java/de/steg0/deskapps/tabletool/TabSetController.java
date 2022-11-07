@@ -211,6 +211,29 @@ implements KeyListener
                 int index=tabbedPane.getSelectedIndex();
                 notebooks.get(index).disconnect();
             }
+        },
+        findAction = new AbstractAction("Find")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                String text = JOptionPane.showInputDialog("Find");
+                if(text==null) return;
+                JdbcNotebookController notebook = notebooks.get(index);
+                notebook.lastSearchBuf=0;
+                notebook.lastSearchLoc=-1;
+                notebook.lastSearchText=text;
+                notebook.find();
+            }
+        },
+        findNextAction = new AbstractAction("Find Next")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook = notebooks.get(index);
+                notebook.find();
+            }
         };
 
     {
@@ -232,6 +255,8 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK),"Zoom-");
         im.put(getKeyStroke(KeyEvent.VK_UP,ALT_MASK),"Fetchsize+");
         im.put(getKeyStroke(KeyEvent.VK_DOWN,ALT_MASK),"Fetchsize-");
+        im.put(getKeyStroke(KeyEvent.VK_F,CTRL_MASK),"Find");
+        im.put(getKeyStroke(KeyEvent.VK_F3,0),"Find Next");
         var am = tabbedPane.getActionMap();
         am.put("Select Tab 1",new SelectTabAction(0));
         am.put("Select Tab 2",new SelectTabAction(1));
@@ -247,6 +272,8 @@ implements KeyListener
         am.put("Zoom-",new ZoomAction(1.0/1.3));
         am.put("Fetchsize+",increaseFetchsizeAction);
         am.put("Fetchsize-",decreaseFetchsizeAction);
+        am.put("Find",findAction);
+        am.put("Find Next",findNextAction);
         
         /* https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path */
         tabbedPane.setDropTarget(new DropTarget()

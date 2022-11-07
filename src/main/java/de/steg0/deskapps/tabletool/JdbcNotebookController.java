@@ -652,6 +652,26 @@ class JdbcNotebookController
         else fetchsize = 10000;
         fetchsizeField.setValue(fetchsize);
     }
+
+    int lastSearchBuf;
+    int lastSearchLoc=-1;
+    String lastSearchText;
+
+    void find()
+    {
+        if(lastSearchBuf>=buffers.size()) return;
+        if(lastSearchText==null) return;
+        logger.log(Level.FINE,"Finding: {0}",lastSearchText);
+        logger.log(Level.FINE,"Buffer index: {0}",lastSearchBuf);
+        logger.log(Level.FINE,"Last search location: {0}",lastSearchLoc);
+        lastSearchLoc=buffers.get(lastSearchBuf).searchNext(lastSearchLoc+1,
+                lastSearchText);
+        if(lastSearchLoc<0) 
+        {
+            lastSearchBuf++;
+            find();
+        }
+    }
     
     PropertyChangeListener fetchSizeListener = (e) ->
     {
