@@ -322,9 +322,9 @@ implements KeyListener
                 cellDisplay,
                 infoDisplay,
                 propertyHolder,
-                connections
+                connections,
+                notebookListener
         );
-        notebook.addListener(notebookListener);
         notebooks.add(notebook);
         int newIndex = tabbedPane.getComponentCount();
         if(unnamed)

@@ -47,7 +47,6 @@ import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.text.NumberFormatter;
 
 /**
@@ -127,12 +126,14 @@ class JdbcNotebookController
             JFrame cellDisplay,
             JFrame infoDisplay,
             PropertyHolder propertyHolder,
-            Connections connections)
+            Connections connections,
+            Listener listener)
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
+        this.listener = listener;
         this.bufferConfigSource = new JdbcBufferConfigSource(propertyHolder,
                 this.connections);
         
@@ -170,10 +171,7 @@ class JdbcNotebookController
             {
                 c.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
                 {
-                    for(Listener l : listeners.getListeners(Listener.class))
-                    {
-                        l.autocommitChanged(c,autocommitCb.isSelected());
-                    }
+                    listener.autocommitChanged(c,autocommitCb.isSelected());
                 });
             });
         });
@@ -242,13 +240,8 @@ class JdbcNotebookController
         }
     }
     
-    EventListenerList listeners = new EventListenerList();
+    final Listener listener;
     
-    void addListener(Listener l)
-    {
-        listeners.add(Listener.class,l);
-    }
-
     class BufferPaneMouseListener extends MouseAdapter
     {
         int clickVpY;
@@ -424,10 +417,7 @@ class JdbcNotebookController
             if(!unsaved)
             {
                 unsaved=true;
-                for(Listener l : listeners.getListeners(Listener.class))
-                {
-                    l.bufferChanged();
-                }
+                listener.bufferChanged();
             }
         }
 
@@ -616,10 +606,7 @@ class JdbcNotebookController
         {
             c.disconnect(logConsumer,() ->
             {
-                for(Listener l : listeners.getListeners(Listener.class))
-                {
-                    l.disconnected(c);
-                }
+                listener.disconnected(c);
             });
         });
     }
@@ -707,10 +694,7 @@ class JdbcNotebookController
             var connection = connections.getConnection(item);
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
             {
-                for(Listener l : listeners.getListeners(Listener.class))
-                {
-                    l.autocommitChanged(connection,autocommitCb.isSelected());
-                }
+                listener.autocommitChanged(connection,autocommitCb.isSelected());
             });
             for(JdbcBufferController buffer : buffers)
             {
