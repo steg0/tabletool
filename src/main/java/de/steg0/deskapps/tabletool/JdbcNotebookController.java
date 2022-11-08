@@ -212,8 +212,8 @@ class JdbcNotebookController
 
     private JdbcBufferController newBufferController()
     {
-        return new JdbcBufferController(cellDisplay,infoDisplay,
-                logConsumer,resultviewHeight,bufferConfigSource,bufferListener);
+        return new JdbcBufferController(cellDisplay,infoDisplay,logConsumer,
+                bufferConfigSource,bufferListener);
     }
 
     void setBackground(Color bg)
