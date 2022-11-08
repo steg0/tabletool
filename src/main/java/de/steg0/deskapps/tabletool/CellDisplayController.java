@@ -39,6 +39,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.undo.UndoManager;
 
 class CellDisplayController
 {
@@ -211,6 +212,9 @@ class CellDisplayController
         cellDisplay.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         cellDisplay.getContentPane().setLayout(new BorderLayout());
         
+        var undoManager = new UndoManager();
+        textarea.getDocument().addUndoableEditListener(undoManager);
+
         textarea.addKeyListener(new KeyListener()
         {
             @Override public void keyTyped(KeyEvent e) { }
@@ -223,6 +227,18 @@ class CellDisplayController
                 {
                 case KeyEvent.VK_ESCAPE:
                     cellDisplay.setVisible(false);
+                    break;
+                case KeyEvent.VK_Z:
+                    if(e.isControlDown() && undoManager.canUndo())
+                    {
+                        undoManager.undo();
+                    }
+                    break;
+                case KeyEvent.VK_Y:
+                    if(e.isControlDown() && undoManager.canRedo())
+                    {
+                        undoManager.redo();
+                    }
                 }
             }
         });
