@@ -50,7 +50,6 @@ import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -115,12 +114,13 @@ class JdbcBufferController
     
     JdbcBufferController(JFrame cellDisplay,JFrame infoDisplay,
             Consumer<String> updateLog,int resultviewHeight,
-            JdbcBufferConfigSource configSource)
+            JdbcBufferConfigSource configSource,Listener listener)
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
         this.resultviewHeight = resultviewHeight;
         this.configSource = configSource;
+        this.listener = listener;
         this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
@@ -481,19 +481,11 @@ class JdbcBufferController
         setCaretPositionInLine(offset);
     }
 
-    EventListenerList listeners = new EventListenerList();
-    
-    void addListener(Listener l)
-    {
-        listeners.add(Listener.class,l);
-    }
+    final Listener listener;
     
     void fireBufferEvent(JdbcBufferControllerEvent e)
     {
-        for(var l : listeners.getListeners(Listener.class))
-        {
-            l.bufferActionPerformed(e);
-        }
+        listener.bufferActionPerformed(e);
     }
 
     void fireBufferEvent(Type type)
