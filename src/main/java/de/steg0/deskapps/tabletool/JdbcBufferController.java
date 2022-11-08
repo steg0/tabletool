@@ -107,18 +107,16 @@ class JdbcBufferController
     }
     
     JTable resultview;
-    int resultviewHeight;
     JdbcBufferConfigSource configSource;
     
     Consumer<String> log;
     
     JdbcBufferController(JFrame cellDisplay,JFrame infoDisplay,
-            Consumer<String> updateLog,int resultviewHeight,
-            JdbcBufferConfigSource configSource,Listener listener)
+            Consumer<String> updateLog,JdbcBufferConfigSource configSource,
+            Listener listener)
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
-        this.resultviewHeight = resultviewHeight;
         this.configSource = configSource;
         this.listener = listener;
         this.log = updateLog;
@@ -214,7 +212,7 @@ class JdbcBufferController
         resultview.setRowHeight(lineHeight);
         Dimension preferredSize = resultview.getPreferredSize();
         var viewportSize = new Dimension((int)preferredSize.getWidth(),
-                (int)Math.min(resultviewHeight*lineHeight,
+                (int)Math.min(configSource.getResultViewHeight()*lineHeight,
                         preferredSize.getHeight()));
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});

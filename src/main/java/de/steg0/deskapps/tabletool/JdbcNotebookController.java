@@ -184,7 +184,6 @@ class JdbcNotebookController
         
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
-        resultviewHeight = propertyHolder.getResultviewHeight();
         var buffer = newBufferController();
         add(0,buffer);
 

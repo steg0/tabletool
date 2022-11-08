@@ -14,6 +14,10 @@ class JdbcBufferConfigSource
         this.connectionListModel = connectionListModel;
     }
 
+    int getResultViewHeight()
+    {
+        return propertyHolder.getResultviewHeight();
+    }
     String getCompletionTemplate()
     {
         Connections.ConnectionState connectionState = 
