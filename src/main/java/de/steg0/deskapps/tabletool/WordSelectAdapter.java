@@ -26,14 +26,14 @@ import javax.swing.JTextArea;
  * operation might also have been started in the right panel area next to the
  * editor. Such actions should interoperate as well as possible.
  */
-class WordSelectListener
+class WordSelectAdapter
 extends MouseAdapter
 {
     Logger logger = Logger.getLogger("tabletool.editor");
     
     JTextArea textarea;
 
-    WordSelectListener(JTextArea textarea)
+    WordSelectAdapter(JTextArea textarea)
     {
         this.textarea = textarea;
         textarea.addMouseListener(this);

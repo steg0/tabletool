@@ -81,7 +81,7 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
-    WordSelectListener selectListener = new WordSelectListener(editor);
+    WordSelectAdapter selectListener = new WordSelectAdapter(editor);
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
@@ -337,7 +337,7 @@ class JdbcBufferController
                     var xy = editor.modelToView2D(editor.getCaretPosition());
                     int maxresults = 16;
                     var resultConsumer =
-                        new MenuResultConsumer(JdbcBufferController.this,
+                        new CompletionConsumer(JdbcBufferController.this,
                                 (int)xy.getCenterX(),(int)xy.getCenterY(),
                                 log,maxresults);
                     String sql = completionTemplate.replaceAll(

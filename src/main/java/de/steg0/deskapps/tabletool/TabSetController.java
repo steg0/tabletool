@@ -217,7 +217,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 int index=tabbedPane.getSelectedIndex();
-                String text = JOptionPane.showInputDialog(parent,"Find");
+                String text = JOptionPane.showInputDialog(parent,"Find text:");
                 if(text==null) return;
                 JdbcNotebookController notebook = notebooks.get(index);
                 notebook.lastSearchBuf=0;

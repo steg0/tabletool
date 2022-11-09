@@ -11,14 +11,14 @@ import java.util.function.Consumer;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
-class MenuResultConsumer implements BiConsumer<ResultSetTableModel,Long>
+class CompletionConsumer implements BiConsumer<ResultSetTableModel,Long>
 {
     private JdbcBufferController buffer;
     private int x,y;
     private Consumer<String> log;
-    int maxresults;
+    private int maxresults;
 
-    MenuResultConsumer(JdbcBufferController buffer,int x,int y,
+    CompletionConsumer(JdbcBufferController buffer,int x,int y,
             Consumer<String> log,int maxresults)
     {
         this.buffer = buffer;
