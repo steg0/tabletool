@@ -47,13 +47,16 @@ class TabSetController
 extends MouseAdapter
 implements KeyListener
 {
-    int MAX_RECENTS_SIZE=500;
+    static final int MAX_RECENTS_SIZE=500;
     
-    JFrame parent,cellDisplay=new JFrame(),infoDisplay=new JFrame();
-    PropertyHolder propertyHolder;
+    private final JFrame
+        parent,
+        cellDisplay=new JFrame(),
+        infoDisplay=new JFrame();
+    private final PropertyHolder propertyHolder;
     
-    Connections connections;
-    Executor executor = Executors.newCachedThreadPool();
+    private Connections connections;
+    private final Executor executor = Executors.newCachedThreadPool();
 
     TabSetController(JFrame parent,PropertyHolder propertyHolder)
     {
@@ -69,7 +72,7 @@ implements KeyListener
         connections = new Connections(propertyHolder,executor);
     }
 
-    JTabbedPane tabbedPane = new JTabbedPane();
+    final JTabbedPane tabbedPane = new JTabbedPane();
     
     class SelectTabAction extends AbstractAction
     {
@@ -305,8 +308,8 @@ implements KeyListener
         });
     }
     
-    List<JdbcNotebookController> notebooks = new ArrayList<>();
-    int unnamedNotebookCount;
+    private final List<JdbcNotebookController> notebooks = new ArrayList<>();
+    private int unnamedNotebookCount;
     
     /**
      * Adds a tab and selects it.
@@ -367,7 +370,7 @@ implements KeyListener
         });
     }
     
-    Deque<String> recents = new LinkedList<>();
+    private final Deque<String> recents = new LinkedList<>();
     
     JMenu getRecentsMenu()
     {
@@ -633,7 +636,7 @@ implements KeyListener
         }
     }
     
-    int lastClicked=-1;
+    private int lastClicked=-1;
 
     @Override
     public void mouseClicked(MouseEvent e)
