@@ -20,7 +20,7 @@ class PropertyHolder
     Logger logger = Logger.getLogger("tabletool.properties");
 
     File propertiesfile;
-    Properties properties = new Properties();
+    private Properties properties;
     
     PropertyHolder(File propertiesfile)
     {
@@ -33,6 +33,7 @@ class PropertyHolder
         if(propertiesfile!=null) try(var propertyStream = 
                 new BufferedInputStream(new FileInputStream(propertiesfile)))
         {
+            properties = new Properties();
             properties.load(propertyStream);
         }
     }
@@ -150,14 +151,14 @@ class PropertyHolder
             .toArray(ConnectionInfo[]::new);
     }
 
-    static String getConnectionNameKey(Object propertyKey)
+    private static String getConnectionNameKey(Object propertyKey)
     {
         String s = String.valueOf(propertyKey).substring(
                 ConnectionInfo.CONNECTIONS_PREFIX.length());
         return s.substring(0,s.indexOf("."));
     }
 
-    Map<String,String> getSnippetsForDriver(String driverName)
+    private Map<String,String> getSnippetsForDriver(String driverName)
     {
         return properties
             .stringPropertyNames().stream()
@@ -168,14 +169,14 @@ class PropertyHolder
                     properties::getProperty));
     }
     
-    static String getSnippetNameKeyForDriver(Object propertyKey)
+    private static String getSnippetNameKeyForDriver(Object propertyKey)
     {
         String s = String.valueOf(propertyKey).substring(
                 ConnectionInfo.DRIVERS_PREFIX.length());
         return s.substring(s.lastIndexOf(".")+1);
     }
 
-    Map<String,String> getSnippetsForConnection(String connectionName)
+    private Map<String,String> getSnippetsForConnection(String connectionName)
     {
         return properties
             .stringPropertyNames().stream()
@@ -186,7 +187,7 @@ class PropertyHolder
                     properties::getProperty));
     }
     
-    static String getSnippetNameKeyForConnection(Object propertyKey)
+    private static String getSnippetNameKeyForConnection(Object propertyKey)
     {
         String s = String.valueOf(propertyKey).substring(
                 ConnectionInfo.CONNECTIONS_PREFIX.length());
