@@ -126,7 +126,7 @@ class CellDisplayController
             }
             textarea.setText(b.toString());
 
-            var updateButton = new JButton("Update");
+            var updateButton = new JButton("Update & Close");
             var updateAction = new ClobUpdateAction();
             updateAction.textarea = textarea;
             updateAction.resultset = resultset;
@@ -192,7 +192,7 @@ class CellDisplayController
 
             if(resultset!=null)
             {
-                var updateButton = new JButton("Update");
+                var updateButton = new JButton("Update & Close");
                 updateButton.setMnemonic(KeyEvent.VK_U);
                 var updateAction = new UpdateAction();
                 updateAction.textarea = textarea;
