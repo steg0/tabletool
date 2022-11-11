@@ -31,7 +31,7 @@ extends MouseAdapter
 {
     Logger logger = Logger.getLogger("tabletool.editor");
     
-    JTextArea textarea;
+    private final JTextArea textarea;
 
     WordSelectAdapter(JTextArea textarea)
     {
@@ -102,7 +102,7 @@ extends MouseAdapter
         updateSelection();
     }
     
-    void updateSelection()
+    private void updateSelection()
     {
         switch(clickCount)
         {
@@ -116,7 +116,7 @@ extends MouseAdapter
         }
     }
 
-    int getWordStartPos(String text,int initPos)
+    private int getWordStartPos(String text,int initPos)
     {
         int i = initPos;
         while(i > 0 && (
@@ -128,7 +128,7 @@ extends MouseAdapter
         return i;
     }
 
-    int getWordEndPos(String text,int initPos)
+    private int getWordEndPos(String text,int initPos)
     {
         int i = initPos;
         while(i < text.length() && (
@@ -152,7 +152,7 @@ extends MouseAdapter
         textarea.select(newSelection[0],newSelection[1]);
     }
     
-    void updateWordSelection()
+    private void updateWordSelection()
     {
         if(dragPos<0) return;
         String text = textarea.getText();
@@ -169,7 +169,7 @@ extends MouseAdapter
         textarea.select(newSelection[0],newSelection[1]);
     }
 
-    int getLineStartPos(String text,int initPos)
+    private int getLineStartPos(String text,int initPos)
     {
         int i = initPos;
         if(text.charAt(i) == '\n')
@@ -183,7 +183,7 @@ extends MouseAdapter
         return i + 1;
     }
 
-    int getLineEndPos(String text,int initPos)
+    private int getLineEndPos(String text,int initPos)
     {
         int i = initPos;
         while(i < text.length() && text.charAt(i) != '\n')
@@ -193,7 +193,7 @@ extends MouseAdapter
         return i;
     }
 
-    void selectLine()
+    private void selectLine()
     {
         if(clickPos<0) return;
         String text = textarea.getText();
@@ -205,7 +205,7 @@ extends MouseAdapter
         textarea.select(newSelection[0],newSelection[1]);
     }
     
-    void updateLineSelection()
+    private void updateLineSelection()
     {
         if(dragPos<0) return;
         String text = textarea.getText();

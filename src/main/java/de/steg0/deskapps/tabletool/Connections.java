@@ -16,7 +16,7 @@ class Connections
      */
     class ConnectionState
     {
-        int connectionIndex;
+        private int connectionIndex;
         
         PropertyHolder.ConnectionInfo info()
         {
@@ -31,10 +31,10 @@ class Connections
         }
     }
 
-    ConnectionState[] connectionState;
-    PropertyHolder.ConnectionInfo[] connectionInfo;
-    ConnectionWorker[] connections;
-    Executor executor;
+    private final ConnectionState[] connectionState;
+    private final PropertyHolder.ConnectionInfo[] connectionInfo;
+    private final ConnectionWorker[] connections;
+    private final Executor executor;
     
     Connections(PropertyHolder propertyHolder,Executor executor)
     {

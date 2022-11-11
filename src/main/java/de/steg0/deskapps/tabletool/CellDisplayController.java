@@ -43,10 +43,8 @@ import javax.swing.undo.UndoManager;
 
 class CellDisplayController
 {
-    final JFrame cellDisplay;
+    private final JFrame cellDisplay;
 
-    JPanel panel = new JPanel(new BorderLayout());
-    
     CellDisplayController(JFrame cellDisplay,JTable source,Consumer<String> log)
     {
         this.cellDisplay = cellDisplay;
@@ -278,12 +276,12 @@ class CellDisplayController
         cellDisplay.setVisible(true);
     }
 
-    static class HexDump
+    private static class HexDump
     {
-        String dump;
-        int length;
+        private String dump;
+        private int length;
         
-        HexDump(InputStream is,int maxlength)
+        private HexDump(InputStream is,int maxlength)
         throws IOException
         {
             var hex=new StringBuilder();
@@ -312,9 +310,9 @@ class CellDisplayController
         }
     }
     
-    class BlobOpenAction implements ActionListener
+    private class BlobOpenAction implements ActionListener
     {
-        Blob blob;
+        private Blob blob;
 
         /**blocking */
         @Override
@@ -353,9 +351,9 @@ class CellDisplayController
         }
     }
     
-    class BlobExportAction implements ActionListener
+    private class BlobExportAction implements ActionListener
     {
-        Blob blob;
+        private Blob blob;
         
         /**blocking */
         @Override
@@ -391,11 +389,11 @@ class CellDisplayController
         }
     }
     
-    class BlobImportAction implements ActionListener
+    private class BlobImportAction implements ActionListener
     {
-        Blob blob;
-        ResultSet resultset;
-        int column;
+        private Blob blob;
+        private ResultSet resultset;
+        private int column;
         
         /**blocking */
         @Override
@@ -441,11 +439,11 @@ class CellDisplayController
         }
     }
     
-    class UpdateAction implements ActionListener
+    private class UpdateAction implements ActionListener
     {
-        JTextArea textarea;
-        ResultSet resultset;
-        int column;
+        private JTextArea textarea;
+        private ResultSet resultset;
+        private int column;
         
         /**blocking */
         @Override
@@ -468,11 +466,11 @@ class CellDisplayController
         }
     }
     
-    class ClobUpdateAction implements ActionListener
+    private class ClobUpdateAction implements ActionListener
     {
-        JTextArea textarea;
-        ResultSet resultset;
-        int column;
+        private JTextArea textarea;
+        private ResultSet resultset;
+        private int column;
         
         /**blocking */
         @Override

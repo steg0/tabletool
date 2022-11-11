@@ -1074,10 +1074,11 @@ class JdbcBufferController
         {
             switch(e.getKeyCode())
             {
+            case KeyEvent.VK_UP:
+                if(e.isControlDown()); // XXX how to focus the tab bar?
             case KeyEvent.VK_LEFT:
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_DOWN:
-            case KeyEvent.VK_UP:
             case KeyEvent.VK_HOME:
             case KeyEvent.VK_END:
             case KeyEvent.VK_PAGE_DOWN:

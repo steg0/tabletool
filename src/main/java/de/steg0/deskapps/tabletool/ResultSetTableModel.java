@@ -16,10 +16,10 @@ import javax.swing.table.TableModel;
 class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
-    Statement st;
+    private Statement st;
     ResultSet rs;
-    String cols[];
-    List<Object[]> rows;
+    private String cols[];
+    private List<Object[]> rows;
     int fetchsize;
     boolean resultSetClosed;
     
@@ -35,7 +35,7 @@ implements TableModel,AutoCloseable
         fill();
     }
     
-    void fill()
+    private void fill()
     throws SQLException
     {
         rows = new ArrayList<Object[]>(fetchsize);

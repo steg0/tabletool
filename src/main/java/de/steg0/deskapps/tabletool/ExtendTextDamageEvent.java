@@ -42,7 +42,7 @@ class ExtendTextDamageEvent implements DocumentEvent
         editor.getUI().getRootView(editor).changedUpdate(event,null,null);
     }
     
-    DocumentEvent miniDamageEvent;
+    private DocumentEvent miniDamageEvent;
 
     @Override
     public int getOffset()

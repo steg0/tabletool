@@ -4,8 +4,8 @@ import java.util.Map;
 
 class JdbcBufferConfigSource
 {
-    PropertyHolder propertyHolder;
-    ConnectionListModel connectionListModel;
+    private final PropertyHolder propertyHolder;
+    private final ConnectionListModel connectionListModel;
 
     JdbcBufferConfigSource(PropertyHolder propertyHolder,
             ConnectionListModel connectionListModel)
