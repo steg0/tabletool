@@ -13,7 +13,6 @@ public class HtmlExporter
     /**blocking */
     static void openTemp(JFrame parent,String html)
     {
-        
         try
         {
             var tmpfile = File.createTempFile("tthtml",".html");

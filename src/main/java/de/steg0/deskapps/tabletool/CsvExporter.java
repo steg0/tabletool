@@ -13,7 +13,6 @@ public class CsvExporter
     /**blocking */
     static void openTemp(JFrame parent,String csv)
     {
-        
         try
         {
             var tmpfile = File.createTempFile("ttcsv",".csv");
