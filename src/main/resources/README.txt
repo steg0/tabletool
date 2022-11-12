@@ -28,6 +28,7 @@ The configuration file supports the following keys:
   frame.y=100
   frame.w=700
   frame.h=450
+  editor.font=Luxi Mono
   default.bg=#ffffff
   scroll.increment=16
   resultview.height=150

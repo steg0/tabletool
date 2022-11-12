@@ -127,6 +127,13 @@ class JdbcBufferController
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
+        if(configSource.getEditorFontName() != null)
+        {
+            Font f = editor.getFont(),f2=new Font(
+                    configSource.getEditorFontName(),f.getStyle(),
+                    f.getSize());
+            editor.setFont(f2);
+        }
         
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");

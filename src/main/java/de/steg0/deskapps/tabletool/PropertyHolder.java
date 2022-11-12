@@ -69,6 +69,11 @@ class PropertyHolder
         return Integer.parseInt(
                 properties.getOrDefault("resultview.height","12").toString());
     }
+
+    String getEditorFontName()
+    {
+        return properties.getProperty("editor.font");
+    }
     
     Color getDefaultBackground()
     {

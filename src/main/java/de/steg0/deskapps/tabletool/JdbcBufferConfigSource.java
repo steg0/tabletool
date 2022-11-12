@@ -18,6 +18,10 @@ class JdbcBufferConfigSource
     {
         return propertyHolder.getResultviewHeight();
     }
+    String getEditorFontName()
+    {
+        return propertyHolder.getEditorFontName();
+    }
     String getCompletionTemplate()
     {
         Connections.ConnectionState connectionState = 
