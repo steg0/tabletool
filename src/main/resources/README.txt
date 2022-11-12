@@ -31,16 +31,25 @@ The configuration file supports the following keys:
   default.bg=#ffffff
   scroll.increment=16
   resultview.height=150
+  drivers.<JDBC URL part after the schema>.completionTemplate=\
+      select table_name from user_tables \
+      where table_name like upper('@@selection@@%')
+  drivers.<JDBC URL part after the schema>.infoTemplate=<...>
+  drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<...>
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
   connections.<Name 1>.bg=#eeeedd
   connections.<Name 1>.completionTemplate=\
-      select table_name from user_tables \
-      where lower(table_name) like lower('@@selection@@%')
+      select table_name from all_tables \
+      where table_name like upper('@@selection@@%')
+  connections.<Name 1>.infoTemplate=<...>
+  connections.<Name 1>.snippets.<Snippet Name 1>=<...>
 └─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
+
+completionTemplate, infoTemplate, and snippets can be specified for drivers as well as connections, where for completionTemplate and infoTemplate the latter overrides the former.
 
 
 ▶ Actions in a notebook
@@ -48,12 +57,16 @@ More than one connection definition can occur in the file as long as the name pa
 While editing SQL in a notebook, the following keys are supported:
 
 • Alt+Up, Alt+Down - increase/decrease fetch size.
+• Alt+Left, Alt+Right - select prior/next tab.
+• Ctrl+Alt+Left, Ctrl+Alt+Right - move tab left/right.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
 • Ctrl+Shift+Enter - like Ctrl+Enter, but always create a new result table.
 • Ctrl+Tab - select the next result table or buffer section.
 • Ctrl+Shift+Tab - select the previous result table or buffer section.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+/ - comment/uncomment.
+• Ctrl+F - find text.
+• F3 - find next.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
 • F1 - execute info template for word under cursor or selection.
@@ -62,9 +75,9 @@ While editing SQL in a notebook, the following keys are supported:
 
 To navigate across a result table, use Up/Down arrow keys.
 
-In a result table, a double click on a cell brings up a window to view the cell content in a larger space. For CLOBs, this fetches the complete content instead of displaying the standard Object::toString(). For BLOBs, it displays the first couple of bytes as a dump but offers export/import functionality. For DB2, connect with the "progressiveStreaming=2" option to be able to export BLOBs. Also see notes about the import function below.
+In a result table, a double click or Enter on a cell brings up a window to view the cell content in a larger space. For CLOBs, this fetches the complete content instead of displaying the standard Object::toString(). For BLOBs, it displays the first couple of bytes as a dump but offers export/import functionality. For DB2, connect with the "progressiveStreaming=2" option to be able to export BLOBs. Also see notes about the import function below.
 
-A right click on the result table brings up a popup menu which allows closing the table. This also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
+A right click on the result table brings up a popup menu which allows closing the table, or exporting the buffer with desktop actions. Closing also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
 
 Ⓐ a subsequent query is submitted over the connection; and, as mentioned,
 Ⓑ the result table is closed (either with the popup action or by closing the tab).
@@ -79,7 +92,7 @@ If a query begins with "{", "create", "call", "begin", or "declare", CallableSta
 
 ▶ Update function for BLOBs
 
-The single benefit (right now) of leaving the ResultSet open is that updatable ResultSets can be made available to the user. This is utilized to allow BLOB value updates. There are a few prerequisites for this to work:
+The single benefit (right now) of leaving the ResultSet open is that updatable ResultSets can be made available to the user. This is utilized to allow cell value updates. There are a few prerequisites for this to work:
 
 Ⓐ don't fetch beyond the last row. If you did, fetch again but set a manual, small enough fetch size in the 〈Fetch:〉 field before.
 Ⓑ use explicit columns instead of SELECT * in the query.
