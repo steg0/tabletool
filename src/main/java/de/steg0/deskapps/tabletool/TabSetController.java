@@ -83,6 +83,7 @@ implements KeyListener
         }
         @Override public void actionPerformed(ActionEvent e)
         {
+            if(tabindex >= tabbedPane.getTabCount()) return;
             tabbedPane.setSelectedIndex(tabindex);
             JdbcNotebookController c = notebooks.get(
                     tabbedPane.getSelectedIndex());
@@ -175,6 +176,67 @@ implements KeyListener
                 }
             }
         },
+        selectPreviousTabAction = new AbstractAction("Select Previous Tab")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int selected = tabbedPane.getSelectedIndex();
+                if(selected==0) selected=tabbedPane.getTabCount();
+                else tabbedPane.setSelectedIndex(selected-1);
+                JdbcNotebookController c = notebooks.get(
+                        tabbedPane.getSelectedIndex());
+                if(c.hasSavedFocusPosition) c.restoreFocus();
+            }
+        },
+        selectNextTabAction = new AbstractAction("Select Next Tab")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int selected = tabbedPane.getSelectedIndex();
+                if(selected==tabbedPane.getTabCount()-1) selected=-1;
+                tabbedPane.setSelectedIndex(selected+1);
+                JdbcNotebookController c = notebooks.get(
+                        tabbedPane.getSelectedIndex());
+                if(c.hasSavedFocusPosition) c.restoreFocus();
+            }
+        },
+        moveTabLeftAction = new AbstractAction("Move Tab Left")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index = tabbedPane.getSelectedIndex();
+                if(index>0)
+                {
+                    String title = tabbedPane.getTitleAt(index);
+                    Component c = tabbedPane.getSelectedComponent();
+                    tabbedPane.remove(index);
+                    tabbedPane.add(c,index-1);
+                    tabbedPane.setTitleAt(index-1,title);
+                    JdbcNotebookController notebook = notebooks.remove(index);
+                    notebooks.add(index-1,notebook);
+                    tabbedPane.setSelectedComponent(c);
+                }
+        
+            }
+        },
+        moveTabRightAction = new AbstractAction("Move Tab Right")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index = tabbedPane.getSelectedIndex();
+                if(index<tabbedPane.getTabCount()-1)
+                {
+                    String title = tabbedPane.getTitleAt(index);
+                    Component c = tabbedPane.getSelectedComponent();
+                    tabbedPane.remove(index);
+                    tabbedPane.add(c,index+1);
+                    tabbedPane.setTitleAt(index+1,title);
+                    JdbcNotebookController notebook = notebooks.remove(index);
+                    notebooks.add(index+1,notebook);
+                    tabbedPane.setSelectedComponent(c);
+                }
+            }
+        },
         increaseFetchsizeAction = new AbstractAction("Fetchsize+")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -254,6 +316,12 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_8,CTRL_MASK),"Select Tab 8");
         im.put(getKeyStroke(KeyEvent.VK_9,CTRL_MASK),"Select Tab 9");
         im.put(getKeyStroke(KeyEvent.VK_0,CTRL_MASK),"Select Tab 10");
+        im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK),"Select Previous Tab");
+        im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK),"Select Next Tab");
+        im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK|CTRL_MASK),
+                "Move Tab Left");
+        im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK|CTRL_MASK),
+                "Move Tab Right");
         im.put(getKeyStroke(KeyEvent.VK_EQUALS,CTRL_MASK),"Zoom+");
         im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK),"Zoom-");
         im.put(getKeyStroke(KeyEvent.VK_UP,ALT_MASK),"Fetchsize+");
@@ -271,6 +339,10 @@ implements KeyListener
         am.put("Select Tab 8",new SelectTabAction(7));
         am.put("Select Tab 9",new SelectTabAction(8));
         am.put("Select Tab 10",new SelectTabAction(9));
+        am.put("Select Previous Tab",selectPreviousTabAction);
+        am.put("Select Next Tab",selectNextTabAction);
+        am.put("Move Tab Left",moveTabLeftAction);
+        am.put("Move Tab Right",moveTabRightAction);
         am.put("Zoom+",new ZoomAction(1.3));
         am.put("Zoom-",new ZoomAction(1.0/1.3));
         am.put("Fetchsize+",increaseFetchsizeAction);
@@ -329,7 +401,7 @@ implements KeyListener
                 notebookListener
         );
         notebooks.add(notebook);
-        int newIndex = tabbedPane.getComponentCount();
+        int newIndex = tabbedPane.getTabCount();
         if(unnamed)
         {
             String newname = "Notebook"+(unnamedNotebookCount++);
@@ -600,39 +672,10 @@ implements KeyListener
     @Override
     public void keyReleased(KeyEvent e)
     {
-        int index=0;
         switch(e.getKeyCode())
         {
         case KeyEvent.VK_ENTER:
             notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
-            break;
-        case KeyEvent.VK_RIGHT:
-            index = tabbedPane.getSelectedIndex();
-            if(e.isAltDown() && index<tabbedPane.getComponentCount()-1)
-            {
-                String title = tabbedPane.getTitleAt(index);
-                Component c = tabbedPane.getSelectedComponent();
-                tabbedPane.remove(index);
-                tabbedPane.add(c,index+1);
-                tabbedPane.setTitleAt(index+1,title);
-                JdbcNotebookController notebook = notebooks.remove(index);
-                notebooks.add(index+1,notebook);
-                tabbedPane.setSelectedComponent(c);
-            }
-            break;
-        case KeyEvent.VK_LEFT:
-            index = tabbedPane.getSelectedIndex();
-            if(e.isAltDown() && index>0)
-            {
-                String title = tabbedPane.getTitleAt(index);
-                Component c = tabbedPane.getSelectedComponent();
-                tabbedPane.remove(index);
-                tabbedPane.add(c,index-1);
-                tabbedPane.setTitleAt(index-1,title);
-                JdbcNotebookController notebook = notebooks.remove(index);
-                notebooks.add(index-1,notebook);
-                tabbedPane.setSelectedComponent(c);
-            }
         }
     }
     
