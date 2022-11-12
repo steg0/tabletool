@@ -35,8 +35,8 @@ The configuration file supports the following keys:
   drivers.<JDBC URL part after the schema>.completionTemplate=\
       select table_name from user_tables \
       where table_name like upper('@@selection@@%')
-  drivers.<JDBC URL part after the schema>.infoTemplate=<...>
-  drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<...>
+  drivers.<JDBC URL part after the schema>.infoTemplate=<…>
+  drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<…>
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
@@ -44,8 +44,8 @@ The configuration file supports the following keys:
   connections.<Name 1>.completionTemplate=\
       select table_name from all_tables \
       where table_name like upper('@@selection@@%')
-  connections.<Name 1>.infoTemplate=<...>
-  connections.<Name 1>.snippets.<Snippet Name 1>=<...>
+  connections.<Name 1>.infoTemplate=<…>
+  connections.<Name 1>.snippets.<Snippet Name 1>=<…>
 └─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
