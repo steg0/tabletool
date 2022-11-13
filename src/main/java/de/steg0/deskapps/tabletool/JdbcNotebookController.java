@@ -404,7 +404,6 @@ class JdbcNotebookController
         }
     };
     
-    /* this listener could live in JdbcBufferController */
     private class BufferDocumentListener implements DocumentListener
     {
         JdbcBufferController buffer;
