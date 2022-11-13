@@ -278,8 +278,8 @@ class CellDisplayController
 
     private static class HexDump
     {
-        private String dump;
-        private int length;
+        String dump;
+        int length;
         
         private HexDump(InputStream is,int maxlength)
         throws IOException
@@ -312,7 +312,7 @@ class CellDisplayController
     
     private class BlobOpenAction implements ActionListener
     {
-        private Blob blob;
+        Blob blob;
 
         /**blocking */
         @Override
@@ -353,7 +353,7 @@ class CellDisplayController
     
     private class BlobExportAction implements ActionListener
     {
-        private Blob blob;
+        Blob blob;
         
         /**blocking */
         @Override
@@ -391,9 +391,9 @@ class CellDisplayController
     
     private class BlobImportAction implements ActionListener
     {
-        private Blob blob;
-        private ResultSet resultset;
-        private int column;
+        Blob blob;
+        ResultSet resultset;
+        int column;
         
         /**blocking */
         @Override
@@ -441,9 +441,9 @@ class CellDisplayController
     
     private class UpdateAction implements ActionListener
     {
-        private JTextArea textarea;
-        private ResultSet resultset;
-        private int column;
+        JTextArea textarea;
+        ResultSet resultset;
+        int column;
         
         /**blocking */
         @Override
@@ -468,9 +468,9 @@ class CellDisplayController
     
     private class ClobUpdateAction implements ActionListener
     {
-        private JTextArea textarea;
-        private ResultSet resultset;
-        private int column;
+        JTextArea textarea;
+        ResultSet resultset;
+        int column;
         
         /**blocking */
         @Override
