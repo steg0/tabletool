@@ -66,31 +66,31 @@ class JdbcNotebookController
     
     Logger logger = Logger.getLogger("tabletool.editor");
     
-    final JFrame cellDisplay,infoDisplay;
-    final PropertyHolder propertyHolder;
-    final JdbcBufferConfigSource bufferConfigSource;
+    private final JFrame cellDisplay,infoDisplay;
+    private final PropertyHolder propertyHolder;
+    private final JdbcBufferConfigSource bufferConfigSource;
     
     File file;
     boolean unsaved;
     
-    final ConnectionListModel connections;
-    JComboBox<Connections.ConnectionState> connectionsSelector;
+    private final ConnectionListModel connections;
+    private JComboBox<Connections.ConnectionState> connectionsSelector;
 
-    JFormattedTextField fetchsizeField;
+    private JFormattedTextField fetchsizeField;
     
-    JButton commitButton = new JButton("Commit");
-    JButton rollbackButton = new JButton("Rollback");
-    JButton disconnectButton = new JButton("Disconnect");
-    JCheckBox autocommitCb = new JCheckBox("Autocommit",
+    private final JButton commitButton = new JButton("Commit");
+    private final JButton rollbackButton = new JButton("Rollback");
+    private final JButton disconnectButton = new JButton("Disconnect");
+    private final JCheckBox autocommitCb = new JCheckBox("Autocommit",
             Connections.AUTOCOMMIT_DEFAULT);
     
-    JScrollPane bufferPane;
-    int scrollIncrement;
+    private final JScrollPane bufferPane;
+    private final int scrollIncrement;
     
-    JTextArea log = new JTextArea();
-    JSplitPane logBufferPane;
+    private final JTextArea log = new JTextArea();
+    private final JSplitPane logBufferPane;
 
-    void resize()
+    private void resize()
     {
         int lines = Math.min(10,log.getLineCount());
         int lineheight = log.getFontMetrics(log.getFont()).getHeight();
@@ -113,14 +113,13 @@ class JdbcNotebookController
         });
     }
     
-    Consumer<String> logConsumer = (t) -> log.setText(t);
+    private final Consumer<String> logConsumer = (t) -> log.setText(t);
     
-    List<JdbcBufferController> buffers = new ArrayList<>();
-    int lastFocusedBuffer;
+    private final List<JdbcBufferController> buffers = new ArrayList<>();
+    private int lastFocusedBuffer;
     boolean hasSavedFocusPosition;
-    int resultviewHeight;
-    JPanel bufferPanel = new JPanel(new GridBagLayout());
-    JPanel notebookPanel = new JPanel(new GridBagLayout());
+    private final JPanel bufferPanel = new JPanel(new GridBagLayout());
+    final JPanel notebookPanel = new JPanel(new GridBagLayout());
     
     JdbcNotebookController(
             JFrame cellDisplay,
@@ -216,7 +215,7 @@ class JdbcNotebookController
                 bufferConfigSource,bufferListener);
     }
 
-    void setBackground(Color bg)
+    private void setBackground(Color bg)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
         if(bg==null) bg=buffers.get(0).defaultBackground;
@@ -239,9 +238,9 @@ class JdbcNotebookController
         }
     }
     
-    final Listener listener;
+    private final Listener listener;
     
-    class BufferPaneMouseListener extends MouseAdapter
+    private class BufferPaneMouseListener extends MouseAdapter
     {
         int clickVpY;
         Component clickBuffer;
@@ -322,7 +321,7 @@ class JdbcNotebookController
         }
     }
     
-    JdbcBufferController.Listener bufferListener = 
+    private final JdbcBufferController.Listener bufferListener = 
             new JdbcBufferController.Listener()
     {
         @Override
@@ -406,7 +405,7 @@ class JdbcNotebookController
     };
     
     /* this listener could live in JdbcBufferController */
-    class BufferDocumentListener implements DocumentListener
+    private class BufferDocumentListener implements DocumentListener
     {
         JdbcBufferController buffer;
         
@@ -468,7 +467,7 @@ class JdbcNotebookController
         layoutPanel();
     }
     
-    void layoutPanel()
+    private void layoutPanel()
     {
         bufferPanel.removeAll();
         
@@ -487,7 +486,7 @@ class JdbcNotebookController
         bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
-    void exitedSouth(JdbcBufferController source)
+    private void exitedSouth(JdbcBufferController source)
     {
         int i=buffers.indexOf(source);
         if(buffers.size() <= i+1)
@@ -506,7 +505,7 @@ class JdbcNotebookController
                 (int)source.panel.getBounds().getHeight(),1,h));
     }
 
-    void selectedRectChanged(JdbcBufferController source,Rectangle rect)
+    private void selectedRectChanged(JdbcBufferController source,Rectangle rect)
     {
         Rectangle sourceRect = source.panel.getBounds();
         JViewport viewport = bufferPane.getViewport();
@@ -562,7 +561,7 @@ class JdbcNotebookController
     }
 
     /**blocking */
-    void store(Writer w)
+    private void store(Writer w)
     throws IOException
     {
         for(JdbcBufferController buffer : buffers)
@@ -657,7 +656,7 @@ class JdbcNotebookController
         }
     }
     
-    PropertyChangeListener fetchSizeListener = (e) ->
+    private final PropertyChangeListener fetchSizeListener = (e) ->
     {
         int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         for(JdbcBufferController buffer : buffers)
@@ -666,7 +665,7 @@ class JdbcNotebookController
         }
     };
 
-    void onConnection(Consumer<ConnectionWorker> c)
+    private void onConnection(Consumer<ConnectionWorker> c)
     {
         ConnectionWorker selectedConnection = buffers.get(0).connection;
         if(selectedConnection != null)
@@ -680,7 +679,7 @@ class JdbcNotebookController
     }
     
     /**blocking */
-    void updateConnection(ItemEvent event)
+    private void updateConnection(ItemEvent event)
     {
         /* 
          * If the update was due to a Deselect action, don't do anything
