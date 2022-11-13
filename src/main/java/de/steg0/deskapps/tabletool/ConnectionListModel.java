@@ -13,8 +13,8 @@ class ConnectionListModel
 implements ComboBoxModel<Connections.ConnectionState>
 {
 
-    Connections connections;
-    Object selected;
+    private final Connections connections;
+    private Object selected;
     
     ConnectionListModel(Connections connections)
     {
@@ -28,11 +28,6 @@ implements ComboBoxModel<Connections.ConnectionState>
         return connections.getConnection(connection);
     }
     
-    void reportDisconnect(ConnectionWorker connection)
-    {
-        connections.reportDisconnect(connection);
-    }
-
     @Override
     public int getSize()
     {
