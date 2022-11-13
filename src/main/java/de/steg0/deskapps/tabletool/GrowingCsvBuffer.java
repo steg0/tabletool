@@ -5,13 +5,13 @@ import java.util.List;
 
 class GrowingCsvBuffer
 {
-    List<Object[]> rows = new ArrayList<>();
-    List<Object> row = new ArrayList<>();
-    StringBuilder field = new StringBuilder();
+    final List<Object[]> rows = new ArrayList<>();
+    private List<Object> row = new ArrayList<>();
+    private final StringBuilder field = new StringBuilder();
     
-    enum State { INIT,FIELD,QUOTEDFIELD,QUOTEINQUOTEDFIELD };
+    private enum State { INIT,FIELD,QUOTEDFIELD,QUOTEINQUOTEDFIELD };
     
-    State state = State.INIT;
+    private State state = State.INIT;
 
     /**
      * @throws IndexOutOfBoundsException if no header has been scanned
@@ -35,18 +35,18 @@ class GrowingCsvBuffer
         return rows.subList(1,rows.size());
     }
     
-    void accept(int c)
+    private void accept(int c)
     {
         field.append((char)c);
     }
     
-    void acceptField()
+    private void acceptField()
     {
         row.add(field.toString());
         field.setLength(0);
     }
     
-    void acceptLine()
+    private void acceptLine()
     {
         rows.add(row.toArray());
         row = new ArrayList<>();
