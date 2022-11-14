@@ -12,7 +12,7 @@ class SQLExceptionPrinter
         b.append(new Date());
         b.append("\n");
         var cause = e.getCause();
-        if(cause != null && cause != e)
+        if(cause != null)
         {
             b.append(cause+"\n");
         }
