@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * Represents the list of connections available to the runtime.
@@ -52,7 +53,8 @@ class Connections
     }
     
     /**blocking; establishes connection if needed */
-    ConnectionWorker getConnection(ConnectionState connection)
+    ConnectionWorker getConnection(ConnectionState connection,
+            Consumer<String> log)
     throws SQLException
     {
         int i = connection.connectionIndex;
@@ -68,6 +70,11 @@ class Connections
                     jdbcConnection,
                     executor
             );
+            if(connectionInfo[i].initSql != null)
+            {
+                connections[i].submit(connectionInfo[i].initSql,0,
+                        (r,c) -> {},(r,c) -> {},log);
+            }
         }
         return connections[i];
     }

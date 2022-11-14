@@ -86,8 +86,9 @@ class PropertyHolder
         static final String CONNECTIONS_PREFIX = "connections.";
         static final String DRIVERS_PREFIX = "drivers.";
         
-        String name,url,username,password,completionTemplate,infoTemplate;
-        Map<String,String> snippetTemplates = new TreeMap<>();
+        String name,url,username,password,completionTemplate,infoTemplate,
+            initSql;
+        final Map<String,String> snippetTemplates = new TreeMap<>();
         Color background;
         
         ConnectionInfo(String nameKey)
@@ -99,8 +100,7 @@ class PropertyHolder
             username=String.valueOf(properties.get(prefix+".username"));
             password=String.valueOf(properties.get(prefix+".password"));
 
-            String driverSpec = url.replaceFirst(
-                "^jdbc\\:([a-z]+)\\:.*$","$1");
+            String driverSpec = url.replaceFirst("^jdbc\\:([a-z]+)\\:.*$","$1");
             logger.fine("Looking up templates for driver "+driverSpec);
 
             if(properties.containsKey(prefix+".completionTemplate"))
@@ -117,19 +117,30 @@ class PropertyHolder
                         DRIVERS_PREFIX+driverSpec+".completionTemplate"));
                 }
             }
-            if(properties.containsKey(
-                DRIVERS_PREFIX+driverSpec+".infoTemplate"))
+            if(properties.containsKey(prefix+".infoTemplate"))
             {
-                infoTemplate=String.valueOf(properties.get(
-                    DRIVERS_PREFIX+driverSpec+".infoTemplate"));
+                infoTemplate=String.valueOf(properties.get(prefix+
+                        ".infoTemplate"));
             }
             else
             {
                 if(properties.containsKey(
                     DRIVERS_PREFIX+driverSpec+".infoTemplate"))
                 {
-                    completionTemplate=String.valueOf(properties.get(
+                    infoTemplate=String.valueOf(properties.get(
                         DRIVERS_PREFIX+driverSpec+".infoTemplate"));
+                }
+            }
+            if(properties.containsKey(prefix+".initSql"))
+            {
+                initSql=String.valueOf(properties.get(prefix+".initSql"));
+            }
+            else
+            {
+                if(properties.containsKey(DRIVERS_PREFIX+driverSpec+".initSql"))
+                {
+                    initSql=String.valueOf(properties.get(
+                        DRIVERS_PREFIX+driverSpec+".initSql"));
                 }
             }
             snippetTemplates.putAll(getSnippetsForDriver(driverSpec));

@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.sql.SQLException;
+import java.util.function.Consumer;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ListDataListener;
@@ -22,10 +23,11 @@ implements ComboBoxModel<Connections.ConnectionState>
     }
 
     /**blocking; establishes connection if needed */
-    ConnectionWorker getConnection(Connections.ConnectionState connection)
+    ConnectionWorker getConnection(Connections.ConnectionState connection,
+            Consumer<String> log)
     throws SQLException
     {
-        return connections.getConnection(connection);
+        return connections.getConnection(connection,log);
     }
     
     @Override
