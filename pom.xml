@@ -4,7 +4,7 @@
   <groupId>de.steg0.deskapps.tabletool</groupId>
   <artifactId>tabtype</artifactId>
   <packaging>jar</packaging>
-  <version>0.38-SNAPSHOT</version>
+  <version>0.47-SNAPSHOT</version>
   <name>tabtype</name>
   <url>http://www.steg0.eu</url>
 
@@ -24,6 +24,12 @@
     <dependency>
       <groupId>com.oracle.ojdbc</groupId>
       <artifactId>ojdbc10</artifactId>
+      <version>19.3.0.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.oracle.database.xml</groupId>
+      <artifactId>xdb</artifactId>
       <version>19.3.0.0</version>
       <scope>test</scope>
     </dependency>

@@ -11,6 +11,11 @@ class SQLExceptionPrinter
         b.append("Error executing SQL at ");
         b.append(new Date());
         b.append("\n");
+        var cause = e.getCause();
+        if(cause != null)
+        {
+            b.append(cause+"\n");
+        }
         for(;e!=null;e=e.getNextException())
         {
             b.append("Error code: "+e.getErrorCode()+"\n");

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -36,13 +37,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.undo.UndoManager;
 
 class CellDisplayController
 {
-    final JFrame cellDisplay;
+    private final JFrame cellDisplay;
 
-    JPanel panel = new JPanel(new BorderLayout());
-    
     CellDisplayController(JFrame cellDisplay,JTable source,Consumer<String> log)
     {
         this.cellDisplay = cellDisplay;
@@ -106,7 +108,6 @@ class CellDisplayController
     throws SQLException,IOException
     {
         var textarea = new JTextArea(17,72);
-        textarea.setEditable(false);
         
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
@@ -122,10 +123,20 @@ class CellDisplayController
                 b.append('\n');
             }
             textarea.setText(b.toString());
+
+            var updateButton = new JButton("Update & Close");
+            var updateAction = new ClobUpdateAction();
+            updateAction.textarea = textarea;
+            updateAction.resultset = resultset;
+            updateAction.column = column;
+            updateButton.addActionListener(updateAction);
+            buttonPanel.add(updateButton);
+
             dialogtitle = "CLOB display";
         }
         else if(value instanceof Blob)
         {
+            textarea.setEditable(false);
             var blob = (Blob)value;
             
             if(Desktop.isDesktopSupported())
@@ -164,6 +175,7 @@ class CellDisplayController
         }
         else if(value instanceof byte[] b)
         {
+            textarea.setEditable(false);
             var dump = new HexDump(new ByteArrayInputStream(b),b.length);
             textarea.setFont(new Font(
                     Font.MONOSPACED,
@@ -175,6 +187,19 @@ class CellDisplayController
         else
         {
             if(value!=null) textarea.setText(value.toString());
+
+            if(resultset!=null)
+            {
+                var updateButton = new JButton("Update & Close");
+                updateButton.setMnemonic(KeyEvent.VK_U);
+                var updateAction = new UpdateAction();
+                updateAction.textarea = textarea;
+                updateAction.resultset = resultset;
+                updateAction.column = column;
+                updateButton.addActionListener(updateAction);
+                buttonPanel.add(updateButton);
+            }
+
             dialogtitle = "Scalar value display";
         }
         textarea.setCaretPosition(0);
@@ -185,6 +210,9 @@ class CellDisplayController
         cellDisplay.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         cellDisplay.getContentPane().setLayout(new BorderLayout());
         
+        var undoManager = new UndoManager();
+        textarea.getDocument().addUndoableEditListener(undoManager);
+
         textarea.addKeyListener(new KeyListener()
         {
             @Override public void keyTyped(KeyEvent e) { }
@@ -197,15 +225,48 @@ class CellDisplayController
                 {
                 case KeyEvent.VK_ESCAPE:
                     cellDisplay.setVisible(false);
+                    break;
+                case KeyEvent.VK_Z:
+                    if(e.isControlDown() && undoManager.canUndo())
+                    {
+                        undoManager.undo();
+                    }
+                    break;
+                case KeyEvent.VK_Y:
+                    if(e.isControlDown() && undoManager.canRedo())
+                    {
+                        undoManager.redo();
+                    }
                 }
             }
         });
+
+        textarea.getDocument().addDocumentListener(
+                new DocumentListener()
+                {
+                    @Override
+                    public void insertUpdate(DocumentEvent e)
+                    {
+                        changedUpdate(e);
+                    }
+                    @Override
+                    public void removeUpdate(DocumentEvent e)
+                    {
+                        changedUpdate(e);
+                    }
+                    @Override
+                    public void changedUpdate(DocumentEvent e)
+                    {
+                        cellDisplay.setTitle("*"+dialogtitle);
+                    }
+                });
         
         var scrollpane = new JScrollPane(textarea);
 
         cellDisplay.getContentPane().add(scrollpane);
         
         var closeButton = new JButton("Close");
+        closeButton.setMnemonic(KeyEvent.VK_C);
         closeButton.addActionListener((e) -> cellDisplay.setVisible(false));
         buttonPanel.add(closeButton);
         
@@ -215,12 +276,12 @@ class CellDisplayController
         cellDisplay.setVisible(true);
     }
 
-    static class HexDump
+    private static class HexDump
     {
         String dump;
         int length;
         
-        HexDump(InputStream is,int maxlength)
+        private HexDump(InputStream is,int maxlength)
         throws IOException
         {
             var hex=new StringBuilder();
@@ -249,7 +310,7 @@ class CellDisplayController
         }
     }
     
-    class BlobOpenAction implements ActionListener
+    private class BlobOpenAction implements ActionListener
     {
         Blob blob;
 
@@ -290,7 +351,7 @@ class CellDisplayController
         }
     }
     
-    class BlobExportAction implements ActionListener
+    private class BlobExportAction implements ActionListener
     {
         Blob blob;
         
@@ -328,7 +389,7 @@ class CellDisplayController
         }
     }
     
-    class BlobImportAction implements ActionListener
+    private class BlobImportAction implements ActionListener
     {
         Blob blob;
         ResultSet resultset;
@@ -374,8 +435,62 @@ class CellDisplayController
                         "Error importing",
                         JOptionPane.ERROR_MESSAGE);
             }
-            cellDisplay.setVisible(true);
+            cellDisplay.setVisible(false);
         }
     }
     
+    private class UpdateAction implements ActionListener
+    {
+        JTextArea textarea;
+        ResultSet resultset;
+        int column;
+        
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            try
+            {
+                resultset.updateString(column,textarea.getText());
+                resultset.updateRow();
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        cellDisplay,
+                        "Error updating: "+SQLExceptionPrinter.toString(e),
+                        "Error updating",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            cellDisplay.setVisible(false);
+        }
+    }
+    
+    private class ClobUpdateAction implements ActionListener
+    {
+        JTextArea textarea;
+        ResultSet resultset;
+        int column;
+        
+        /**blocking */
+        @Override
+        public void actionPerformed(ActionEvent event)
+        {
+            try
+            {
+                resultset.updateClob(column,new StringReader(
+                        textarea.getText()));
+                resultset.updateRow();
+            }
+            catch(SQLException e)
+            {
+                JOptionPane.showMessageDialog(
+                        cellDisplay,
+                        "Error updating: "+SQLExceptionPrinter.toString(e),
+                        "Error updating",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            cellDisplay.setVisible(false);
+        }
+    }
 }

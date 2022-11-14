@@ -16,10 +16,10 @@ import javax.swing.table.TableModel;
 class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
-    Statement st;
+    private Statement st;
     ResultSet rs;
-    String cols[];
-    List<Object[]> rows;
+    private String cols[];
+    private List<Object[]> rows;
     int fetchsize;
     boolean resultSetClosed;
     
@@ -35,7 +35,7 @@ implements TableModel,AutoCloseable
         fill();
     }
     
-    void fill()
+    private void fill()
     throws SQLException
     {
         rows = new ArrayList<Object[]>(fetchsize);
@@ -94,26 +94,27 @@ implements TableModel,AutoCloseable
         return b.toString();
     }
     
-    void store(Writer w)
+    void store(Writer w,boolean asSqlComment)
     throws IOException
     {
-        w.write("--CSV Result\n--");
+        if(asSqlComment) w.write("--CSV Result\n--");
         for(int i=0;i<cols.length;i++)
         {
             if(i>0) w.write(',');
-            String strval = sanitizeForCsv(cols[i].toString());
+            String strval = sanitizeForCsv(cols[i].toString(),asSqlComment);
             w.write(strval);
         }
         w.write('\n');
         for(Object[] row : rows)
         {
-            w.write("--");
+            if(asSqlComment) w.write("--");
             for(int i=0;i<row.length;i++)
             {
                 if(i>0) w.write(',');
                 if(row[i] != null)
                 {
-                    String strval = sanitizeForCsv(row[i].toString());
+                    String strval = sanitizeForCsv(row[i].toString(),
+                            asSqlComment);
                     w.write(strval);
                 }
             }
@@ -122,7 +123,7 @@ implements TableModel,AutoCloseable
         w.write('\n');
     }
     
-    static String sanitizeForCsv(String strval)
+    static String sanitizeForCsv(String strval,boolean asSqlComment)
     {
         StringBuilder out=null;
         for(int i=0;i<strval.length();i++)
@@ -139,7 +140,8 @@ implements TableModel,AutoCloseable
                 break;
             case '\n':
                 if(out==null) out=new StringBuilder(strval.substring(0,i));
-                out.append("\n--");
+                out.append("\n");
+                if(asSqlComment) out.append("--");
                 break;
             default:
                 if(out!=null) out.append(strval.charAt(i));
@@ -148,6 +150,7 @@ implements TableModel,AutoCloseable
         return out==null? strval : "\"" + out + "\"";
     }
 
+    /**Always expects the SQL comment format. */
     void load(LineNumberReader r)
     throws IOException
     {

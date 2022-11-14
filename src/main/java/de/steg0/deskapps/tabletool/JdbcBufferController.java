@@ -14,9 +14,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -24,10 +24,12 @@ import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -48,7 +50,6 @@ import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -75,12 +76,12 @@ class JdbcBufferController
     
     Logger logger = Logger.getLogger("tabletool.editor");
 
-    final JFrame cellDisplay;
+    final JFrame cellDisplay,infoDisplay;
 
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
-    WordSelectListener selectListener = new WordSelectListener(editor);
+    WordSelectAdapter selectListener = new WordSelectAdapter(editor);
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
@@ -106,17 +107,18 @@ class JdbcBufferController
     }
     
     JTable resultview;
-    int resultviewHeight;
     JdbcBufferConfigSource configSource;
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame cellDisplay,Consumer<String> updateLog,
-            int resultviewHeight,JdbcBufferConfigSource configSource)
+    JdbcBufferController(JFrame cellDisplay,JFrame infoDisplay,
+            Consumer<String> updateLog,JdbcBufferConfigSource configSource,
+            Listener listener)
     {
         this.cellDisplay = cellDisplay;
-        this.resultviewHeight = resultviewHeight;
+        this.infoDisplay = infoDisplay;
         this.configSource = configSource;
+        this.listener = listener;
         this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
@@ -125,11 +127,20 @@ class JdbcBufferController
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
+        if(configSource.getEditorFontName() != null)
+        {
+            Font f = editor.getFont(),f2=new Font(
+                    configSource.getEditorFontName(),f.getStyle(),
+                    f.getSize());
+            editor.setFont(f2);
+        }
         
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
                 "Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
+        im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
         im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
@@ -137,6 +148,8 @@ class JdbcBufferController
         var am = editor.getActionMap();
         am.put("Execute",executeAction);
         am.put("Execute/Split",executeSplitAction);
+        am.put("Show Info",showInfoAction);
+        am.put("Show Snippets",showSnippetsPopupAction);
         am.put("Show Completions",showCompletionPopupAction);
         am.put("Toggle Comment",toggleCommentAction);
         am.put("Undo",undoAction);
@@ -174,10 +187,23 @@ class JdbcBufferController
         }
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
-        setResultViewFontSize(newSize);
+        setResultViewFontSize(resultview,newSize);
+    }
+
+    int searchNext(int loc,String text)
+    {
+        int index = editor.getText().indexOf(text,loc);
+        if(index>=0)
+        {
+            logger.log(Level.FINE,"Found at location: {0}",index);
+            editor.requestFocusInWindow();
+            editor.setSelectionEnd(index+text.length());
+            editor.setSelectionStart(index);
+        }
+        return index;
     }
     
-    void setResultViewFontSize(int newSize)
+    void setResultViewFontSize(JTable resultview,int newSize)
     {
         if(resultview==null) return;
         Font rf = resultview.getFont(),
@@ -193,7 +219,7 @@ class JdbcBufferController
         resultview.setRowHeight(lineHeight);
         Dimension preferredSize = resultview.getPreferredSize();
         var viewportSize = new Dimension((int)preferredSize.getWidth(),
-                (int)Math.min(resultviewHeight*lineHeight,
+                (int)Math.min(configSource.getResultViewHeight()*lineHeight,
                         preferredSize.getHeight()));
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
@@ -215,22 +241,93 @@ class JdbcBufferController
                 fetch(true);
             }
         },
+        showInfoAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                if(connection == null)
+                {
+                    log.accept("No connection available at "+new Date());
+                    fireBufferEvent(Type.DRY_FETCH);
+                    return;
+                }
+                String infoTemplate = configSource.getInfoTemplate();
+                if(infoTemplate == null)
+                {
+                    log.accept("No infoTemplate available at "+new Date());
+                    return;
+                }
+                String text = editor.getSelectedText();
+                if(text == null)
+                {
+                    selectListener.clickPos = editor.getCaretPosition();
+                    selectListener.selectWord();
+                    text = editor.getSelectedText();
+                }
+                if(text == null) return;
+                logger.fine("Fetching info for text: "+text);
+                int maxresults = 10000;
+                String sql = infoTemplate.replaceAll("@@selection@@",text);
+                logger.fine("Info using SQL: "+sql);
+                connection.submit(sql,maxresults,infoResultConsumer,
+                        updateCountConsumer,log);
+            }
+        },
+        showSnippetsPopupAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                if(connection == null)
+                {
+                    log.accept("No connection available at "+new Date());
+                    fireBufferEvent(Type.DRY_FETCH);
+                    return;
+                }
+                Map<String,String> snippetTemplates =
+                    configSource.getSnippetTemplates();
+                if(snippetTemplates.size()==0)
+                {
+                    log.accept("No snippetTemplates available at "+new Date());
+                    return;
+                }
+                String text = editor.getSelectedText();
+                if(text == null)
+                {
+                    selectListener.clickPos = editor.getCaretPosition();
+                    selectListener.selectWord();
+                    text = editor.getSelectedText();
+                }
+                if(text == null) text = "";
+                logger.fine("Completing text: "+text);
+                try
+                {
+                    var xy = editor.modelToView2D(editor.getCaretPosition());
+                    new SnippetPopup(JdbcBufferController.this,
+                            (int)xy.getCenterX(),(int)xy.getCenterY())
+                            .show(snippetTemplates);
+                }
+                catch(BadLocationException e)
+                {
+                    assert false : e.getMessage();
+                }
+            }
+        },
         showCompletionPopupAction = new AbstractAction()
         {
-            @Override public void actionPerformed(ActionEvent e)
+            @Override public void actionPerformed(ActionEvent event)
             {
+                if(connection == null)
+                {
+                    log.accept("No connection available at "+new Date());
+                    fireBufferEvent(Type.DRY_FETCH);
+                    return;
+                }
                 String completionTemplate = configSource
                     .getCompletionTemplate();
                 if(completionTemplate == null)
                 {
                     log.accept("No completionTemplate available at "+
                             new Date());
-                    return;
-                }
-                if(connection == null)
-                {
-                    log.accept("No connection available at "+new Date());
-                    fireBufferEvent(Type.DRY_FETCH);
                     return;
                 }
                 try
@@ -247,7 +344,7 @@ class JdbcBufferController
                     var xy = editor.modelToView2D(editor.getCaretPosition());
                     int maxresults = 16;
                     var resultConsumer =
-                        new MenuResultConsumer(JdbcBufferController.this,
+                        new CompletionConsumer(JdbcBufferController.this,
                                 (int)xy.getCenterX(),(int)xy.getCenterY(),
                                 log,maxresults);
                     String sql = completionTemplate.replaceAll(
@@ -256,8 +353,9 @@ class JdbcBufferController
                     connection.submit(sql,maxresults,resultConsumer,
                             updateCountConsumer,log);
                 }
-                catch(BadLocationException ignored)
+                catch(BadLocationException e)
                 {
+                    assert false : e.getMessage();
                 }
             }
         },
@@ -388,19 +486,11 @@ class JdbcBufferController
         setCaretPositionInLine(offset);
     }
 
-    EventListenerList listeners = new EventListenerList();
-    
-    void addListener(Listener l)
-    {
-        listeners.add(Listener.class,l);
-    }
+    final Listener listener;
     
     void fireBufferEvent(JdbcBufferControllerEvent e)
     {
-        for(var l : listeners.getListeners(Listener.class))
-        {
-            l.bufferActionPerformed(e);
-        }
+        listener.bufferActionPerformed(e);
     }
 
     void fireBufferEvent(Type type)
@@ -587,6 +677,21 @@ class JdbcBufferController
         htmlbuf.append(getResultSetTableModel().toHtml());
         HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
+
+    /**blocking*/
+    void openAsCsv()
+    {
+        var sw = new StringWriter();
+        try
+        {
+            getResultSetTableModel().store(sw,false);
+        }
+        catch(IOException e)
+        {
+            assert false: e.getMessage();
+        }
+        CsvExporter.openTemp(cellDisplay,sw.toString());
+    }
     
     void store(Writer w)
     throws IOException
@@ -596,7 +701,7 @@ class JdbcBufferController
         if(rsm != null)
         {
             w.write('\n');
-            rsm.store(w);
+            rsm.store(w,true);
         }
     }
     
@@ -782,13 +887,13 @@ class JdbcBufferController
             log.accept(FETCH_LOG_FORMAT.format(logargs));
         }
     };
-    
+
     void addResultSetTable(ResultSetTableModel rsm)
     {
         if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
-        setResultViewFontSize(editor.getFont().getSize());
+        setResultViewFontSize(resultview,editor.getFont().getSize());
         
         new CellDisplayController(cellDisplay,resultview,log);
         addResultSetPopup();
@@ -817,6 +922,34 @@ class JdbcBufferController
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     }
 
+    BiConsumer<ResultSetTableModel,Long> infoResultConsumer = (rsm,t) ->
+    {
+        showInfoTable(rsm);
+        
+        Object[] logargs = {
+                rsm.getRowCount(),
+                t,
+                rsm.resultSetClosed? "closed" : "open",
+                new Date().toString()
+        };
+        if(rsm.getRowCount() < rsm.fetchsize)
+        {
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
+        }
+        else
+        {
+            log.accept(FETCH_LOG_FORMAT.format(logargs));
+        }
+    };
+    
+    void showInfoTable(ResultSetTableModel rsm)
+    {
+        JTable inforesultview = new JTable(rsm);
+        setResultViewFontSize(inforesultview,editor.getFont().getSize());
+        inforesultview.setCellSelectionEnabled(true);
+        new InfoDisplayController(infoDisplay,inforesultview,log);
+    }
+
     void closeBuffer()
     {
         closeCurrentResultSet();
@@ -835,6 +968,9 @@ class JdbcBufferController
         JMenuItem item;
         item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
         item.addActionListener((e) -> openAsHtml());
+        popup.add(item);
+        item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
+        item.addActionListener((e) -> openAsCsv());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
         item.addActionListener((e) -> closeBuffer());
@@ -945,10 +1081,10 @@ class JdbcBufferController
         {
             switch(e.getKeyCode())
             {
+            case KeyEvent.VK_UP:
             case KeyEvent.VK_LEFT:
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_DOWN:
-            case KeyEvent.VK_UP:
             case KeyEvent.VK_HOME:
             case KeyEvent.VK_END:
             case KeyEvent.VK_PAGE_DOWN:

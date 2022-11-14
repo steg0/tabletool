@@ -17,8 +17,8 @@ import java.util.function.Consumer;
  */
 class ConnectionWorker
 {
-    final Connection connection;
-    final Executor executor;
+    private final Connection connection;
+    private final Executor executor;
     
     ConnectionWorker(Connection connection,Executor executor)
     {
@@ -26,7 +26,7 @@ class ConnectionWorker
         this.executor=executor;
     }
     
-    void report(Consumer<String> log,String str)
+    private void report(Consumer<String> log,String str)
     {
         invokeLater(() -> log.accept(str));
     }
@@ -62,14 +62,14 @@ class ConnectionWorker
         executor.execute(sqlRunnable);
     }
     
-    class SqlRunnable implements Runnable
+    private class SqlRunnable implements Runnable
     {
-        BiConsumer<ResultSetTableModel,Long> resultConsumer;
-        BiConsumer<Integer,Long> updateCountConsumer;
-        Consumer<String> log;
-        String sql;
-        int fetchsize;
-        long ts;
+        private BiConsumer<ResultSetTableModel,Long> resultConsumer;
+        private BiConsumer<Integer,Long> updateCountConsumer;
+        private Consumer<String> log;
+        private String sql;
+        private int fetchsize;
+        private long ts;
 
         public void run()
         {
@@ -96,7 +96,7 @@ class ConnectionWorker
             }
         }
 
-        void getResult(String text)
+        private void getResult(String text)
         throws SQLException
         {
             try
@@ -151,7 +151,7 @@ class ConnectionWorker
             }
         }
         
-        void displayUpdateCount(Statement statement)
+        private void displayUpdateCount(Statement statement)
         throws SQLException
         {
             Integer count = statement.getUpdateCount();
@@ -160,12 +160,12 @@ class ConnectionWorker
             statement.close();
         }
         
-        void reportNullResult()
+        private void reportNullResult()
         {
             invokeLater(() -> resultConsumer.accept(null,0L));
         }
 
-        void reportResult(Statement statement)
+        private void reportResult(Statement statement)
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();

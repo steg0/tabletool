@@ -8,18 +8,18 @@ import java.io.OutputStreamWriter;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class HtmlExporter
+public class CsvExporter
 {
     /**blocking */
-    static void openTemp(JFrame parent,String html)
+    static void openTemp(JFrame parent,String csv)
     {
         try
         {
-            var tmpfile = File.createTempFile("tthtml",".html");
+            var tmpfile = File.createTempFile("ttcsv",".csv");
             tmpfile.deleteOnExit();
             try(var ow = new OutputStreamWriter(new FileOutputStream(tmpfile)))
             {
-                ow.write(html);
+                ow.write(csv);
             }
             Desktop.getDesktop().open(tmpfile);
         }
