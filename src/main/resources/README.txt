@@ -36,6 +36,7 @@ The configuration file supports the following keys:
       select table_name from user_tables \
       where table_name like upper('@@selection@@%')
   drivers.<JDBC URL part after the schema>.infoTemplate=<…>
+  drivers.<JDBC URL part after the schema>.initSql=<…>
   drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<…>
   connections.<Name 1>.url=<JDBC URL>
   connections.<Name 1>.username=<User>
@@ -45,12 +46,15 @@ The configuration file supports the following keys:
       select table_name from all_tables \
       where table_name like upper('@@selection@@%')
   connections.<Name 1>.infoTemplate=<…>
+  connections.<Name 1>.initSql=<…>
   connections.<Name 1>.snippets.<Snippet Name 1>=<…>
 └─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
 
-completionTemplate, infoTemplate, and snippets can be specified for drivers as well as connections, where for completionTemplate and infoTemplate the latter overrides the former.
+completionTemplate, infoTemplate, initSql and snippets can be specified for drivers as well as connections. Except in the case of snippets (which are merged) the latter overrides the former.
+
+initSql is a statement which will be executed whenever a matching connection is opened. There will be no output possibility for such statements.
 
 
 ▶ Actions in a notebook
@@ -70,9 +74,9 @@ While editing SQL in a notebook, the following keys are supported:
 • F3 - find next.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
-• F1 - execute info template for word under cursor or selection.
+• F1 - execute infoTemplate for word under cursor or selection.
 • F2 - insert snippets into word under cursor or selection.
-• F8 - execute completion template for word under cursor or selection.
+• F8 - execute completionTemplate for word under cursor or selection.
 
 To navigate across a result table, use Up/Down arrow keys.
 
@@ -91,7 +95,7 @@ Some JDBC drivers close ResultSets automatically when the cursor moves beyond th
 If a query begins with "{", "create", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
 
 
-▶ Update function for BLOBs
+▶ Update function
 
 The single benefit (right now) of leaving the ResultSet open is that updatable ResultSets can be made available to the user. This is utilized to allow cell value updates. There are a few prerequisites for this to work:
 
