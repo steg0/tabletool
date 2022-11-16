@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.function.Consumer;
 
 import javax.swing.ComboBoxModel;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 /**
@@ -16,10 +18,21 @@ implements ComboBoxModel<Connections.ConnectionState>
 
     private final Connections connections;
     private Object selected;
+    private final EventListenerList listeners = new EventListenerList();
     
     ConnectionListModel(Connections connections)
     {
         this.connections = connections;
+    }
+
+    void notifyIntervalAdded(int oldSize)
+    {
+        for(ListDataListener l : listeners.getListeners(ListDataListener.class))
+        {
+            ListDataEvent event = new ListDataEvent(this,
+                    ListDataEvent.INTERVAL_ADDED,oldSize,connections.getSize());
+            l.intervalAdded(event);
+        }
     }
 
     /**blocking; establishes connection if needed */
@@ -45,11 +58,13 @@ implements ComboBoxModel<Connections.ConnectionState>
     @Override
     public void addListDataListener(ListDataListener l)
     {
+        this.listeners.add(ListDataListener.class,l);
     }
 
     @Override
     public void removeListDataListener(ListDataListener l)
     {
+        this.listeners.remove(ListDataListener.class,l);
     }
 
     @Override

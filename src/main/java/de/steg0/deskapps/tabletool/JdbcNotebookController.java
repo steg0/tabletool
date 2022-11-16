@@ -73,7 +73,7 @@ class JdbcNotebookController
     File file;
     boolean unsaved;
     
-    private final ConnectionListModel connections;
+    final ConnectionListModel connections;
     private JComboBox<Connections.ConnectionState> connectionsSelector;
 
     private JFormattedTextField fetchsizeField;

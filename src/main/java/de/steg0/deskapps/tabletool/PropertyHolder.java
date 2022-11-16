@@ -152,8 +152,18 @@ class PropertyHolder
                         prefix+".bg")));
             }
         }
+    
+        public boolean equals(Object o)
+        {
+            if(!(o instanceof ConnectionInfo)) return false;
+            ConnectionInfo other = (ConnectionInfo)o;
+            if(!(name.equals(other.name))) return false;
+            return true;
+        }
     }
     
+    /**@return a new array of {@link ConnectionInfo} instances parsed
+     * from the property table. */
     ConnectionInfo[] getConnections()
     {
         return properties

@@ -2,6 +2,8 @@ package de.steg0.deskapps.tabletool;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -27,28 +29,60 @@ class Connections
         public String toString()
         {
             /* connected ones get a star in front */
-            return (connections[connectionIndex] != null? "*" : "  ") +
+            return (workers[connectionIndex] != null? "*" : "  ") +
                     connectionInfo[connectionIndex].name;
         }
     }
 
-    private final ConnectionState[] connectionState;
-    private final PropertyHolder.ConnectionInfo[] connectionInfo;
-    private final ConnectionWorker[] connections;
+    private ConnectionState[] connectionStates;
+    private PropertyHolder.ConnectionInfo[] connectionInfo;
+    private ConnectionWorker[] workers;
     private final Executor executor;
     
     Connections(PropertyHolder propertyHolder,Executor executor)
     {
         connectionInfo = propertyHolder.getConnections();
         this.executor = executor;
-        connections = new ConnectionWorker[connectionInfo.length];
-        connectionState = new ConnectionState[connectionInfo.length];
+        workers = new ConnectionWorker[connectionInfo.length];
+        initStates();
+    }
+
+    void refresh(PropertyHolder propertyHolder)
+    {
+        var newConnectionInfo = propertyHolder.getConnections();
+        List<PropertyHolder.ConnectionInfo> mergedConnectionInfo =
+            new ArrayList<>();
+        for(var info : connectionInfo) mergedConnectionInfo.add(info);
+        for(var info : newConnectionInfo)
+        {
+            int existingIndex = mergedConnectionInfo.indexOf(info);
+            if(existingIndex >= 0)
+            {
+                mergedConnectionInfo.set(existingIndex, info);
+            }
+            /* add new ones at the end */
+            else
+            {
+                mergedConnectionInfo.add(info);
+            }
+        }
+        connectionInfo = mergedConnectionInfo.toArray(
+                new PropertyHolder.ConnectionInfo[mergedConnectionInfo.size()]);
+        var newWorkers = new ConnectionWorker[connectionInfo.length];
+        System.arraycopy(workers,0,newWorkers,0,workers.length);
+        workers = newWorkers;
+        initStates();
+    }
+
+    private void initStates()
+    {
+        connectionStates = new ConnectionState[connectionInfo.length];
 
         for(int i=0;i<connectionInfo.length;i++)
         {
             var state = new ConnectionState();
             state.connectionIndex = i;
-            connectionState[i] = state;
+            connectionStates[i] = state;
         }
     }
     
@@ -58,7 +92,7 @@ class Connections
     throws SQLException
     {
         int i = connection.connectionIndex;
-        if(connections[i] == null)
+        if(workers[i] == null)
         {
             var jdbcConnection = DriverManager.getConnection(
                     connectionInfo[i].url,
@@ -66,25 +100,25 @@ class Connections
                     connectionInfo[i].password
             );
             jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
-            connections[i] = new ConnectionWorker(
+            workers[i] = new ConnectionWorker(
                     jdbcConnection,
                     executor
             );
             if(connectionInfo[i].initSql != null)
             {
-                connections[i].submit(connectionInfo[i].initSql,0,
+                workers[i].submit(connectionInfo[i].initSql,0,
                         (r,c) -> {},(r,c) -> {},log);
             }
         }
-        return connections[i];
+        return workers[i];
     }
     
     void reportDisconnect(ConnectionWorker connection)
     {
         for(int i=0;i<connectionInfo.length;i++)
         {
-            if(connections[i] != connection) continue;
-            connections[i] = null;
+            if(workers[i] != connection) continue;
+            workers[i] = null;
         }
     }
 
@@ -95,6 +129,6 @@ class Connections
 
     ConnectionState getElementAt(int index)
     {
-        return connectionState[index];
+        return connectionStates[index];
     }
 }
