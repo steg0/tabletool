@@ -25,17 +25,17 @@ public class Tabtype
 extends WindowAdapter
 {
 
-    JFrame frame;
-    File properties,workspace,sqlFiles[];
-    TabSetController controller;
+    private JFrame frame;
+    private File properties,workspace,sqlFiles[];
+    private TabSetController controller;
     
-    Tabtype(String propertiesfile,String workspacefile)
+    private Tabtype(String propertiesfile,String workspacefile)
     {
         if(propertiesfile!=null) properties = new File(propertiesfile);
         if(workspacefile!=null) workspace = new File(workspacefile);
     }
     
-    Tabtype(String propertiesfile,String[] sqlFiles)
+    private Tabtype(String propertiesfile,String[] sqlFiles)
     {
         if(propertiesfile!=null) properties = new File(propertiesfile);
         this.sqlFiles=Arrays.stream(sqlFiles)
@@ -43,7 +43,7 @@ extends WindowAdapter
                 .toArray(File[]::new);
     }
     
-    void showJdbcBuffer()
+    private void showJdbcBuffer()
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
             "(.)\\.[^.]+$","$1")+" - " : "");
@@ -85,7 +85,8 @@ extends WindowAdapter
         return List.of(icon16.getImage(),icon32.getImage(),icon.getImage());
     }
     
-    TabSetController ensureFrameConfiguration(PropertyHolder propertyHolder)
+    private TabSetController ensureFrameConfiguration(
+            PropertyHolder propertyHolder)
     {
         try
         {
@@ -107,7 +108,7 @@ extends WindowAdapter
         return null;
     }
     
-    void ensureWorkspace()
+    private void ensureWorkspace()
     {
         try
         {
