@@ -12,7 +12,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -29,7 +28,6 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
-import java.util.Map;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -37,8 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -135,6 +131,8 @@ class JdbcBufferController
             editor.setFont(f2);
         }
         
+        var actions = new JdbcBufferControllerActions();
+        actions.buffer = this;
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
@@ -146,14 +144,14 @@ class JdbcBufferController
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
         var am = editor.getActionMap();
-        am.put("Execute",executeAction);
-        am.put("Execute/Split",executeSplitAction);
-        am.put("Show Info",showInfoAction);
-        am.put("Show Snippets",showSnippetsPopupAction);
-        am.put("Show Completions",showCompletionPopupAction);
-        am.put("Toggle Comment",toggleCommentAction);
-        am.put("Undo",undoAction);
-        am.put("Redo",redoAction);
+        am.put("Execute",actions.executeAction);
+        am.put("Execute/Split",actions.executeSplitAction);
+        am.put("Show Info",actions.showInfoAction);
+        am.put("Show Snippets",actions.showSnippetsPopupAction);
+        am.put("Show Completions",actions.showCompletionPopupAction);
+        am.put("Toggle Comment",actions.toggleCommentAction);
+        am.put("Undo",actions.undoAction);
+        am.put("Redo",actions.redoAction);
     }
     
     void setBackground(Color background)
@@ -225,161 +223,6 @@ class JdbcBufferController
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
         resultview.setPreferredScrollableViewportSize(viewportSize);
     }
-    
-    Action
-        executeAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                fetch(false);
-            }
-        },
-        executeSplitAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                fetch(true);
-            }
-        },
-        showInfoAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent event)
-            {
-                if(connection == null)
-                {
-                    log.accept("No connection available at "+new Date());
-                    fireBufferEvent(Type.DRY_FETCH);
-                    return;
-                }
-                String infoTemplate = configSource.getInfoTemplate();
-                if(infoTemplate == null)
-                {
-                    log.accept("No infoTemplate available at "+new Date());
-                    return;
-                }
-                String text = editor.getSelectedText();
-                if(text == null)
-                {
-                    selectListener.clickPos = editor.getCaretPosition();
-                    selectListener.selectWord();
-                    text = editor.getSelectedText();
-                }
-                if(text == null) return;
-                logger.fine("Fetching info for text: "+text);
-                int maxresults = 10000;
-                String sql = infoTemplate.replaceAll("@@selection@@",text);
-                logger.fine("Info using SQL: "+sql);
-                connection.submit(sql,maxresults,infoResultConsumer,
-                        updateCountConsumer,log);
-            }
-        },
-        showSnippetsPopupAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent event)
-            {
-                if(connection == null)
-                {
-                    log.accept("No connection available at "+new Date());
-                    fireBufferEvent(Type.DRY_FETCH);
-                    return;
-                }
-                Map<String,String> snippetTemplates =
-                    configSource.getSnippetTemplates();
-                if(snippetTemplates.size()==0)
-                {
-                    log.accept("No snippetTemplates available at "+new Date());
-                    return;
-                }
-                String text = editor.getSelectedText();
-                if(text == null)
-                {
-                    selectListener.clickPos = editor.getCaretPosition();
-                    selectListener.selectWord();
-                    text = editor.getSelectedText();
-                }
-                if(text == null) text = "";
-                logger.fine("Completing text: "+text);
-                try
-                {
-                    var xy = editor.modelToView2D(editor.getCaretPosition());
-                    new SnippetPopup(JdbcBufferController.this,
-                            (int)xy.getCenterX(),(int)xy.getCenterY())
-                            .show(snippetTemplates);
-                }
-                catch(BadLocationException e)
-                {
-                    assert false : e.getMessage();
-                }
-            }
-        },
-        showCompletionPopupAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent event)
-            {
-                if(connection == null)
-                {
-                    log.accept("No connection available at "+new Date());
-                    fireBufferEvent(Type.DRY_FETCH);
-                    return;
-                }
-                String completionTemplate = configSource
-                    .getCompletionTemplate();
-                if(completionTemplate == null)
-                {
-                    log.accept("No completionTemplate available at "+
-                            new Date());
-                    return;
-                }
-                try
-                {
-                    String text = editor.getSelectedText();
-                    if(text == null)
-                    {
-                        selectListener.clickPos = editor.getCaretPosition();
-                        selectListener.selectWord();
-                        text = editor.getSelectedText();
-                    }
-                    if(text == null) return;
-                    logger.fine("Completing text: "+text);
-                    var xy = editor.modelToView2D(editor.getCaretPosition());
-                    int maxresults = 16;
-                    var resultConsumer =
-                        new CompletionConsumer(JdbcBufferController.this,
-                                (int)xy.getCenterX(),(int)xy.getCenterY(),
-                                log,maxresults);
-                    String sql = completionTemplate.replaceAll(
-                            "@@selection@@",text);
-                    logger.fine("Completion using SQL: "+sql);
-                    connection.submit(sql,maxresults,resultConsumer,
-                            updateCountConsumer,log);
-                }
-                catch(BadLocationException e)
-                {
-                    assert false : e.getMessage();
-                }
-            }
-        },
-        toggleCommentAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                togglePrefix("--",null);
-            }
-        },
-        undoAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                if(undoManager.canUndo()) undoManager.undo();
-            }
-        },
-        redoAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                if(undoManager.canRedo()) undoManager.redo();
-            }
-        };
     
     KeyListener editorKeyListener = new KeyListener()
     {
