@@ -790,7 +790,7 @@ class JdbcBufferController
         JTable inforesultview = new JTable(rsm);
         setResultViewFontSize(inforesultview,editor.getFont().getSize());
         inforesultview.setCellSelectionEnabled(true);
-        new InfoDisplayController(infoDisplay,inforesultview,log);
+        new InfoDisplayController(infoDisplay,inforesultview);
     }
 
     private void closeBuffer()

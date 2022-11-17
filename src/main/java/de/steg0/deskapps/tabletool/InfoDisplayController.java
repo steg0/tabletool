@@ -17,15 +17,13 @@ class InfoDisplayController
 {
     private final JFrame infoDisplay;
     private final JTable content;
-    private final Consumer<String> log;
 
     JPanel panel = new JPanel(new BorderLayout());
     
-    InfoDisplayController(JFrame infoDisplay,JTable content,Consumer<String> log)
+    InfoDisplayController(JFrame infoDisplay,JTable content)
     {
         this.infoDisplay = infoDisplay;
         this.content = content;
-        this.log = log;
         show();
     }
 
