@@ -72,7 +72,7 @@ class JdbcBufferController
     
     Logger logger = Logger.getLogger("tabletool.editor");
 
-    final JFrame cellDisplay,infoDisplay;
+    private final JFrame cellDisplay,infoDisplay;
 
     JPanel panel = new JPanel(new GridBagLayout());
     
@@ -201,7 +201,7 @@ class JdbcBufferController
         return index;
     }
     
-    void setResultViewFontSize(JTable resultview,int newSize)
+    private void setResultViewFontSize(JTable resultview,int newSize)
     {
         if(resultview==null) return;
         Font rf = resultview.getFont(),
@@ -224,7 +224,7 @@ class JdbcBufferController
         resultview.setPreferredScrollableViewportSize(viewportSize);
     }
     
-    KeyListener editorKeyListener = new KeyListener()
+    private KeyListener editorKeyListener = new KeyListener()
     {
         @Override
         public void keyPressed(KeyEvent event)
@@ -281,7 +281,7 @@ class JdbcBufferController
         @Override public void keyTyped(KeyEvent e) { }
     };
     
-    static JViewport findViewportParent(Component c)
+    private static JViewport findViewportParent(Component c)
     {
         if(c==null) return null;
         if(c instanceof JViewport) return (JViewport)c;
@@ -302,7 +302,7 @@ class JdbcBufferController
         return caret-1-index;
     }
     
-    void setCaretPositionInLine(int position)
+    private void setCaretPositionInLine(int position)
     {
         String t = editor.getText();
         int caretInLine = getCaretPositionInLine();
@@ -315,7 +315,7 @@ class JdbcBufferController
         editor.setSelectionEnd(newPosition);
     }
     
-    void traverseScreenful(int start,int vec)
+    private void traverseScreenful(int start,int vec)
     {
         int vpheight = findViewportParent(editor).getHeight();
         int linesOnScreen = vpheight / getLineHeight();
@@ -329,7 +329,7 @@ class JdbcBufferController
         setCaretPositionInLine(offset);
     }
 
-    final Listener listener;
+    private final Listener listener;
     
     void fireBufferEvent(JdbcBufferControllerEvent e)
     {
@@ -508,7 +508,7 @@ class JdbcBufferController
     }
     
     /**blocking */
-    void openAsHtml()
+    private void openAsHtml()
     {
         var htmlbuf = new StringBuilder();
         htmlbuf.append("<pre>");
@@ -522,7 +522,7 @@ class JdbcBufferController
     }
 
     /**blocking*/
-    void openAsCsv()
+    private void openAsCsv()
     {
         var sw = new StringWriter();
         try
@@ -585,7 +585,7 @@ class JdbcBufferController
         return linesRead;
     }
     
-    int savedCaretPosition,savedSelectionStart,savedSelectionEnd;
+    private int savedCaretPosition,savedSelectionStart,savedSelectionEnd;
 
     ConnectionWorker connection;
     int fetchsize;
@@ -650,7 +650,7 @@ class JdbcBufferController
         }
     }
 
-    ResultSetTableModel getResultSetTableModel()
+    private ResultSetTableModel getResultSetTableModel()
     {
         if(resultview != null)
         {
@@ -659,7 +659,7 @@ class JdbcBufferController
         return null;
     }
     
-    String selectCurrentQuery()
+    private String selectCurrentQuery()
     {
         String text = editor.getText();
         int offset = 0,position = editor.getCaretPosition();
@@ -681,7 +681,7 @@ class JdbcBufferController
         return null;
     }
     
-    void restoreCaretPosition()
+    private void restoreCaretPosition()
     {
         if(editor.getSelectionStart()!=savedSelectionStart ||
            editor.getSelectionEnd()!=savedSelectionEnd) return;
@@ -701,7 +701,7 @@ class JdbcBufferController
      * The first argument is the result data; <code>null</code> means there is
      * nothing to display, which can lead to the buffer being closed.
      */
-    BiConsumer<ResultSetTableModel,Long> resultConsumer = (rsm,t) ->
+    private BiConsumer<ResultSetTableModel,Long> resultConsumer = (rsm,t) ->
     {
         /* In case of a possible fresh split, close again if there is
          * nothing to display */
@@ -731,7 +731,7 @@ class JdbcBufferController
         }
     };
 
-    void addResultSetTable(ResultSetTableModel rsm)
+    private void addResultSetTable(ResultSetTableModel rsm)
     {
         if(panel.getComponentCount()==2) panel.remove(1);
 
@@ -785,7 +785,7 @@ class JdbcBufferController
         }
     };
     
-    void showInfoTable(ResultSetTableModel rsm)
+    private void showInfoTable(ResultSetTableModel rsm)
     {
         JTable inforesultview = new JTable(rsm);
         setResultViewFontSize(inforesultview,editor.getFont().getSize());
@@ -793,7 +793,7 @@ class JdbcBufferController
         new InfoDisplayController(infoDisplay,inforesultview,log);
     }
 
-    void closeBuffer()
+    private void closeBuffer()
     {
         closeCurrentResultSet();
         resultview=null;
@@ -805,7 +805,7 @@ class JdbcBufferController
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);
     }
     
-    void addResultSetPopup()
+    private void addResultSetPopup()
     {
         var popup = new JPopupMenu();
         JMenuItem item;
@@ -834,7 +834,7 @@ class JdbcBufferController
         resultview.getTableHeader().addMouseListener(popuplistener);
     }
     
-    class ResultPaneMouseWheelListener implements MouseWheelListener
+    private class ResultPaneMouseWheelListener implements MouseWheelListener
     {
         MouseWheelListener originalListener;
 
@@ -878,7 +878,7 @@ class JdbcBufferController
         }
     }
     
-    KeyListener resultsetKeyListener = new KeyListener()
+    private KeyListener resultsetKeyListener = new KeyListener()
     {
         void scrollToView()
         {

@@ -15,9 +15,9 @@ import javax.swing.JTable;
 
 class InfoDisplayController
 {
-    final JFrame infoDisplay;
-    final JTable content;
-    final Consumer<String> log;
+    private final JFrame infoDisplay;
+    private final JTable content;
+    private final Consumer<String> log;
 
     JPanel panel = new JPanel(new BorderLayout());
     
@@ -29,7 +29,7 @@ class InfoDisplayController
         show();
     }
 
-    void show()
+    private void show()
     {
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
