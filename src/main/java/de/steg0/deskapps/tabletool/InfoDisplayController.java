@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
