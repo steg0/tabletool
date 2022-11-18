@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 class PropertyHolder
 {
@@ -169,7 +170,8 @@ class PropertyHolder
         return properties
             .keySet().stream()
             .filter((k) -> String.valueOf(k).startsWith(
-                    ConnectionInfo.CONNECTIONS_PREFIX))
+                    ConnectionInfo.CONNECTIONS_PREFIX) && 
+                    String.valueOf(k).endsWith(".url"))
             .collect(groupingBy(PropertyHolder::getConnectionNameKey))
             .keySet().stream()
             .sorted()
@@ -206,17 +208,27 @@ class PropertyHolder
     {
         return properties
             .stringPropertyNames().stream()
-            .filter((k) -> String.valueOf(k).startsWith(
-                    ConnectionInfo.CONNECTIONS_PREFIX+connectionName+
-                    ".snippets."))
+            .filter((k) -> 
+                k.startsWith(ConnectionInfo.CONNECTIONS_PREFIX) &&
+                connectionNamePatternForSnippetsMatches(k,connectionName))
             .collect(toMap(PropertyHolder::getSnippetNameKeyForConnection,
                     properties::getProperty));
     }
-    
-    private static String getSnippetNameKeyForConnection(Object propertyKey)
+
+    private static boolean connectionNamePatternForSnippetsMatches(
+            String propertyKey,String connectionName)
     {
-        String s = String.valueOf(propertyKey).substring(
+        int rightBoundary = propertyKey.lastIndexOf(".snippets.");
+        if(rightBoundary < 0) return false;
+        String patternString = propertyKey.substring(
+                ConnectionInfo.CONNECTIONS_PREFIX.length(),rightBoundary);
+        return Pattern.compile(patternString).matcher(connectionName).matches();
+    }
+    
+    private static String getSnippetNameKeyForConnection(String propertyKey)
+    {
+        String s = propertyKey.substring(
                 ConnectionInfo.CONNECTIONS_PREFIX.length());
-        return s.substring(s.lastIndexOf(".")+1);
+        return s.substring(s.lastIndexOf(".snippets.")+10);
     }
 }
