@@ -47,7 +47,7 @@ The configuration file supports the following keys:
       where table_name like upper('@@selection@@%')
   connections.<Name 1>.infoTemplate=<…>
   connections.<Name 1>.initSql=<…>
-  connections.<Name 1>.snippets.<Snippet Name 1>=<…>
+  connections.<Name Regex 1>.snippets.<Snippet Name 1>=<…>
 └─────────────────────────────────────────────────────────────────────┘
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
