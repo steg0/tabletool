@@ -11,15 +11,12 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -51,7 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
-import de.steg0.deskapps.tabletool.JdbcBufferControllerEvent.Type;
+import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
 
 class JdbcBufferController
 {
@@ -67,7 +64,7 @@ class JdbcBufferController
     
     interface Listener extends EventListener
     {
-        void bufferActionPerformed(JdbcBufferControllerEvent e);
+        void bufferActionPerformed(JdbcBufferEvent e);
     }
     
     Logger logger = Logger.getLogger("tabletool.editor");
@@ -77,6 +74,8 @@ class JdbcBufferController
     JPanel panel = new JPanel(new GridBagLayout());
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
+    private KeyListener editorKeyListener =
+        new JdbcBufferEditorKeyListener(this);
     WordSelectAdapter selectListener = new WordSelectAdapter(editor);
     
     /**The system-default editor background */
@@ -131,8 +130,7 @@ class JdbcBufferController
             editor.setFont(f2);
         }
         
-        var actions = new JdbcBufferControllerActions();
-        actions.buffer = this;
+        var actions = new JdbcBufferActions(this);
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
@@ -224,63 +222,6 @@ class JdbcBufferController
         resultview.setPreferredScrollableViewportSize(viewportSize);
     }
     
-    private KeyListener editorKeyListener = new KeyListener()
-    {
-        @Override
-        public void keyPressed(KeyEvent event)
-        { 
-            try
-            {
-                int caret = editor.getCaretPosition();
-                switch(event.getKeyCode())
-                {
-                case KeyEvent.VK_DOWN:
-                case KeyEvent.VK_PAGE_DOWN:
-                    if(event.isShiftDown()) break;
-                    if(event.isAltDown()) break;
-                    if(editor.getLineOfOffset(caret) ==
-                       editor.getLineCount()-1 &&
-                       resultview != null)
-                    {
-                        fireBufferEvent(Type.EXITED_SOUTH);
-                    }
-                    else if(event.getKeyCode()==KeyEvent.VK_PAGE_DOWN)
-                    {
-                        traverseScreenful(caret,1);
-                        event.consume();
-                    }
-                    break;
-                case KeyEvent.VK_UP:
-                case KeyEvent.VK_PAGE_UP:
-                    if(event.isShiftDown()) break;
-                    if(event.isAltDown()) break;
-                    if(editor.getLineOfOffset(caret) == 0)
-                    {
-                        fireBufferEvent(Type.EXITED_NORTH);
-                    }
-                    else if(event.getKeyCode()==KeyEvent.VK_PAGE_UP)
-                    {
-                        traverseScreenful(caret-1,-1);
-                        event.consume();
-                    }
-                    break;
-                case KeyEvent.VK_TAB:
-                    if(editor.getSelectionEnd()!=editor.getSelectionStart())
-                    {
-                        togglePrefix("\t",!event.isShiftDown());
-                        event.consume();
-                    }
-                }
-            }            
-            catch(BadLocationException e)
-            {
-                assert false : e.getMessage();
-            }
-        }
-        @Override public void keyReleased(KeyEvent e) { }
-        @Override public void keyTyped(KeyEvent e) { }
-    };
-    
     private static JViewport findViewportParent(Component c)
     {
         if(c==null) return null;
@@ -315,7 +256,7 @@ class JdbcBufferController
         editor.setSelectionEnd(newPosition);
     }
     
-    private void traverseScreenful(int start,int vec)
+    void traverseScreenful(int start,int vec)
     {
         int vpheight = findViewportParent(editor).getHeight();
         int linesOnScreen = vpheight / getLineHeight();
@@ -331,14 +272,14 @@ class JdbcBufferController
 
     private final Listener listener;
     
-    void fireBufferEvent(JdbcBufferControllerEvent e)
+    void fireBufferEvent(JdbcBufferEvent e)
     {
         listener.bufferActionPerformed(e);
     }
 
     void fireBufferEvent(Type type)
     {
-        fireBufferEvent(new JdbcBufferControllerEvent(this,type));
+        fireBufferEvent(new JdbcBufferEvent(this,type));
     }
 
     void addDocumentListener(DocumentListener l)
@@ -614,7 +555,7 @@ class JdbcBufferController
             int end = savedSelectionEnd;
             Document d = editor.getDocument();
 
-            var e = new JdbcBufferControllerEvent(this,Type.SPLIT_REQUESTED);
+            var e = new JdbcBufferEvent(this,Type.SPLIT_REQUESTED);
             e.text = d.getText(0,end);
             e.selectionStart = savedSelectionStart;
             e.selectionEnd = end;
@@ -731,6 +672,9 @@ class JdbcBufferController
         }
     };
 
+    private KeyListener resultsetKeyListener = 
+        new JdbcBufferResultSetKeyListener(this);
+
     private void addResultSetTable(ResultSetTableModel rsm)
     {
         if(panel.getComponentCount()==2) panel.remove(1);
@@ -754,7 +698,7 @@ class JdbcBufferController
         resultviewConstraints.gridy = 1;
         
         /* https://bugs.openjdk.java.net/browse/JDK-4890196 */
-        var newMl = new ResultPaneMouseWheelListener();
+        var newMl = new JdbcBufferResultPaneMouseWheelListener(this);
         newMl.originalListener = resultscrollpane.getMouseWheelListeners()[0];
         resultscrollpane.removeMouseWheelListener(newMl.originalListener);
         resultscrollpane.addMouseWheelListener(newMl);
@@ -833,107 +777,4 @@ class JdbcBufferController
         resultview.addMouseListener(popuplistener);
         resultview.getTableHeader().addMouseListener(popuplistener);
     }
-    
-    private class ResultPaneMouseWheelListener implements MouseWheelListener
-    {
-        MouseWheelListener originalListener;
-
-        @Override
-        public void mouseWheelMoved(MouseWheelEvent e)
-        {
-            int wr = e.getWheelRotation();
-            JViewport vp = (JViewport)resultview.getParent();
-            if(wr > 0)
-            {
-                if(e.isShiftDown() && vp.getViewPosition().getX() + 
-                        vp.getWidth() >= resultview.getWidth())
-                {
-                    fireBufferEvent(Type.SCROLLED_EAST);
-                }
-                else if(vp.getViewPosition().getY() + vp.getHeight() >= 
-                        resultview.getHeight())
-                {
-                    fireBufferEvent(Type.SCROLLED_SOUTH);
-                }
-                else
-                {
-                    originalListener.mouseWheelMoved(e);
-                }
-            }
-            else if(wr < 0)
-            {
-                if(e.isShiftDown() && vp.getViewPosition().getX() == 0)
-                {
-                    fireBufferEvent(Type.SCROLLED_WEST);
-                }
-                else if(vp.getViewPosition().getY() == 0)
-                {
-                    fireBufferEvent(Type.SCROLLED_NORTH);
-                }
-                else
-                {
-                    originalListener.mouseWheelMoved(e);
-                }
-            }
-        }
-    }
-    
-    private KeyListener resultsetKeyListener = new KeyListener()
-    {
-        void scrollToView()
-        {
-            Rectangle rect = editor.getBounds();
-            Rectangle cellRect = resultview.getCellRect(
-                    resultview.getSelectedRow(),
-                    resultview.getSelectedColumn(),
-                    true
-            );
-            Rectangle headerBounds = 
-                    resultview.getTableHeader().getBounds();
-            Point position = ((JViewport)resultview.getParent())
-                .getViewPosition();
-            var e = new JdbcBufferControllerEvent(JdbcBufferController.this,
-                    Type.SELECTED_RECT_CHANGED);
-            e.selectedRect = new Rectangle(
-                    (int)cellRect.getX(),
-                    (int)(rect.getHeight() + 
-                          cellRect.getY() - 
-                          position.getY() +
-                          headerBounds.getHeight()),
-                    (int)cellRect.getWidth(),
-                    (int)cellRect.getHeight()
-            );
-            fireBufferEvent(e);
-        }
-        
-        @Override public void keyTyped(KeyEvent e) { }
-        
-        @Override
-        public void keyPressed(KeyEvent e)
-        {
-            switch(e.getKeyCode())
-            {
-            case KeyEvent.VK_LEFT:
-            case KeyEvent.VK_RIGHT:
-                scrollToView();
-            }
-        }
-
-        @Override
-        public void keyReleased(KeyEvent e)
-        {
-            switch(e.getKeyCode())
-            {
-            case KeyEvent.VK_UP:
-            case KeyEvent.VK_LEFT:
-            case KeyEvent.VK_RIGHT:
-            case KeyEvent.VK_DOWN:
-            case KeyEvent.VK_HOME:
-            case KeyEvent.VK_END:
-            case KeyEvent.VK_PAGE_DOWN:
-            case KeyEvent.VK_PAGE_UP:
-                scrollToView();
-            }
-        }
-    };
 }

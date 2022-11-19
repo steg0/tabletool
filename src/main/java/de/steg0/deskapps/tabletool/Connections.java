@@ -47,6 +47,11 @@ class Connections
         initStates();
     }
 
+    /**
+     * Refreshes the list of available connection definitions. New ones
+     * are added to the end of the list. Removed ones are kept to not
+     * require disconnect.
+     */
     void refresh(PropertyHolder propertyHolder)
     {
         var newConnectionInfo = propertyHolder.getConnections();
@@ -60,7 +65,6 @@ class Connections
             {
                 mergedConnectionInfo.set(existingIndex, info);
             }
-            /* add new ones at the end */
             else
             {
                 mergedConnectionInfo.add(info);

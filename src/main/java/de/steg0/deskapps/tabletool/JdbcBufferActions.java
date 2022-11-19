@@ -9,97 +9,98 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 
-import de.steg0.deskapps.tabletool.JdbcBufferControllerEvent.Type;
+import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
 
-class JdbcBufferControllerActions
+class JdbcBufferActions
 {
     Logger logger = Logger.getLogger("tabletool.editor");
 
-    JdbcBufferController buffer;
+    private final JdbcBufferController b;
+
+    JdbcBufferActions(JdbcBufferController b)
+    {
+        this.b = b;
+    }
 
     Action
         executeAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                buffer.fetch(false);
+                b.fetch(false);
             }
         },
         executeSplitAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                buffer.fetch(true);
+                b.fetch(true);
             }
         },
         showInfoAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent event)
             {
-                if(buffer.connection == null)
+                if(b.connection == null)
                 {
-                    buffer.log.accept("No connection available at "+new Date());
-                    buffer.fireBufferEvent(Type.DRY_FETCH);
+                    b.log.accept("No connection available at "+new Date());
+                    b.fireBufferEvent(Type.DRY_FETCH);
                     return;
                 }
-                String infoTemplate = buffer.configSource.getInfoTemplate();
+                String infoTemplate = b.configSource.getInfoTemplate();
                 if(infoTemplate == null)
                 {
-                    buffer.log.accept("No infoTemplate available at "+
-                            new Date());
+                    b.log.accept("No infoTemplate available at "+new Date());
                     return;
                 }
-                String text = buffer.editor.getSelectedText();
+                String text = b.editor.getSelectedText();
                 if(text == null)
                 {
-                    buffer.selectListener.clickPos =
-                        buffer.editor.getCaretPosition();
-                    buffer.selectListener.selectWord();
-                    text = buffer.editor.getSelectedText();
+                    b.selectListener.clickPos = b.editor.getCaretPosition();
+                    b.selectListener.selectWord();
+                    text = b.editor.getSelectedText();
                 }
                 if(text == null) return;
                 logger.fine("Fetching info for text: "+text);
                 int maxresults = 10000;
                 String sql = infoTemplate.replaceAll("@@selection@@",text);
                 logger.fine("Info using SQL: "+sql);
-                buffer.connection.submit(sql,maxresults,
-                        buffer.infoResultConsumer,buffer.updateCountConsumer,
-                        buffer.log);
+                b.connection.submit(sql,maxresults,
+                        b.infoResultConsumer,b.updateCountConsumer,b.log);
             }
         },
         showSnippetsPopupAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent event)
             {
-                if(buffer.connection == null)
+                if(b.connection == null)
                 {
-                    buffer.log.accept("No connection available at "+new Date());
-                    buffer.fireBufferEvent(Type.DRY_FETCH);
+                    b.log.accept("No connection available at "+new Date());
+                    b.fireBufferEvent(Type.DRY_FETCH);
                     return;
                 }
                 Map<String,String> snippetTemplates =
-                    buffer.configSource.getSnippetTemplates();
+                    b.configSource.getSnippetTemplates();
                 if(snippetTemplates.size()==0)
                 {
-                    buffer.log.accept("No snippetTemplates available at "+
+                    b.log.accept("No snippetTemplates available at "+
                             new Date());
                     return;
                 }
-                String text = buffer.editor.getSelectedText();
+                String text = b.editor.getSelectedText();
                 if(text == null)
                 {
-                    buffer.selectListener.clickPos =
-                        buffer.editor.getCaretPosition();
-                    buffer.selectListener.selectWord();
-                    text = buffer.editor.getSelectedText();
+                    b.selectListener.clickPos = b.editor.getCaretPosition();
+                    b.selectListener.selectWord();
+                    text = b.editor.getSelectedText();
                 }
                 if(text == null) text = "";
                 logger.fine("Completing text: "+text);
                 try
                 {
-                    var xy = buffer.editor.modelToView2D(
-                            buffer.editor.getCaretPosition());
-                    new SnippetPopup(buffer,
+                    var xy = b.editor.modelToView2D(
+                            b.editor.getCaretPosition());
+                    new SnippetPopup(b,
                             (int)xy.getCenterX(),(int)xy.getCenterY())
                             .show(snippetTemplates);
                 }
@@ -113,44 +114,42 @@ class JdbcBufferControllerActions
         {
             @Override public void actionPerformed(ActionEvent event)
             {
-                if(buffer.connection == null)
+                if(b.connection == null)
                 {
-                    buffer.log.accept("No connection available at "+new Date());
-                    buffer.fireBufferEvent(Type.DRY_FETCH);
+                    b.log.accept("No connection available at "+new Date());
+                    b.fireBufferEvent(Type.DRY_FETCH);
                     return;
                 }
-                String completionTemplate = buffer.configSource
+                String completionTemplate = b.configSource
                     .getCompletionTemplate();
                 if(completionTemplate == null)
                 {
-                    buffer.log.accept("No completionTemplate available at "+
+                    b.log.accept("No completionTemplate available at "+
                             new Date());
                     return;
                 }
                 try
                 {
-                    String text = buffer.editor.getSelectedText();
+                    String text = b.editor.getSelectedText();
                     if(text == null)
                     {
-                        buffer.selectListener.clickPos =
-                            buffer.editor.getCaretPosition();
-                        buffer.selectListener.selectWord();
-                        text = buffer.editor.getSelectedText();
+                        b.selectListener.clickPos = b.editor.getCaretPosition();
+                        b.selectListener.selectWord();
+                        text = b.editor.getSelectedText();
                     }
                     if(text == null) return;
                     logger.fine("Completing text: "+text);
-                    var xy = buffer.editor.modelToView2D(
-                            buffer.editor.getCaretPosition());
+                    var xy = b.editor.modelToView2D(
+                            b.editor.getCaretPosition());
                     int maxresults = 16;
-                    var resultConsumer =
-                        new CompletionConsumer(buffer,
+                    var resultConsumer = new CompletionConsumer(b,
                                 (int)xy.getCenterX(),(int)xy.getCenterY(),
-                                buffer.log,maxresults);
+                                b.log,maxresults);
                     String sql = completionTemplate.replaceAll(
                             "@@selection@@",text);
                     logger.fine("Completion using SQL: "+sql);
-                    buffer.connection.submit(sql,maxresults,resultConsumer,
-                            buffer.updateCountConsumer,buffer.log);
+                    b.connection.submit(sql,maxresults,resultConsumer,
+                            b.updateCountConsumer,b.log);
                 }
                 catch(BadLocationException e)
                 {
@@ -162,21 +161,21 @@ class JdbcBufferControllerActions
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                buffer.togglePrefix("--",null);
+                b.togglePrefix("--",null);
             }
         },
         undoAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                if(buffer.undoManager.canUndo()) buffer.undoManager.undo();
+                if(b.undoManager.canUndo()) b.undoManager.undo();
             }
         },
         redoAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                if(buffer.undoManager.canRedo()) buffer.undoManager.redo();
+                if(b.undoManager.canRedo()) b.undoManager.redo();
             }
         };
 }
