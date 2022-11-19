@@ -702,7 +702,7 @@ class JdbcNotebookController
         }
         catch(SQLException e)
         {
-            connectionsSelector.setSelectedIndex(-1);
+            reportDisconnect(buffers.get(0).connection);
             logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
     }
