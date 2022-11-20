@@ -161,6 +161,8 @@ class PropertyHolder
             if(!(name.equals(other.name))) return false;
             return true;
         }
+
+        public int hashCode() { return name.hashCode(); }
     }
     
     /**@return a new array of {@link ConnectionInfo} instances parsed
