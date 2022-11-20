@@ -34,7 +34,8 @@ class HelpAction extends AbstractAction
                 getClass().getResourceAsStream("/README.txt"),
                 StandardCharsets.UTF_8)))
         {
-            var dialog = new JDialog(parent,"README - Tabtype",false);
+            var dialog = new JDialog(parent,"README - Tabtype V"+
+                    getClass().getPackage().getImplementationVersion(),false);
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             
             var panel = new JPanel(new BorderLayout());
