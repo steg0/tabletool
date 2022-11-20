@@ -17,8 +17,6 @@ import javax.swing.border.EmptyBorder;
 
 class HelpAction extends AbstractAction
 {
-    private static final long serialVersionUID = 1L;
-    
     JFrame parent;
     
     HelpAction(JFrame parent)
