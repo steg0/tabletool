@@ -83,6 +83,7 @@
             <arg>-Xlint:-serial</arg>
             <arg>-Xlint:-fallthrough</arg>
             <arg>-Xlint:-module</arg>
+            <arg>-Xlint:-missing-explicit-ctor</arg>
             <arg>-Xlint:-options</arg>
           </compilerArgs>
         </configuration>
