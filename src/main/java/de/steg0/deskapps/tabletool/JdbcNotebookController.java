@@ -73,7 +73,7 @@ class JdbcNotebookController
     File file;
     boolean unsaved;
     
-    private final ConnectionListModel connections;
+    final ConnectionListModel connections;
     private JComboBox<Connections.ConnectionState> connectionsSelector;
 
     private JFormattedTextField fetchsizeField;
@@ -116,6 +116,7 @@ class JdbcNotebookController
     private final Consumer<String> logConsumer = (t) -> log.setText(t);
     
     private final List<JdbcBufferController> buffers = new ArrayList<>();
+    private JdbcBufferController firstBuffer() { return buffers.get(0); }
     private int lastFocusedBuffer;
     boolean hasSavedFocusPosition;
     private final JPanel bufferPanel = new JPanel(new GridBagLayout());
@@ -218,7 +219,7 @@ class JdbcNotebookController
     private void setBackground(Color bg)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
-        if(bg==null) bg=buffers.get(0).defaultBackground;
+        if(bg==null) bg=firstBuffer().defaultBackground;
         bufferPanel.setBackground(bg);
         log.setBackground(bg);
         for(JdbcBufferController buffer : buffers) buffer.setBackground(bg);
@@ -325,7 +326,7 @@ class JdbcNotebookController
             new JdbcBufferController.Listener()
     {
         @Override
-        public void bufferActionPerformed(JdbcBufferControllerEvent e)
+        public void bufferActionPerformed(JdbcBufferEvent e)
         {
             JdbcBufferController source = e.getSource();
             switch(e.type)
@@ -450,8 +451,8 @@ class JdbcNotebookController
         c.fetchsize = Integer.parseInt(fetchsizeField.getText());
         if(buffers.size()>0)
         {
-            c.editor.setFont(buffers.get(0).editor.getFont());
-            c.sizes = (Stack<Integer>)buffers.get(0).sizes.clone();
+            c.editor.setFont(firstBuffer().editor.getFont());
+            c.sizes = (Stack<Integer>)firstBuffer().sizes.clone();
         }
         
         buffers.add(index,c);
@@ -574,17 +575,17 @@ class JdbcNotebookController
     throws IOException
     {
         assert buffers.size()==1 : "load only supports uninitialized panels";
-        int linesRead = buffers.get(0).load(r);
+        int linesRead = firstBuffer().load(r);
         while(linesRead>0)
         {
             var newBufferController = newBufferController();
-            newBufferController.setBackground(buffers.get(0).getBackground());
+            newBufferController.setBackground(firstBuffer().getBackground());
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);
         }
         unsaved=false;
         bufferPanel.revalidate();
-        buffers.get(0).focusEditor(0,0);
+        firstBuffer().focusEditor(0,0);
     }
 
     void commit()
@@ -666,7 +667,7 @@ class JdbcNotebookController
 
     private void onConnection(Consumer<ConnectionWorker> c)
     {
-        ConnectionWorker selectedConnection = buffers.get(0).connection;
+        ConnectionWorker selectedConnection = firstBuffer().connection;
         if(selectedConnection != null)
         {
             c.accept(selectedConnection);
@@ -702,7 +703,7 @@ class JdbcNotebookController
         }
         catch(SQLException e)
         {
-            connectionsSelector.setSelectedIndex(-1);
+            reportDisconnect(firstBuffer().connection);
             logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
     }
@@ -717,7 +718,7 @@ class JdbcNotebookController
     
     void reportDisconnect(ConnectionWorker connection)
     {
-        if(buffers.get(0).connection != connection) return;
+        if(firstBuffer().connection != connection) return;
         for(JdbcBufferController buffer : buffers)
         {
             buffer.connection = null;
@@ -730,7 +731,7 @@ class JdbcNotebookController
     
     void reportAutocommitChanged(ConnectionWorker connection,boolean enabled)
     {
-        if(buffers.get(0).connection != connection) return;
+        if(firstBuffer().connection != connection) return;
         autocommitCb.setSelected(enabled);
     }
 }

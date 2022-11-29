@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.function.Consumer;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -15,25 +14,23 @@ import javax.swing.JTable;
 
 class InfoDisplayController
 {
-    final JFrame infoDisplay;
-    final JTable content;
-    final Consumer<String> log;
+    private final JFrame infoDisplay;
+    private final JTable content;
 
     JPanel panel = new JPanel(new BorderLayout());
     
-    InfoDisplayController(JFrame infoDisplay,JTable content,Consumer<String> log)
+    InfoDisplayController(JFrame infoDisplay,JTable content)
     {
         this.infoDisplay = infoDisplay;
         this.content = content;
-        this.log = log;
         show();
     }
 
-    void show()
+    private void show()
     {
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
-        String dialogtitle = "Info display";
+        String dialogtitle = "Info display - Tabtype";
         
         infoDisplay.setTitle(dialogtitle);
         infoDisplay.getContentPane().removeAll();

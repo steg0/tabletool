@@ -176,6 +176,31 @@ implements KeyListener
                 }
             }
         },
+        refreshPropertiesAction = new AbstractAction("Refresh Properties")
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                try
+                {
+                    propertyHolder.load();
+                    int oldSize = connections.getSize();
+                    connections.refresh(propertyHolder);
+                    for(var notebook : notebooks)
+                    {
+                        notebook.connections.notifyIntervalAdded(oldSize);
+                    }
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            tabbedPane,
+                            "Error refreshing "+propertyHolder.propertiesfile+
+                            ": "+e.getMessage(),
+                            "Error refreshing properties",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        },
         selectPreviousTabAction = new AbstractAction("Select Previous Tab")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -547,6 +572,11 @@ implements KeyListener
         item.setMnemonic(KeyEvent.VK_P);
         item.setEnabled(propertyHolder.propertiesfile != null &&
                 Desktop.isDesktopSupported());
+        menu.add(item);
+
+        item = new JMenuItem(refreshPropertiesAction);
+        item.setMnemonic(KeyEvent.VK_R);
+        item.setEnabled(propertyHolder.propertiesfile != null);
         menu.add(item);
 
         menubar.add(menu);
