@@ -448,7 +448,7 @@ class JdbcNotebookController
             @Override 
             public void focusGained(FocusEvent e) { }
         });
-        c.fetchsize = Integer.parseInt(fetchsizeField.getText());
+        c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
         {
             c.editor.setFont(firstBuffer().editor.getFont());
