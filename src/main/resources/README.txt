@@ -28,6 +28,7 @@ The configuration file supports the following keys:
   frame.y=100
   frame.w=700
   frame.h=450
+  tab.placement=1
   editor.font=Lucida Sans Regular
   editor.tabsize=4
   default.bg=#ffffff

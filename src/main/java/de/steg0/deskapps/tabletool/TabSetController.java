@@ -58,10 +58,14 @@ implements KeyListener
     private Connections connections;
     private final Executor executor = Executors.newCachedThreadPool();
 
+    final JTabbedPane tabbedPane = new JTabbedPane();
+    
     TabSetController(JFrame parent,PropertyHolder propertyHolder)
     {
         this.parent = parent;
         this.propertyHolder = propertyHolder;
+
+        tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         
         Point parentLocation = parent.getLocation();
         int dialogx = (int)parentLocation.getX()+30,
@@ -72,8 +76,6 @@ implements KeyListener
         connections = new Connections(propertyHolder,executor);
     }
 
-    final JTabbedPane tabbedPane = new JTabbedPane();
-    
     class SelectTabAction extends AbstractAction
     {
         int tabindex;

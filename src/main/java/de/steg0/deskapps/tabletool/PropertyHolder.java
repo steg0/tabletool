@@ -16,6 +16,8 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.swing.JTabbedPane;
+
 class PropertyHolder
 {
     Logger logger = Logger.getLogger("tabletool.properties");
@@ -80,6 +82,12 @@ class PropertyHolder
     {
         return Integer.parseInt(
                 properties.getOrDefault("editor.tabsize","8").toString());
+    }
+
+    int getTabPlacement()
+    {
+        return Integer.parseInt(
+                properties.getOrDefault("tab.placement",JTabbedPane.TOP).toString());
     }
     
     Color getDefaultBackground()
