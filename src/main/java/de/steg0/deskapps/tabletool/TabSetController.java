@@ -623,6 +623,7 @@ implements KeyListener
         }
         
         if(w.getFiles().length==0) add(true);
+        int selectedIndex=0;
         for(String fn : w.getFiles())
         {
             File sqlFile = new File(fn);
@@ -632,6 +633,7 @@ implements KeyListener
                 notebook.load(r);
                 notebook.file = sqlFile;
                 int index = tabbedPane.getSelectedIndex();
+                if(fn.equals(w.getActiveFile())) selectedIndex = index;
                 tabbedPane.setTitleAt(index,sqlFile.getName());
                 tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
             }
@@ -645,6 +647,7 @@ implements KeyListener
                         e.getMessage());
             }
         }
+        tabbedPane.setSelectedIndex(selectedIndex);
     }
     
     void saveWorkspace(File file)
@@ -657,6 +660,8 @@ implements KeyListener
             .filter(Objects::nonNull)
             .map((f) -> f.getPath())
             .toArray(String[]::new));
+        var selectedNb = notebooks.get(tabbedPane.getSelectedIndex());
+        if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));
         Workspaces.store(w,file);
     }

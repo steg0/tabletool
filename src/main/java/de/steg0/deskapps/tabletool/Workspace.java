@@ -13,6 +13,18 @@ public class Workspace
     {
         this.files = files;
     }
+
+    private String activeFile;
+
+    public String getActiveFile()
+    {
+        return activeFile;
+    }
+
+    public void setActiveFile(String activeFile)
+    {
+        this.activeFile = activeFile;
+    }
     
     private String[] recentFiles;
 
