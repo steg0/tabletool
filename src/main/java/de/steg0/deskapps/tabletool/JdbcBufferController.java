@@ -129,6 +129,7 @@ class JdbcBufferController
                     f.getSize());
             editor.setFont(f2);
         }
+        editor.setTabSize(configSource.getEditorTabsize());
         
         var actions = new JdbcBufferActions(this);
         var im = editor.getInputMap();

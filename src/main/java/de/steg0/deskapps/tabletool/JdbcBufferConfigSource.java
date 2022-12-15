@@ -22,6 +22,10 @@ class JdbcBufferConfigSource
     {
         return propertyHolder.getEditorFontName();
     }
+    int getEditorTabsize()
+    {
+        return propertyHolder.getEditorTabsize();
+    }
     String getCompletionTemplate()
     {
         Connections.ConnectionState connectionState = 

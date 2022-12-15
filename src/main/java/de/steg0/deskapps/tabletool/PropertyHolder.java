@@ -75,6 +75,12 @@ class PropertyHolder
     {
         return properties.getProperty("editor.font");
     }
+
+    int getEditorTabsize()
+    {
+        return Integer.parseInt(
+                properties.getOrDefault("editor.tabsize","8").toString());
+    }
     
     Color getDefaultBackground()
     {
