@@ -29,10 +29,10 @@ extends WindowAdapter
     private File properties,workspace,sqlFiles[];
     private TabSetController controller;
     
-    private Tabtype(String propertiesfile,String workspacefile)
+    private Tabtype(String propertiesFile,String workspaceFile)
     {
-        if(propertiesfile!=null) properties = new File(propertiesfile);
-        if(workspacefile!=null) workspace = new File(workspacefile);
+        if(propertiesFile!=null) properties = new File(propertiesFile);
+        if(workspaceFile!=null) workspace = new File(workspaceFile);
     }
     
     private Tabtype(String propertiesfile,String[] sqlFiles)
@@ -94,7 +94,7 @@ extends WindowAdapter
             frame.getContentPane().setPreferredSize(
                     propertyHolder.getDefaultFrameSize());
             frame.setLocation(propertyHolder.getDefaultFrameLocation());
-            return new TabSetController(frame,propertyHolder);
+            return new TabSetController(frame,propertyHolder,workspace);
         }
         catch(Exception e)
         {
@@ -123,7 +123,7 @@ extends WindowAdapter
             }
             else
             {
-                controller.restoreWorkspace(workspace);
+                controller.restoreWorkspace();
             }
         }
         catch(Exception e)
@@ -155,10 +155,9 @@ extends WindowAdapter
 
         frame.dispose();
         
-        if(workspace==null) return;
         try
         {
-            controller.saveWorkspace(workspace);
+            controller.saveWorkspace();
         }
         catch(IOException e)
         {

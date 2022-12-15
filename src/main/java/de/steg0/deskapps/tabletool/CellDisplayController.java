@@ -44,10 +44,13 @@ import javax.swing.undo.UndoManager;
 class CellDisplayController
 {
     private final JFrame cellDisplay;
+    private final File pwd;
 
-    CellDisplayController(JFrame cellDisplay,JTable source,Consumer<String> log)
+    CellDisplayController(JFrame cellDisplay,JTable source,Consumer<String> log,
+            File pwd)
     {
         this.cellDisplay = cellDisplay;
+        this.pwd = pwd;
         
         source.addMouseListener(new MouseAdapter()
         {
@@ -360,7 +363,7 @@ class CellDisplayController
         @Override
         public void actionPerformed(ActionEvent event)
         {
-            var filechooser = new JFileChooser();
+            var filechooser = new JFileChooser(pwd);
             int returnVal = filechooser.showSaveDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
@@ -400,7 +403,7 @@ class CellDisplayController
         @Override
         public void actionPerformed(ActionEvent event)
         {
-            var filechooser = new JFileChooser();
+            var filechooser = new JFileChooser(pwd);
             int returnVal = filechooser.showOpenDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();

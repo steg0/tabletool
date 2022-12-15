@@ -59,11 +59,15 @@ implements KeyListener
     private final Executor executor = Executors.newCachedThreadPool();
 
     final JTabbedPane tabbedPane = new JTabbedPane();
+
+    private final File workspaceFile;
     
-    TabSetController(JFrame parent,PropertyHolder propertyHolder)
+    TabSetController(JFrame parent,PropertyHolder propertyHolder,
+            File workspaceFile)
     {
         this.parent = parent;
         this.propertyHolder = propertyHolder;
+        this.workspaceFile = workspaceFile;
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         
@@ -425,6 +429,7 @@ implements KeyListener
                 infoDisplay,
                 propertyHolder,
                 connections,
+                getPwd(),
                 notebookListener
         );
         notebooks.add(notebook);
@@ -495,12 +500,21 @@ implements KeyListener
         while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
         recreateMenuBar();
     }
-    
+
+    private File getPwd()
+    {
+        if(workspaceFile!=null)
+        {
+            return workspaceFile.getParentFile();
+        }
+        return null;
+    }
+
     void load(File file)
     {
         if(file==null)
         {
-            var filechooser = new JFileChooser();
+            var filechooser = new JFileChooser(getPwd());
             int returnVal = filechooser.showOpenDialog(tabbedPane);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
@@ -612,10 +626,11 @@ implements KeyListener
         parent.setJMenuBar(menubar);
     }
     
-    void restoreWorkspace(File f)
+    void restoreWorkspace()
     throws IOException
     {
-        Workspace w = Workspaces.load(f);
+        Objects.requireNonNull(workspaceFile);
+        Workspace w = Workspaces.load(workspaceFile);
         
         if(w.getRecentFiles() != null)
         {
@@ -650,9 +665,11 @@ implements KeyListener
         tabbedPane.setSelectedIndex(selectedIndex);
     }
     
-    void saveWorkspace(File file)
+    void saveWorkspace()
     throws IOException
     {
+        if(workspaceFile==null) return;
+
         Workspace w = new Workspace();
         w.setFiles(notebooks
             .stream()
@@ -663,7 +680,7 @@ implements KeyListener
         var selectedNb = notebooks.get(tabbedPane.getSelectedIndex());
         if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));
-        Workspaces.store(w,file);
+        Workspaces.store(w,workspaceFile);
     }
         
     JdbcNotebookController.Listener notebookListener = 
