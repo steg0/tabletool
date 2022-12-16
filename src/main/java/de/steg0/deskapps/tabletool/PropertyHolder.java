@@ -96,6 +96,12 @@ class PropertyHolder
         return Color.decode(properties.getProperty("default.bg").toString());
     }
 
+    Color getFrameBackground()
+    {
+        if(!properties.containsKey("frame.bg")) return null;
+        return Color.decode(properties.getProperty("frame.bg").toString());
+    }
+
     class ConnectionInfo
     {
         static final String CONNECTIONS_PREFIX = "connections.";

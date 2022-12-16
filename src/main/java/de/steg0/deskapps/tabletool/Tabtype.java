@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -94,6 +95,9 @@ extends WindowAdapter
             frame.getContentPane().setPreferredSize(
                     propertyHolder.getDefaultFrameSize());
             frame.setLocation(propertyHolder.getDefaultFrameLocation());
+            Color frameBackground = propertyHolder.getFrameBackground();
+            if(frameBackground!=null) frame.getContentPane().setBackground(
+                    frameBackground);
             return new TabSetController(frame,propertyHolder,workspace);
         }
         catch(Exception e)

@@ -32,6 +32,7 @@ The configuration file supports the following keys:
   editor.font=Lucida Sans Regular
   editor.tabsize=4
   default.bg=#ffffff
+  frame.bg=#dddddd
   scroll.increment=16
   resultview.height=150
   drivers.<JDBC URL part after the schema>.completionTemplate=\
