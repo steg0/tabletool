@@ -127,6 +127,7 @@ class JdbcNotebookController
             JFrame infoDisplay,
             PropertyHolder propertyHolder,
             Connections connections,
+            File pwd,
             Listener listener)
     {
         this.cellDisplay = cellDisplay;
@@ -135,7 +136,7 @@ class JdbcNotebookController
         this.connections = new ConnectionListModel(connections);
         this.listener = listener;
         this.bufferConfigSource = new JdbcBufferConfigSource(propertyHolder,
-                this.connections);
+                this.connections,pwd);
         
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -448,7 +449,7 @@ class JdbcNotebookController
             @Override 
             public void focusGained(FocusEvent e) { }
         });
-        c.fetchsize = Integer.parseInt(fetchsizeField.getText());
+        c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
         {
             c.editor.setFont(firstBuffer().editor.getFont());
@@ -522,7 +523,7 @@ class JdbcNotebookController
     {
         if(file==null || saveAs)
         {
-            var filechooser = new JFileChooser();
+            var filechooser = new JFileChooser(bufferConfigSource.pwd);
             int returnVal = filechooser.showSaveDialog(bufferPanel);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
             File file=filechooser.getSelectedFile();

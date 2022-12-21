@@ -16,6 +16,8 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.swing.JTabbedPane;
+
 class PropertyHolder
 {
     Logger logger = Logger.getLogger("tabletool.properties");
@@ -75,11 +77,29 @@ class PropertyHolder
     {
         return properties.getProperty("editor.font");
     }
+
+    int getEditorTabsize()
+    {
+        return Integer.parseInt(
+                properties.getOrDefault("editor.tabsize","8").toString());
+    }
+
+    int getTabPlacement()
+    {
+        return Integer.parseInt(
+                properties.getOrDefault("tab.placement",JTabbedPane.TOP).toString());
+    }
     
     Color getDefaultBackground()
     {
         if(!properties.containsKey("default.bg")) return null;
         return Color.decode(properties.getProperty("default.bg").toString());
+    }
+
+    Color getFrameBackground()
+    {
+        if(!properties.containsKey("frame.bg")) return null;
+        return Color.decode(properties.getProperty("frame.bg").toString());
     }
 
     class ConnectionInfo

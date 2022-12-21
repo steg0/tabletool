@@ -28,8 +28,11 @@ The configuration file supports the following keys:
   frame.y=100
   frame.w=700
   frame.h=450
-  editor.font=Luxi Mono
+  tab.placement=1
+  editor.font=Lucida Sans Regular
+  editor.tabsize=4
   default.bg=#ffffff
+  frame.bg=#dddddd
   scroll.increment=16
   resultview.height=150
   drivers.<JDBC URL part after the schema>.completionTemplate=\

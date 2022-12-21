@@ -1,17 +1,20 @@
 package de.steg0.deskapps.tabletool;
 
+import java.io.File;
 import java.util.Map;
 
 class JdbcBufferConfigSource
 {
     private final PropertyHolder propertyHolder;
     private final ConnectionListModel connectionListModel;
+    final File pwd;
 
     JdbcBufferConfigSource(PropertyHolder propertyHolder,
-            ConnectionListModel connectionListModel)
+            ConnectionListModel connectionListModel,File pwd)
     {
         this.propertyHolder = propertyHolder;
         this.connectionListModel = connectionListModel;
+        this.pwd = pwd;
     }
 
     int getResultViewHeight()
@@ -21,6 +24,10 @@ class JdbcBufferConfigSource
     String getEditorFontName()
     {
         return propertyHolder.getEditorFontName();
+    }
+    int getEditorTabsize()
+    {
+        return propertyHolder.getEditorTabsize();
     }
     String getCompletionTemplate()
     {

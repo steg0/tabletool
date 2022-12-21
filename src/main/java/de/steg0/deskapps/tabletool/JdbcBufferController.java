@@ -129,6 +129,7 @@ class JdbcBufferController
                     f.getSize());
             editor.setFont(f2);
         }
+        editor.setTabSize(configSource.getEditorTabsize());
         
         var actions = new JdbcBufferActions(this);
         var im = editor.getInputMap();
@@ -682,7 +683,7 @@ class JdbcBufferController
         resultview = new JTable(rsm);
         setResultViewFontSize(resultview,editor.getFont().getSize());
         
-        new CellDisplayController(cellDisplay,resultview,log);
+        new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
         addResultSetPopup();
         
         resultview.setCellSelectionEnabled(true);

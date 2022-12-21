@@ -58,10 +58,18 @@ implements KeyListener
     private Connections connections;
     private final Executor executor = Executors.newCachedThreadPool();
 
-    TabSetController(JFrame parent,PropertyHolder propertyHolder)
+    final JTabbedPane tabbedPane = new JTabbedPane();
+
+    private final File workspaceFile;
+    
+    TabSetController(JFrame parent,PropertyHolder propertyHolder,
+            File workspaceFile)
     {
         this.parent = parent;
         this.propertyHolder = propertyHolder;
+        this.workspaceFile = workspaceFile;
+
+        tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         
         Point parentLocation = parent.getLocation();
         int dialogx = (int)parentLocation.getX()+30,
@@ -72,8 +80,6 @@ implements KeyListener
         connections = new Connections(propertyHolder,executor);
     }
 
-    final JTabbedPane tabbedPane = new JTabbedPane();
-    
     class SelectTabAction extends AbstractAction
     {
         int tabindex;
@@ -423,6 +429,7 @@ implements KeyListener
                 infoDisplay,
                 propertyHolder,
                 connections,
+                getPwd(),
                 notebookListener
         );
         notebooks.add(notebook);
@@ -493,12 +500,21 @@ implements KeyListener
         while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
         recreateMenuBar();
     }
-    
+
+    private File getPwd()
+    {
+        if(workspaceFile!=null)
+        {
+            return workspaceFile.getParentFile();
+        }
+        return null;
+    }
+
     void load(File file)
     {
         if(file==null)
         {
-            var filechooser = new JFileChooser();
+            var filechooser = new JFileChooser(getPwd());
             int returnVal = filechooser.showOpenDialog(tabbedPane);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
@@ -610,10 +626,11 @@ implements KeyListener
         parent.setJMenuBar(menubar);
     }
     
-    void restoreWorkspace(File f)
+    void restoreWorkspace()
     throws IOException
     {
-        Workspace w = Workspaces.load(f);
+        Objects.requireNonNull(workspaceFile);
+        Workspace w = Workspaces.load(workspaceFile);
         
         if(w.getRecentFiles() != null)
         {
@@ -621,6 +638,7 @@ implements KeyListener
         }
         
         if(w.getFiles().length==0) add(true);
+        int selectedIndex=0;
         for(String fn : w.getFiles())
         {
             File sqlFile = new File(fn);
@@ -630,6 +648,7 @@ implements KeyListener
                 notebook.load(r);
                 notebook.file = sqlFile;
                 int index = tabbedPane.getSelectedIndex();
+                if(fn.equals(w.getActiveFile())) selectedIndex = index;
                 tabbedPane.setTitleAt(index,sqlFile.getName());
                 tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
             }
@@ -643,11 +662,14 @@ implements KeyListener
                         e.getMessage());
             }
         }
+        tabbedPane.setSelectedIndex(selectedIndex);
     }
     
-    void saveWorkspace(File file)
+    void saveWorkspace()
     throws IOException
     {
+        if(workspaceFile==null) return;
+
         Workspace w = new Workspace();
         w.setFiles(notebooks
             .stream()
@@ -655,8 +677,10 @@ implements KeyListener
             .filter(Objects::nonNull)
             .map((f) -> f.getPath())
             .toArray(String[]::new));
+        var selectedNb = notebooks.get(tabbedPane.getSelectedIndex());
+        if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));
-        Workspaces.store(w,file);
+        Workspaces.store(w,workspaceFile);
     }
         
     JdbcNotebookController.Listener notebookListener = 
