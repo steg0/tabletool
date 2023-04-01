@@ -127,6 +127,37 @@ implements KeyListener
                 load(null);
             }
         },
+        openContainingFolderAction = new AbstractAction(
+                "Open Containing Folder")
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                if(notebook.file==null||notebook.file.getParentFile()==null)
+                {
+                    JOptionPane.showMessageDialog(
+                        tabbedPane,
+                        "No folder available for current file",
+                        "Error opening containing folder",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                File parent = notebook.file.getParentFile();
+                try
+                {
+                    Desktop.getDesktop().open(parent);
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            tabbedPane,
+                            "Error opening "+parent+": "+e.getMessage(),
+                            "Error opening containing folder",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        },
         saveAction = new AbstractAction("Save")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -539,7 +570,7 @@ implements KeyListener
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     boolean isUnsaved()
     {
         return !notebooks.stream().noneMatch((n) -> n.unsaved); 
@@ -569,6 +600,11 @@ implements KeyListener
         item = getRecentsMenu();
         menu.add(item);
         
+        item = new JMenuItem(openContainingFolderAction);
+        item.setMnemonic(KeyEvent.VK_F);
+        item.setEnabled(Desktop.isDesktopSupported());
+        menu.add(item);
+
         item = new JMenuItem(saveAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_S,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_S);
