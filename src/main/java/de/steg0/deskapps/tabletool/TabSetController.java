@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -49,6 +51,8 @@ implements KeyListener
 {
     static final int MAX_RECENTS_SIZE=500;
     
+    private Logger logger = Logger.getLogger("tabletool.editor");
+
     private final JFrame
         parent,
         cellDisplay=new JFrame(),
@@ -117,7 +121,7 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                add(true);
+                add();
             }
         },
         loadAction = new AbstractAction("Load...")
@@ -167,7 +171,7 @@ implements KeyListener
                 boolean newBuffer=notebook.file==null;
                 if(notebook.store(false))
                 {
-                    tabbedPane.setTitleAt(index,notebook.file.getName());
+                    retitle();
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                     if(newBuffer) addRecent(notebook.file);
                 }
@@ -181,7 +185,7 @@ implements KeyListener
                 JdbcNotebookController notebook=notebooks.get(index);
                 if(notebook.store(true))
                 {
-                    tabbedPane.setTitleAt(index,notebook.file.getName());
+                    retitle();
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                     addRecent(notebook.file);
                 }
@@ -269,13 +273,12 @@ implements KeyListener
                 int index = tabbedPane.getSelectedIndex();
                 if(index>0)
                 {
-                    String title = tabbedPane.getTitleAt(index);
                     Component c = tabbedPane.getSelectedComponent();
                     tabbedPane.remove(index);
                     tabbedPane.add(c,index-1);
-                    tabbedPane.setTitleAt(index-1,title);
                     JdbcNotebookController notebook = notebooks.remove(index);
                     notebooks.add(index-1,notebook);
+                    retitle();
                     tabbedPane.setSelectedComponent(c);
                 }
         
@@ -288,13 +291,12 @@ implements KeyListener
                 int index = tabbedPane.getSelectedIndex();
                 if(index<tabbedPane.getTabCount()-1)
                 {
-                    String title = tabbedPane.getTitleAt(index);
                     Component c = tabbedPane.getSelectedComponent();
                     tabbedPane.remove(index);
                     tabbedPane.add(c,index+1);
-                    tabbedPane.setTitleAt(index+1,title);
                     JdbcNotebookController notebook = notebooks.remove(index);
                     notebooks.add(index+1,notebook);
+                    retitle();
                     tabbedPane.setSelectedComponent(c);
                 }
             }
@@ -443,8 +445,7 @@ implements KeyListener
     }
     
     private final List<JdbcNotebookController> notebooks = new ArrayList<>();
-    private int unnamedNotebookCount;
-    
+
     /**
      * Adds a tab and selects it.
      * 
@@ -453,7 +454,7 @@ implements KeyListener
      * that the caller sets one.
      * @return the controller responsible for the new tab.
      */
-    JdbcNotebookController add(boolean unnamed)
+    JdbcNotebookController add()
     {
         var notebook = new JdbcNotebookController(
                 cellDisplay,
@@ -465,15 +466,8 @@ implements KeyListener
         );
         notebooks.add(notebook);
         int newIndex = tabbedPane.getTabCount();
-        if(unnamed)
-        {
-            String newname = "Notebook"+(unnamedNotebookCount++);
-            tabbedPane.add(newname,notebook.notebookPanel);
-        }
-        else
-        {
-            tabbedPane.add(notebook.notebookPanel);
-        }
+        tabbedPane.add(notebook.notebookPanel);
+        retitle();
         tabbedPane.setSelectedIndex(newIndex);
         return notebook;
     }
@@ -497,7 +491,8 @@ implements KeyListener
         notebook.closeCurrentResultSet();
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
-        if(notebooks.size()==0) add(true);
+        retitle();
+        if(notebooks.size()==0) add();
         SwingUtilities.invokeLater(() -> {
             int selectedIndex = tabbedPane.getSelectedIndex();
             JdbcNotebookController c = notebooks.get(selectedIndex);
@@ -553,11 +548,11 @@ implements KeyListener
         
         try(var r = new LineNumberReader(new FileReader(file)))
         {
-            JdbcNotebookController notebook = add(false);
+            JdbcNotebookController notebook = add();
             notebook.load(r);
             notebook.file = file;
             int index = tabbedPane.getSelectedIndex();
-            tabbedPane.setTitleAt(index,file.getName());
+            retitle();
             tabbedPane.setToolTipTextAt(index,file.getPath());
             addRecent(file);
         }
@@ -673,19 +668,19 @@ implements KeyListener
             for(var path : w.getRecentFiles()) recents.add(path);
         }
         
-        if(w.getFiles().length==0) add(true);
+        if(w.getFiles().length==0) add();
         int selectedIndex=0;
         for(String fn : w.getFiles())
         {
             File sqlFile = new File(fn);
             try(var r = new LineNumberReader(new FileReader(sqlFile)))
             {
-                JdbcNotebookController notebook = add(false);
+                JdbcNotebookController notebook = add();
                 notebook.load(r);
                 notebook.file = sqlFile;
                 int index = tabbedPane.getSelectedIndex();
                 if(fn.equals(w.getActiveFile())) selectedIndex = index;
-                tabbedPane.setTitleAt(index,sqlFile.getName());
+                retitle();
                 tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
             }
             catch(IOException e)
@@ -740,9 +735,7 @@ implements KeyListener
         @Override
         public void bufferChanged()
         {
-            int selectedIndex = tabbedPane.getSelectedIndex();
-            tabbedPane.setTitleAt(selectedIndex,
-                    "*"+tabbedPane.getTitleAt(selectedIndex));
+            retitle();
         }
 
         @Override
@@ -780,6 +773,20 @@ implements KeyListener
         {
             JdbcNotebookController notebook = notebooks.get(lastClicked);
             if(notebook.hasSavedFocusPosition) notebook.restoreFocus();
+        }
+    }
+
+    private void retitle()
+    {
+        for(int i=0;i<tabbedPane.getTabCount();i++)
+        {
+            File file = notebooks.get(i).file;
+            String name = file!=null? file.getName() : "Untitled";
+            logger.log(Level.FINE,"Name is <{0}>",name);
+            if(notebooks.get(i).unsaved) name = "*" + name;
+            String title=i+":"+name;
+            logger.log(Level.FINE,"Tab title is <{0}>",title);
+            tabbedPane.setTitleAt(i,title);
         }
     }
 }
