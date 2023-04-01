@@ -113,7 +113,7 @@ class JdbcNotebookController
         });
     }
     
-    private final Consumer<String> logConsumer = (t) -> log.setText(t);
+    private final Consumer<String> logConsumer;
     
     private final List<JdbcBufferController> buffers = new ArrayList<>();
     private JdbcBufferController firstBuffer() { return buffers.get(0); }
@@ -166,6 +166,8 @@ class JdbcNotebookController
         disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
+        logConsumer = new JdbcNotebookLogConsumer(log);
+        
         autocommitCb.addActionListener((e) -> 
         {
             onConnection((c) -> 
@@ -201,7 +203,7 @@ class JdbcNotebookController
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
         logBufferPane.add(logPane);
-        
+
         var bufferPaneConstraints = new GridBagConstraints();
         bufferPaneConstraints.fill = GridBagConstraints.BOTH;
         bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
