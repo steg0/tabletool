@@ -74,7 +74,7 @@ class JdbcBufferController
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
     private KeyListener editorKeyListener =
-        new JdbcBufferEditorKeyListener(this);
+            new JdbcBufferEditorKeyListener(this);
     WordSelectAdapter selectListener = new WordSelectAdapter(editor);
     private JdbcBufferDocumentListener documentListener = 
             new JdbcBufferDocumentListener(this);
