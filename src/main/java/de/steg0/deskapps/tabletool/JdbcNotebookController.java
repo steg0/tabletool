@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -7,9 +9,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -30,6 +34,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -75,6 +81,14 @@ class JdbcNotebookController
     
     final ConnectionListModel connections;
     private JComboBox<Connections.ConnectionState> connectionsSelector;
+    Action
+        focusBufferAction = new AbstractAction("Focus Buffer")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                restoreFocus();
+            }
+        };
 
     private JFormattedTextField fetchsizeField;
     
@@ -144,6 +158,10 @@ class JdbcNotebookController
         connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
                 Boolean.TRUE);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
+        var im = connectionsSelector.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_PAGE_DOWN,0),"Focus Buffer");
+        var am = connectionsSelector.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(connectionsSelector);
         
         connectionPanel.add(new JLabel("Fetch:"));
