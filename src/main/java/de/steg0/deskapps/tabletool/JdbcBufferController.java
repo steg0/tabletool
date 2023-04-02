@@ -449,7 +449,7 @@ class JdbcBufferController
     }
     
     /**blocking */
-    private void openAsHtml()
+    private void openAsHtml(boolean transposed)
     {
         var htmlbuf = new StringBuilder();
         htmlbuf.append("<pre>");
@@ -458,7 +458,9 @@ class JdbcBufferController
             htmlbuf.append(HtmlEscaper.nonAscii(c));
         });
         htmlbuf.append("</pre>");
-        htmlbuf.append(getResultSetTableModel().toHtml());
+        htmlbuf.append(transposed?
+                getResultSetTableModel().toHtmlTransposed() :
+                getResultSetTableModel().toHtml());
         HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
 
@@ -754,7 +756,10 @@ class JdbcBufferController
         var popup = new JPopupMenu();
         JMenuItem item;
         item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> openAsHtml());
+        item.addActionListener((e) -> openAsHtml(false));
+        popup.add(item);
+        item = new JMenuItem("Open as HTML (transposed)",KeyEvent.VK_T);
+        item.addActionListener((e) -> openAsHtml(true));
         popup.add(item);
         item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
         item.addActionListener((e) -> openAsCsv());

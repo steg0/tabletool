@@ -93,6 +93,40 @@ implements TableModel,AutoCloseable
         b.append("</table>");
         return b.toString();
     }
+
+    String toHtmlTransposed()
+    {
+        var b = new StringBuilder();
+        b.append("<ol>");
+        for(Object[] row : rows)
+        {
+            b.append("<li>");
+            b.append("<table>");
+            for(int i=0;i<row.length;i++)
+            {
+                b.append("<tr>");
+                b.append("<th>");
+                cols[i].toString().chars().forEach((c) ->
+                {
+                    b.append(HtmlEscaper.nonAscii(c));
+                });
+                b.append("</th>");
+                b.append("<td>");
+                if(row[i] != null)
+                {
+                    row[i].toString().chars().forEach((c) ->
+                    {
+                        b.append(HtmlEscaper.nonAscii(c));
+                    });
+                }
+                b.append("</td>");
+                b.append("</tr>");
+            }
+            b.append("</table>");
+        }
+        b.append("</ol>");
+        return b.toString();
+    }
     
     void store(Writer w,boolean asSqlComment)
     throws IOException
