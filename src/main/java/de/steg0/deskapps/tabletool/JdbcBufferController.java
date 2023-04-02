@@ -79,7 +79,12 @@ class JdbcBufferController
     private JdbcBufferDocumentListener documentListener = 
             new JdbcBufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
-    void setSaved() { documentListener.unsaved = false; }
+    private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+    void setSaved()
+    {
+        documentListener.unsaved = false;
+        if(!editor.hasFocus()) editor.setBorder(unfocusedBorder);
+    }
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
@@ -88,7 +93,6 @@ class JdbcBufferController
     
     {
         editor.getDocument().addUndoableEditListener(undoManager);
-        Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
         Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
         Border unsavedBorder = BorderFactory.createDashedBorder(Color.GRAY);
         editor.setBorder(unfocusedBorder);
