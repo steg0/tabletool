@@ -84,6 +84,8 @@ implements KeyListener
         connections = new Connections(propertyHolder,executor);
     }
 
+    private long lastSelectTabActionTime;
+
     class SelectTabAction extends AbstractAction
     {
         int tabindex;
@@ -91,10 +93,25 @@ implements KeyListener
         {
             this.tabindex = tabindex;
         }
+        private int computeMultiDigitIndex(long time)
+        {
+            int index=tabindex;
+            if(time-lastSelectTabActionTime < 700)
+            {
+                int firstDigit = tabbedPane.getSelectedIndex() + 1;
+                index = firstDigit * 10 + tabindex;
+                if(index >= tabbedPane.getTabCount()) index = tabindex;
+            }
+            if(index >= tabbedPane.getTabCount())
+            {
+                index = tabbedPane.getSelectedIndex();
+            }
+            lastSelectTabActionTime = time;
+            return index;
+        }
         @Override public void actionPerformed(ActionEvent e)
         {
-            if(tabindex >= tabbedPane.getTabCount()) return;
-            tabbedPane.setSelectedIndex(tabindex);
+            tabbedPane.setSelectedIndex(computeMultiDigitIndex(e.getWhen()));
             JdbcNotebookController c = notebooks.get(
                     tabbedPane.getSelectedIndex());
             if(c.hasSavedFocusPosition) c.restoreFocus();
