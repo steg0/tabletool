@@ -784,7 +784,7 @@ implements KeyListener
             File file = notebooks.get(i).file;
             String name = file!=null? file.getName() : "Untitled";
             logger.log(Level.FINE,"Name is <{0}>",name);
-            String title=i+":"+name;
+            String title=(i+1)+":"+name;
             logger.log(Level.FINE,"Tab title is <{0}>",title);
             tabbedPane.setTitleAt(i,title);
             if(notebooks.get(i).unsaved) markChanged(i);
