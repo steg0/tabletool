@@ -801,7 +801,7 @@ implements KeyListener
             File file = notebooks.get(i).file;
             String name = file!=null? file.getName() : "Untitled";
             logger.log(Level.FINE,"Name is <{0}>",name);
-            String title=(i+1)+":"+name;
+            String title=(i+1)+". "+name;
             logger.log(Level.FINE,"Tab title is <{0}>",title);
             tabbedPane.setTitleAt(i,title);
             if(notebooks.get(i).isUnsaved()) markChanged(i);
@@ -811,9 +811,8 @@ implements KeyListener
     private void markChanged(int index)
     {
         String title = tabbedPane.getTitleAt(index);
-        int splitPos=title.indexOf(":");
-        if(splitPos<0) return;
-        tabbedPane.setTitleAt(index,title.substring(0,splitPos)+":*"+
-                title.substring(splitPos+1));
+        int splitPos=title.indexOf(". ");
+        tabbedPane.setTitleAt(index,title.substring(0,splitPos)+". *"+
+                title.substring(splitPos+2));
     }
 }
