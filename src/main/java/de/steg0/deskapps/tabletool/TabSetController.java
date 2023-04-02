@@ -735,7 +735,8 @@ implements KeyListener
         @Override
         public void bufferChanged()
         {
-            retitle();
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            markChanged(selectedIndex);
         }
 
         @Override
@@ -783,10 +784,19 @@ implements KeyListener
             File file = notebooks.get(i).file;
             String name = file!=null? file.getName() : "Untitled";
             logger.log(Level.FINE,"Name is <{0}>",name);
-            if(notebooks.get(i).unsaved) name = "*" + name;
             String title=i+":"+name;
             logger.log(Level.FINE,"Tab title is <{0}>",title);
             tabbedPane.setTitleAt(i,title);
+            if(notebooks.get(i).unsaved) markChanged(i);
         }
+    }
+
+    private void markChanged(int index)
+    {
+        String title = tabbedPane.getTitleAt(index);
+        int splitPos=title.indexOf(":");
+        if(splitPos<0) return;
+        tabbedPane.setTitleAt(index,title.substring(0,splitPos)+":*"+
+                title.substring(splitPos+1));
     }
 }
