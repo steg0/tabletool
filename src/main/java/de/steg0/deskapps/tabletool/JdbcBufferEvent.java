@@ -16,7 +16,8 @@ class JdbcBufferEvent extends EventObject
         SPLIT_REQUESTED,
         RESULT_VIEW_CLOSED,
         RESULT_VIEW_UPDATED,
-        DRY_FETCH
+        DRY_FETCH,
+        CHANGED
     }
     
     Type type;

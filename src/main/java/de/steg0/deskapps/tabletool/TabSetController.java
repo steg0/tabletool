@@ -493,7 +493,7 @@ implements KeyListener
     {
         JdbcNotebookController notebook=
                 notebooks.get(tabbedPane.getSelectedIndex());
-        if(notebook.unsaved)
+        if(notebook.isUnsaved())
         {
             int option = JOptionPane.showConfirmDialog(
                     parent,
@@ -585,7 +585,7 @@ implements KeyListener
 
     boolean isUnsaved()
     {
-        return !notebooks.stream().noneMatch((n) -> n.unsaved); 
+        return !notebooks.stream().noneMatch((n) -> n.isUnsaved()); 
     }
     
     void recreateMenuBar()
@@ -804,7 +804,7 @@ implements KeyListener
             String title=(i+1)+":"+name;
             logger.log(Level.FINE,"Tab title is <{0}>",title);
             tabbedPane.setTitleAt(i,title);
-            if(notebooks.get(i).unsaved) markChanged(i);
+            if(notebooks.get(i).isUnsaved()) markChanged(i);
         }
     }
 

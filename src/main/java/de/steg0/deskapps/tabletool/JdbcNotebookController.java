@@ -77,7 +77,6 @@ class JdbcNotebookController
     private final JdbcBufferConfigSource bufferConfigSource;
     
     File file;
-    boolean unsaved;
     
     final ConnectionListModel connections;
     private JComboBox<Connections.ConnectionState> connectionsSelector;
@@ -422,42 +421,18 @@ class JdbcNotebookController
                 
             case DRY_FETCH:
                 connectionsSelector.requestFocusInWindow();
+                break;
+
+            case CHANGED:
+                listener.bufferChanged();
             }
         }
     };
     
-    private class BufferDocumentListener implements DocumentListener
-    {
-        JdbcBufferController buffer;
-        
-        @Override
-        public void insertUpdate(DocumentEvent e)
-        {
-            if(!unsaved)
-            {
-                unsaved=true;
-                listener.bufferChanged();
-            }
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e)
-        {
-            insertUpdate(e);
-            if(e.getLength() == 1) return;
-            ExtendTextDamageEvent.send(buffer.editor,e);
-        }
-
-        @Override public void changedUpdate(DocumentEvent e) { }
-    };
-
     /**Adds a buffer to the panel and wires listeners. */
     @SuppressWarnings("unchecked")
     private void add(int index,JdbcBufferController c)
     {
-        var documentListener = new BufferDocumentListener();
-        documentListener.buffer = c;
-        c.addDocumentListener(documentListener);
         c.editor.addFocusListener(new FocusListener()
         {
             @Override 
@@ -539,6 +514,16 @@ class JdbcNotebookController
         ));
     }
 
+    boolean isUnsaved()
+    {
+        return !buffers.stream().noneMatch((n) -> n.isUnsaved()); 
+    }
+
+    private void setSaved()
+    {
+        for(var buffer : buffers) buffer.setSaved();
+    }
+    
     public boolean store(boolean saveAs)
     {
         if(file==null || saveAs)
@@ -558,7 +543,7 @@ class JdbcNotebookController
             }
             this.file=file;
         }
-        if(unsaved&&file.exists())
+        if(isUnsaved()&&file.exists())
         {
             var bakfile=new File(file.getPath()+'~');
             bakfile.delete();
@@ -567,7 +552,7 @@ class JdbcNotebookController
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
-            unsaved=false;
+            setSaved();
             return true;
         }
         catch(IOException e)
@@ -604,7 +589,7 @@ class JdbcNotebookController
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);
         }
-        unsaved=false;
+        setSaved();
         bufferPanel.revalidate();
         firstBuffer().focusEditor(0,0);
     }

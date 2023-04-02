@@ -42,7 +42,6 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -77,6 +76,10 @@ class JdbcBufferController
     private KeyListener editorKeyListener =
         new JdbcBufferEditorKeyListener(this);
     WordSelectAdapter selectListener = new WordSelectAdapter(editor);
+    private JdbcBufferDocumentListener documentListener = 
+            new JdbcBufferDocumentListener(this);
+    boolean isUnsaved() { return documentListener.unsaved; }
+    void setSaved() { documentListener.unsaved = false; }
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
@@ -87,6 +90,7 @@ class JdbcBufferController
         editor.getDocument().addUndoableEditListener(undoManager);
         Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
         Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
+        Border unsavedBorder = BorderFactory.createDashedBorder(Color.GRAY);
         editor.setBorder(unfocusedBorder);
         editor.addFocusListener(new FocusListener()
         {
@@ -96,7 +100,7 @@ class JdbcBufferController
             }
             @Override public void focusLost(FocusEvent e)
             {
-                editor.setBorder(unfocusedBorder);
+                editor.setBorder(isUnsaved()?unsavedBorder:unfocusedBorder);
             }
         });
     }
@@ -283,11 +287,6 @@ class JdbcBufferController
         fireBufferEvent(new JdbcBufferEvent(this,type));
     }
 
-    void addDocumentListener(DocumentListener l)
-    {
-        editor.getDocument().addDocumentListener(l);
-    }
-    
     /**
      * @param characterX
      *            the X position to set the caret to, which is a character
