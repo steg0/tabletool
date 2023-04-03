@@ -55,7 +55,8 @@ class JdbcBufferEditorKeyListener implements KeyListener
                 }
                 break;
             case KeyEvent.VK_TAB:
-                if(b.editor.getSelectionEnd()!=b.editor.getSelectionStart())
+                if(event.isShiftDown() ||
+                   b.editor.getSelectionEnd()!=b.editor.getSelectionStart())
                 {
                     b.togglePrefix("\t",!event.isShiftDown());
                     event.consume();
