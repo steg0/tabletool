@@ -265,7 +265,7 @@ implements KeyListener
             {
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==0) selected=tabbedPane.getTabCount();
-                else tabbedPane.setSelectedIndex(selected-1);
+                tabbedPane.setSelectedIndex(selected-1);
                 JdbcNotebookController c = notebooks.get(
                         tabbedPane.getSelectedIndex());
                 if(c.hasSavedFocusPosition) c.restoreFocus();
