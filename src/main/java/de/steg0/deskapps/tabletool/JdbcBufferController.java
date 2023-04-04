@@ -717,6 +717,8 @@ class JdbcBufferController
 
     BiConsumer<ResultSetTableModel,Long> infoResultConsumer = (rsm,t) ->
     {
+        if(rsm==null||rsm.getRowCount()==0) return;
+
         showInfoTable(rsm);
         
         Object[] logargs = {
