@@ -642,24 +642,20 @@ class JdbcNotebookController
         fetchsizeField.setValue(fetchsize);
     }
 
-    int lastSearchBuf;
-    int lastSearchLoc=-1;
-    String lastSearchText;
-
-    void find()
+    boolean findAndAdvance(JdbcNotebookSearchState state)
     {
-        if(lastSearchBuf>=buffers.size()) return;
-        if(lastSearchText==null) return;
-        logger.log(Level.FINE,"Finding: {0}",lastSearchText);
-        logger.log(Level.FINE,"Buffer index: {0}",lastSearchBuf);
-        logger.log(Level.FINE,"Last search location: {0}",lastSearchLoc);
-        lastSearchLoc=buffers.get(lastSearchBuf).searchNext(lastSearchLoc+1,
-                lastSearchText);
-        if(lastSearchLoc<0) 
+        if(state.buf>=buffers.size()) return false;
+        assert state.text != null;
+        logger.log(Level.FINE,"Finding: {0}",state.text);
+        logger.log(Level.FINE,"Buffer index: {0}",state.buf);
+        logger.log(Level.FINE,"Last search location: {0}",state.loc);
+        state.loc=buffers.get(state.buf).searchNext(state.loc+1,state.text);
+        if(state.loc<0) 
         {
-            lastSearchBuf++;
-            find();
+            state.buf++;
+            return findAndAdvance(state);
         }
+        return true;
     }
     
     private final PropertyChangeListener fetchSizeListener = (e) ->

@@ -133,6 +133,8 @@ implements KeyListener
         }
     }
 
+    private JdbcNotebookSearchState searchState=new JdbcNotebookSearchState();
+
     Action
         addAction = new AbstractAction("New")
         {
@@ -362,25 +364,34 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
                 String text = JOptionPane.showInputDialog(parent,"Find text:");
                 if(text==null) return;
-                JdbcNotebookController notebook = notebooks.get(index);
-                notebook.lastSearchBuf=0;
-                notebook.lastSearchLoc=-1;
-                notebook.lastSearchText=text;
-                notebook.find();
+                searchState.reset(tabbedPane.getSelectedIndex());
+                searchState.text=text;
+                find();
             }
         },
         findNextAction = new AbstractAction("Find Next")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook = notebooks.get(index);
-                notebook.find();
+                if(searchState.text==null) return;
+                tabbedPane.setSelectedIndex(searchState.tab);
+                find();
             }
         };
+
+    private void find()
+    {
+        JdbcNotebookController notebook = notebooks.get(searchState.tab);
+        while(!notebook.findAndAdvance(searchState) && 
+                searchState.tab < notebooks.size() - 1)
+        {
+            searchState.reset(searchState.tab+1);
+            tabbedPane.setSelectedIndex(searchState.tab);
+            notebook = notebooks.get(searchState.tab);
+        }
+    }
 
     {
         tabbedPane.addKeyListener(this);
