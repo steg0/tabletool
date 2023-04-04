@@ -42,7 +42,6 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.border.Border;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -75,8 +74,17 @@ class JdbcBufferController
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
     private KeyListener editorKeyListener =
-        new JdbcBufferEditorKeyListener(this);
+            new JdbcBufferEditorKeyListener(this);
     WordSelectAdapter selectListener = new WordSelectAdapter(editor);
+    private JdbcBufferDocumentListener documentListener = 
+            new JdbcBufferDocumentListener(this);
+    boolean isUnsaved() { return documentListener.unsaved; }
+    private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+    void setSaved()
+    {
+        documentListener.unsaved = false;
+        if(!editor.hasFocus()) editor.setBorder(unfocusedBorder);
+    }
     
     /**The system-default editor background */
     final Color defaultBackground = editor.getBackground();
@@ -85,8 +93,8 @@ class JdbcBufferController
     
     {
         editor.getDocument().addUndoableEditListener(undoManager);
-        Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
         Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
+        Border unsavedBorder = BorderFactory.createDashedBorder(Color.GRAY);
         editor.setBorder(unfocusedBorder);
         editor.addFocusListener(new FocusListener()
         {
@@ -96,7 +104,7 @@ class JdbcBufferController
             }
             @Override public void focusLost(FocusEvent e)
             {
-                editor.setBorder(unfocusedBorder);
+                editor.setBorder(isUnsaved()?unsavedBorder:unfocusedBorder);
             }
         });
     }
@@ -283,11 +291,6 @@ class JdbcBufferController
         fireBufferEvent(new JdbcBufferEvent(this,type));
     }
 
-    void addDocumentListener(DocumentListener l)
-    {
-        editor.getDocument().addDocumentListener(l);
-    }
-    
     /**
      * @param characterX
      *            the X position to set the caret to, which is a character
@@ -450,7 +453,7 @@ class JdbcBufferController
     }
     
     /**blocking */
-    private void openAsHtml()
+    private void openAsHtml(boolean transposed)
     {
         var htmlbuf = new StringBuilder();
         htmlbuf.append("<pre>");
@@ -459,7 +462,9 @@ class JdbcBufferController
             htmlbuf.append(HtmlEscaper.nonAscii(c));
         });
         htmlbuf.append("</pre>");
-        htmlbuf.append(getResultSetTableModel().toHtml());
+        htmlbuf.append(transposed?
+                getResultSetTableModel().toHtmlTransposed() :
+                getResultSetTableModel().toHtml());
         HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
 
@@ -712,6 +717,8 @@ class JdbcBufferController
 
     BiConsumer<ResultSetTableModel,Long> infoResultConsumer = (rsm,t) ->
     {
+        if(rsm==null||rsm.getRowCount()==0) return;
+
         showInfoTable(rsm);
         
         Object[] logargs = {
@@ -755,7 +762,10 @@ class JdbcBufferController
         var popup = new JPopupMenu();
         JMenuItem item;
         item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> openAsHtml());
+        item.addActionListener((e) -> openAsHtml(false));
+        popup.add(item);
+        item = new JMenuItem("Open as HTML (transposed)",KeyEvent.VK_T);
+        item.addActionListener((e) -> openAsHtml(true));
         popup.add(item);
         item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
         item.addActionListener((e) -> openAsCsv());

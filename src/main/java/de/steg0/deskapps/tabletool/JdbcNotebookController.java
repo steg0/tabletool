@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -7,9 +9,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
@@ -30,6 +34,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -71,10 +77,17 @@ class JdbcNotebookController
     private final JdbcBufferConfigSource bufferConfigSource;
     
     File file;
-    boolean unsaved;
     
     final ConnectionListModel connections;
     private JComboBox<Connections.ConnectionState> connectionsSelector;
+    Action
+        focusBufferAction = new AbstractAction("Focus Buffer")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                restoreFocus();
+            }
+        };
 
     private JFormattedTextField fetchsizeField;
     
@@ -113,7 +126,7 @@ class JdbcNotebookController
         });
     }
     
-    private final Consumer<String> logConsumer = (t) -> log.setText(t);
+    private final Consumer<String> logConsumer;
     
     private final List<JdbcBufferController> buffers = new ArrayList<>();
     private JdbcBufferController firstBuffer() { return buffers.get(0); }
@@ -144,6 +157,10 @@ class JdbcNotebookController
         connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
                 Boolean.TRUE);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
+        var im = connectionsSelector.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_PAGE_DOWN,0),"Focus Buffer");
+        var am = connectionsSelector.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(connectionsSelector);
         
         connectionPanel.add(new JLabel("Fetch:"));
@@ -165,6 +182,8 @@ class JdbcNotebookController
         
         disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
+        
+        logConsumer = new JdbcNotebookLogConsumer(log);
         
         autocommitCb.addActionListener((e) -> 
         {
@@ -201,7 +220,7 @@ class JdbcNotebookController
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
         logBufferPane.add(logPane);
-        
+
         var bufferPaneConstraints = new GridBagConstraints();
         bufferPaneConstraints.fill = GridBagConstraints.BOTH;
         bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
@@ -402,42 +421,18 @@ class JdbcNotebookController
                 
             case DRY_FETCH:
                 connectionsSelector.requestFocusInWindow();
+                break;
+
+            case CHANGED:
+                listener.bufferChanged();
             }
         }
     };
     
-    private class BufferDocumentListener implements DocumentListener
-    {
-        JdbcBufferController buffer;
-        
-        @Override
-        public void insertUpdate(DocumentEvent e)
-        {
-            if(!unsaved)
-            {
-                unsaved=true;
-                listener.bufferChanged();
-            }
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e)
-        {
-            insertUpdate(e);
-            if(e.getLength() == 1) return;
-            ExtendTextDamageEvent.send(buffer.editor,e);
-        }
-
-        @Override public void changedUpdate(DocumentEvent e) { }
-    };
-
     /**Adds a buffer to the panel and wires listeners. */
     @SuppressWarnings("unchecked")
     private void add(int index,JdbcBufferController c)
     {
-        var documentListener = new BufferDocumentListener();
-        documentListener.buffer = c;
-        c.addDocumentListener(documentListener);
         c.editor.addFocusListener(new FocusListener()
         {
             @Override 
@@ -519,6 +514,16 @@ class JdbcNotebookController
         ));
     }
 
+    boolean isUnsaved()
+    {
+        return !buffers.stream().noneMatch((n) -> n.isUnsaved()); 
+    }
+
+    private void setSaved()
+    {
+        for(var buffer : buffers) buffer.setSaved();
+    }
+    
     public boolean store(boolean saveAs)
     {
         if(file==null || saveAs)
@@ -538,7 +543,7 @@ class JdbcNotebookController
             }
             this.file=file;
         }
-        if(unsaved&&file.exists())
+        if(isUnsaved()&&file.exists())
         {
             var bakfile=new File(file.getPath()+'~');
             bakfile.delete();
@@ -547,7 +552,7 @@ class JdbcNotebookController
         try(Writer w = new BufferedWriter(new FileWriter(file)))
         {
             store(w);
-            unsaved=false;
+            setSaved();
             return true;
         }
         catch(IOException e)
@@ -584,7 +589,7 @@ class JdbcNotebookController
             linesRead = newBufferController.load(r);
             if(linesRead > 0) add(buffers.size(),newBufferController);
         }
-        unsaved=false;
+        setSaved();
         bufferPanel.revalidate();
         firstBuffer().focusEditor(0,0);
     }
@@ -637,24 +642,20 @@ class JdbcNotebookController
         fetchsizeField.setValue(fetchsize);
     }
 
-    int lastSearchBuf;
-    int lastSearchLoc=-1;
-    String lastSearchText;
-
-    void find()
+    boolean findAndAdvance(JdbcNotebookSearchState state)
     {
-        if(lastSearchBuf>=buffers.size()) return;
-        if(lastSearchText==null) return;
-        logger.log(Level.FINE,"Finding: {0}",lastSearchText);
-        logger.log(Level.FINE,"Buffer index: {0}",lastSearchBuf);
-        logger.log(Level.FINE,"Last search location: {0}",lastSearchLoc);
-        lastSearchLoc=buffers.get(lastSearchBuf).searchNext(lastSearchLoc+1,
-                lastSearchText);
-        if(lastSearchLoc<0) 
+        if(state.buf>=buffers.size()) return false;
+        assert state.text != null;
+        logger.log(Level.FINE,"Finding: {0}",state.text);
+        logger.log(Level.FINE,"Buffer index: {0}",state.buf);
+        logger.log(Level.FINE,"Last search location: {0}",state.loc);
+        state.loc=buffers.get(state.buf).searchNext(state.loc+1,state.text);
+        if(state.loc<0) 
         {
-            lastSearchBuf++;
-            find();
+            state.buf++;
+            return findAndAdvance(state);
         }
+        return true;
     }
     
     private final PropertyChangeListener fetchSizeListener = (e) ->

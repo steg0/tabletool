@@ -118,12 +118,12 @@ extends WindowAdapter
         {
             if(workspace==null)
             {
-                if(sqlFiles==null) controller.add(true);
+                if(sqlFiles==null) controller.add();
                 else for(File f : sqlFiles) controller.load(f);
             }
             else if(!workspace.exists())
             {
-                controller.add(true);
+                controller.add();
             }
             else
             {
