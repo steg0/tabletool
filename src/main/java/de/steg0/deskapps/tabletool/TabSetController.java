@@ -210,6 +210,20 @@ implements KeyListener
                 }
             }
         },
+        renameAction = new AbstractAction("Rename...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                if(notebook.rename())
+                {
+                    retitle();
+                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
+                    addRecent(notebook.file);
+                }
+            }
+        },
         closeAction = new AbstractAction("Close")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -635,6 +649,10 @@ implements KeyListener
 
         item = new JMenuItem(saveAsAction);
         item.setMnemonic(KeyEvent.VK_A);
+        menu.add(item);
+
+        item = new JMenuItem(renameAction);
+        item.setMnemonic(KeyEvent.VK_M);
         menu.add(item);
 
         item = new JMenuItem(closeAction);

@@ -566,6 +566,39 @@ class JdbcNotebookController
         }
     }
 
+    public boolean rename()
+    {
+        if(file == null)
+        {
+            JOptionPane.showMessageDialog(
+                    bufferPanel,
+                    "Please save to a file first.",
+                    "Cannot rename",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        String newname = JOptionPane.showInputDialog(
+                bufferPanel,
+                "Please enter a new name:",
+                "Rename file",
+                JOptionPane.QUESTION_MESSAGE);
+        File newFile = new File(file.getParentFile(),newname);
+        if(!newname.isEmpty()&&file.renameTo(newFile))
+        {
+            file = newFile;
+            return true;
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(
+                    bufferPanel,
+                    "Could not rename the file to \""+newname+"\"",
+                    "Error renaming",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
+    }
+
     /**blocking */
     private void store(Writer w)
     throws IOException
