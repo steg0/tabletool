@@ -599,7 +599,6 @@ class JdbcNotebookController
         return false;
     }
 
-    /**blocking */
     private void store(Writer w)
     throws IOException
     {
@@ -609,7 +608,6 @@ class JdbcNotebookController
         }
     }
     
-    /**blocking */
     void load(LineNumberReader r)
     throws IOException
     {
@@ -713,7 +711,6 @@ class JdbcNotebookController
         };
     }
     
-    /**blocking */
     private void updateConnection(ItemEvent event)
     {
         /* 

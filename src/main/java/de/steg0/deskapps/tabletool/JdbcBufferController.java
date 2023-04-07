@@ -452,7 +452,6 @@ class JdbcBufferController
         }
     }
     
-    /**blocking */
     private void openAsHtml(boolean transposed)
     {
         var htmlbuf = new StringBuilder();
@@ -468,7 +467,6 @@ class JdbcBufferController
         HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
     }
 
-    /**blocking*/
     private void openAsCsv()
     {
         var sw = new StringWriter();

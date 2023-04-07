@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 
 public class CsvExporter
 {
-    /**blocking */
     static void openTemp(JFrame parent,String csv)
     {
         try
