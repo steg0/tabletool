@@ -3,12 +3,12 @@
 dpi=`xrdb -query | awk -F: '/^Xft.dpi/{print $2}'`
 if [ "$dpi" -gt 150 -a -z "$GDK_SCALE" ]
 then
-     GDK_SCALE=2
-     export GDK_SCALE
+     scalearg=-Dsun.java2d.uiScale=2
 fi
 
 $JAVA_HOME/bin/java $JAVA_OPTS -ea -XX:+UseSerialGC \
     -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9001 \
+    $scalearg \
     -Dawt.useSystemAAFontSettings=on \
     -Dfile.encoding=UTF-8 \
     -Djava.util.logging.config.file=test.logging.properties \
