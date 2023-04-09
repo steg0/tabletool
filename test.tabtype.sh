@@ -1,4 +1,5 @@
 # Note: you might need to set GDK_SCALE on HiDPI
+# but try to come up with a default
 dpi=`xrdb -query | awk -F: '/^Xft.dpi/{print $2}'`
 if [ "$dpi" -gt 150 -a -z "$GDK_SCALE" ]
 then
