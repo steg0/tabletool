@@ -583,7 +583,7 @@ class JdbcNotebookController
                 "Rename file",
                 JOptionPane.QUESTION_MESSAGE);
         File newFile = new File(file.getParentFile(),newname);
-        if(!newname.isEmpty()&&file.renameTo(newFile))
+        if(!newname.isEmpty()&&!newFile.exists()&&file.renameTo(newFile))
         {
             file = newFile;
             return true;
