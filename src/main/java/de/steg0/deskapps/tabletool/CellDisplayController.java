@@ -106,7 +106,6 @@ class CellDisplayController
         }
     }
     
-    /**blocking*/
     void show(ResultSet resultset,Object value,int column)
     throws SQLException,IOException
     {
@@ -318,7 +317,6 @@ class CellDisplayController
     {
         Blob blob;
 
-        /**blocking */
         @Override
         public void actionPerformed(ActionEvent event)
         {
@@ -359,7 +357,6 @@ class CellDisplayController
     {
         Blob blob;
         
-        /**blocking */
         @Override
         public void actionPerformed(ActionEvent event)
         {
@@ -399,7 +396,6 @@ class CellDisplayController
         ResultSet resultset;
         int column;
         
-        /**blocking */
         @Override
         public void actionPerformed(ActionEvent event)
         {
@@ -449,7 +445,6 @@ class CellDisplayController
         ResultSet resultset;
         int column;
         
-        /**blocking */
         @Override
         public void actionPerformed(ActionEvent event)
         {
@@ -476,7 +471,6 @@ class CellDisplayController
         ResultSet resultset;
         int column;
         
-        /**blocking */
         @Override
         public void actionPerformed(ActionEvent event)
         {

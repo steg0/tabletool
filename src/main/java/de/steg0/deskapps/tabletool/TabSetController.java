@@ -18,9 +18,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -203,6 +201,20 @@ implements KeyListener
                 int index=tabbedPane.getSelectedIndex();
                 JdbcNotebookController notebook=notebooks.get(index);
                 if(notebook.store(true))
+                {
+                    retitle();
+                    tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
+                    addRecent(notebook.file);
+                }
+            }
+        },
+        renameAction = new AbstractAction("Rename...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                JdbcNotebookController notebook=notebooks.get(index);
+                if(notebook.rename())
                 {
                     retitle();
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
@@ -574,11 +586,10 @@ implements KeyListener
             file=filechooser.getSelectedFile();
         }
         
-        try(var r = new LineNumberReader(new FileReader(file)))
+        try
         {
             JdbcNotebookController notebook = add();
-            notebook.load(r);
-            notebook.file = file;
+            notebook.load(file);
             int index = tabbedPane.getSelectedIndex();
             retitle();
             tabbedPane.setToolTipTextAt(index,file.getPath());
@@ -635,6 +646,10 @@ implements KeyListener
 
         item = new JMenuItem(saveAsAction);
         item.setMnemonic(KeyEvent.VK_A);
+        menu.add(item);
+
+        item = new JMenuItem(renameAction);
+        item.setMnemonic(KeyEvent.VK_M);
         menu.add(item);
 
         item = new JMenuItem(closeAction);
@@ -701,11 +716,10 @@ implements KeyListener
         for(String fn : w.getFiles())
         {
             File sqlFile = new File(fn);
-            try(var r = new LineNumberReader(new FileReader(sqlFile)))
+            try
             {
                 JdbcNotebookController notebook = add();
-                notebook.load(r);
-                notebook.file = sqlFile;
+                notebook.load(sqlFile);
                 int index = tabbedPane.getSelectedIndex();
                 if(fn.equals(w.getActiveFile())) selectedIndex = index;
                 retitle();

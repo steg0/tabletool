@@ -19,6 +19,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -521,7 +522,27 @@ class JdbcNotebookController
 
     private void setSaved()
     {
+        logger.log(Level.FINE,"Setting saved flag in all buffers");
         for(var buffer : buffers) buffer.setSaved();
+    }
+
+    private long lastSeenTimestamp;
+
+    private void updateTimestamp()
+    {
+        lastSeenTimestamp = file.lastModified();
+        logger.log(Level.FINE,"Updated lastSeenTimestamp to {0}",
+                lastSeenTimestamp);
+    }
+
+    private boolean wasModified()
+    {
+        long lastModified = file.lastModified();
+        logger.log(Level.FINE,"Timestamp on disk is {0}",lastModified);
+        logger.log(Level.FINE,"Last seen timestamp is {0}",lastSeenTimestamp);
+        int toleranceMs = 2000;
+        return lastSeenTimestamp > 0 &&
+                lastSeenTimestamp + toleranceMs < lastModified;
     }
     
     public boolean store(boolean saveAs)
@@ -535,13 +556,22 @@ class JdbcNotebookController
             if(file.exists())
             {
                 int option = JOptionPane.showConfirmDialog(
-                        bufferPanel,
+                        bufferPane,
                         "File exists. Continue?",
                         "File exists",
                         JOptionPane.YES_NO_OPTION);
                 if(option != JOptionPane.YES_OPTION) return false;
             }
             this.file=file;
+        }
+        else if(wasModified())
+        {
+            int option = JOptionPane.showConfirmDialog(
+                    bufferPane,
+                    "File seems modified on disk. Continue?",
+                    "File modified",
+                    JOptionPane.YES_NO_OPTION);
+            if(option != JOptionPane.YES_OPTION) return false;
         }
         if(isUnsaved()&&file.exists())
         {
@@ -553,12 +583,13 @@ class JdbcNotebookController
         {
             store(w);
             setSaved();
+            updateTimestamp();
             return true;
         }
         catch(IOException e)
         {
             JOptionPane.showMessageDialog(
-                    bufferPanel,
+                    bufferPane,
                     "Error saving: "+e.getMessage(),
                     "Error saving",
                     JOptionPane.ERROR_MESSAGE);
@@ -566,7 +597,39 @@ class JdbcNotebookController
         }
     }
 
-    /**blocking */
+    public boolean rename()
+    {
+        if(file == null)
+        {
+            JOptionPane.showMessageDialog(
+                    bufferPane,
+                    "Please save to a file first.",
+                    "Cannot rename",
+                    JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        String newname = JOptionPane.showInputDialog(
+                bufferPane,
+                "Please enter a new name:",
+                "Rename file",
+                JOptionPane.QUESTION_MESSAGE);
+        File newFile = new File(file.getParentFile(),newname);
+        if(!newname.isEmpty()&&!newFile.exists()&&file.renameTo(newFile))
+        {
+            file = newFile;
+            return true;
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(
+                    bufferPane,
+                    "Could not rename the file to \""+newname+"\"",
+                    "Error renaming",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
+    }
+
     private void store(Writer w)
     throws IOException
     {
@@ -576,20 +639,24 @@ class JdbcNotebookController
         }
     }
     
-    /**blocking */
-    void load(LineNumberReader r)
+    void load(File f)
     throws IOException
     {
-        assert buffers.size()==1 : "load only supports uninitialized panels";
-        int linesRead = firstBuffer().load(r);
-        while(linesRead>0)
+        try(var r = new LineNumberReader(new FileReader(f)))
         {
-            var newBufferController = newBufferController();
-            newBufferController.setBackground(firstBuffer().getBackground());
-            linesRead = newBufferController.load(r);
-            if(linesRead > 0) add(buffers.size(),newBufferController);
+            assert buffers.size()==1 : "load only supports uninitialized panels";
+            int linesRead = firstBuffer().load(r);
+            file = f;
+            while(linesRead>0)
+            {
+                var newBufferController = newBufferController();
+                newBufferController.setBackground(firstBuffer().getBackground());
+                linesRead = newBufferController.load(r);
+                if(linesRead > 0) add(buffers.size(),newBufferController);
+            }
         }
         setSaved();
+        updateTimestamp();
         bufferPanel.revalidate();
         firstBuffer().focusEditor(0,0);
     }
@@ -680,7 +747,6 @@ class JdbcNotebookController
         };
     }
     
-    /**blocking */
     private void updateConnection(ItemEvent event)
     {
         /* 

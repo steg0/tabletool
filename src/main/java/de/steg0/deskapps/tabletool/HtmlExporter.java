@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 
 public class HtmlExporter
 {
-    /**blocking */
     static void openTemp(JFrame parent,String html)
     {
         try
