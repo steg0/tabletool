@@ -836,8 +836,6 @@ implements KeyListener
     private void markChanged(int index)
     {
         String title = tabbedPane.getTitleAt(index);
-        int splitPos=title.indexOf(". ");
-        tabbedPane.setTitleAt(index,title.substring(0,splitPos)+". *"+
-                title.substring(splitPos+2));
+        if(!title.startsWith("*")) tabbedPane.setTitleAt(index,"*"+title);
     }
 }
