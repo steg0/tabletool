@@ -554,7 +554,7 @@ class JdbcBufferController
             return;
         }
         
-        if(split && resultview!=null) try
+        if(split) try
         {
             int end = savedSelectionEnd;
             Document d = editor.getDocument();
