@@ -396,13 +396,18 @@ implements KeyListener
     private void find()
     {
         JdbcNotebookController notebook = notebooks.get(searchState.tab);
-        while(!notebook.findAndAdvance(searchState) && 
+        boolean hasMatch = false;
+        while(!(hasMatch=notebook.findAndAdvance(searchState)) && 
                 searchState.tab < notebooks.size() - 1)
         {
             searchState.reset(searchState.tab+1);
             tabbedPane.setSelectedIndex(searchState.tab);
             notebook = notebooks.get(searchState.tab);
         }
+        if(!hasMatch) JOptionPane.showMessageDialog(parent,
+                "No match found in remaining text",
+                "No match found",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     {
