@@ -417,6 +417,13 @@ class JdbcNotebookController
                     remove(i);
                 }
             case RESULT_VIEW_UPDATED:
+                /* arbitrarily expose a couple of lines of table content. Just
+                 * to give a visual hint that something's there. If the table is
+                 * already in full view, or if scrolling would put the cursor out
+                 * of view, this does nothing. */ 
+                selectedRectChanged(source,new Rectangle(0,
+                        (int)source.editor.getBounds().getHeight(),1,
+                        source.getLineHeight() * 5));
                 bufferPanel.repaint();
                 break;
                 
