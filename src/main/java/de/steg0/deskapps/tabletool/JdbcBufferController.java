@@ -197,13 +197,15 @@ class JdbcBufferController
 
     int searchNext(int loc,String text)
     {
-        int index = editor.getText().indexOf(text,loc);
+        int index = editor.getText().toLowerCase().indexOf(
+                text.toLowerCase(),loc);
         if(index>=0)
         {
             logger.log(Level.FINE,"Found at location: {0}",index);
             editor.requestFocusInWindow();
-            editor.setSelectionEnd(index+text.length());
             editor.setSelectionStart(index);
+            logger.log(Level.FINE,"Setting selection end to {0}",text.length());
+            editor.setSelectionEnd(index+text.length());
         }
         return index;
     }

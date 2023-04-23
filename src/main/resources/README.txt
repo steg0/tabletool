@@ -73,7 +73,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+Shift+Tab - select the previous result table or buffer section.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+/ - comment/uncomment.
-• Ctrl+F - find text, starting on currently selected tab.
+• Ctrl+F - find text (case-insensitively), starting on currently selected tab.
 • F3 - find next.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
