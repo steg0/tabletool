@@ -364,6 +364,14 @@ implements KeyListener
                 notebooks.get(index).rollback();
             }
         },
+        openAction = new AbstractAction("Open")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).openConnection();
+            }
+        },
         disconnectAction = new AbstractAction("Disconnect")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -687,6 +695,10 @@ implements KeyListener
         item.setMnemonic(KeyEvent.VK_R);
         menu.add(item);
         
+        item = new JMenuItem(openAction);
+        item.setMnemonic(KeyEvent.VK_O);
+        menu.add(item);
+
         item = new JMenuItem(disconnectAction);
         item.setMnemonic(KeyEvent.VK_D);
         menu.add(item);
