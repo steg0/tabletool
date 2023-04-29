@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -463,10 +464,26 @@ class JdbcBufferController
             htmlbuf.append(HtmlEscaper.nonAscii(c));
         });
         htmlbuf.append("</pre>");
-        htmlbuf.append(transposed?
-                getResultSetTableModel().toHtmlTransposed() :
-                getResultSetTableModel().toHtml());
-        HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
+        try(var exporter = new HtmlExporter())
+        {
+            if(transposed)
+            {
+                getResultSetTableModel().toHtmlTransposed(exporter.getWriter());
+            }
+            else
+            {
+                exporter.getWriter().write(getResultSetTableModel().toHtml());
+            }
+            exporter.openWithDesktop();
+        }
+        catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(
+                    cellDisplay,
+                    "Error exporting to file: "+e.getMessage(),
+                    "Error exporting",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void openAsCsv()

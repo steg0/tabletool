@@ -94,7 +94,7 @@ implements TableModel,AutoCloseable
         return b.toString();
     }
 
-    String toHtmlTransposed()
+    void toHtmlTransposed(Writer w) throws IOException
     {
         var b = new StringBuilder();
         b.append("<ol>");
@@ -125,7 +125,7 @@ implements TableModel,AutoCloseable
             b.append("</table>");
         }
         b.append("</ol>");
-        return b.toString();
+        w.write(b.toString());
     }
     
     void store(Writer w,boolean asSqlComment)
