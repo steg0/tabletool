@@ -150,7 +150,7 @@ implements TableModel,AutoCloseable
     void store(Writer w,boolean asSqlComment)
     throws IOException
     {
-        if(asSqlComment) w.write("--CSV Result\n--");
+        if(asSqlComment) w.write("--");
         for(int i=0;i<cols.length;i++)
         {
             if(i>0) w.write(',');

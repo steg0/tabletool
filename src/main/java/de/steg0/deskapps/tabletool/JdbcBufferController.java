@@ -508,6 +508,14 @@ class JdbcBufferController
         if(rsm != null)
         {
             w.write('\n');
+            w.write("--CSV Result");
+            if(resultSetMessage!=null && !resultSetMessage.isEmpty())
+            {
+                w.write(" ");
+                w.write(ResultSetTableModel.sanitizeForCsv(
+                        resultSetMessage,true));
+            }
+            w.write("\n");
             rsm.store(w,true);
         }
     }
@@ -524,8 +532,11 @@ class JdbcBufferController
         while((line=r.readLine())!=null)
         {
             linesRead++;
-            if(line.equals("--CSV Result"))
+            if(line.startsWith("--CSV Result"))
             {
+                var lmr = new CsvResultLogMessageReader();
+                lmr.load(line.substring(12),r);
+                resultSetMessage = lmr.message;
                 var rsm = new ResultSetTableModel();
                 rsm.load(r);
                 addResultSetTable(rsm);
@@ -662,6 +673,14 @@ class JdbcBufferController
     };
     
     /**
+     * The log message associated with the last fetch operation. Empty
+     * or <code>null</code> means that no message is available, either because
+     * no result is available, or one was loaded back from a file that didn't
+     * carry a message.
+     */
+    String resultSetMessage;
+
+    /**
      * The first argument is the result data; <code>null</code> means there is
      * nothing to display, which can lead to the buffer being closed.
      */
@@ -685,14 +704,10 @@ class JdbcBufferController
                 rsm.resultSetClosed? "closed" : "open",
                 new Date().toString()
         };
-        if(rsm.getRowCount() < rsm.fetchsize)
-        {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
-        }
-        else
-        {
-            log.accept(FETCH_LOG_FORMAT.format(logargs));
-        }
+        resultSetMessage = rsm.getRowCount() < rsm.fetchsize?
+                FETCH_ALL_LOG_FORMAT.format(logargs) :
+                FETCH_LOG_FORMAT.format(logargs);
+        log.accept(resultSetMessage);
     };
 
     private KeyListener resultsetKeyListener = 
@@ -703,6 +718,10 @@ class JdbcBufferController
         if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
+        if(resultSetMessage!=null && !resultSetMessage.isEmpty())
+        {
+            resultview.setToolTipText(resultSetMessage);
+        }
         setResultViewFontSize(resultview,editor.getFont().getSize());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
@@ -766,6 +785,7 @@ class JdbcBufferController
     {
         closeCurrentResultSet();
         resultview=null;
+        resultSetMessage=null;
         if(panel.getComponentCount()>1)
         {
             panel.remove(1);
