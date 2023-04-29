@@ -80,3 +80,12 @@ select * from sysibm.sysdummy1;
 --IBMREQD
 --Y
 
+
+create table tabtype.t(c clob);
+insert into tabtype.t(c) values('abc
+def');
+select * from tabtype.t;
+--CSV Result
+--C
+--org.apache.derby.impl.jdbc.EmbedClob@2851f874
+

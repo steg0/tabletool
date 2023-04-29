@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -94,7 +95,12 @@ implements TableModel,AutoCloseable
         return b.toString();
     }
 
-    void toHtmlTransposed(Writer w) throws IOException
+    /**
+     * In contrast to the regular export, this exports CLOB text as well.
+     * The assumption is that this will fit okay in such a more vertically
+     * expanding document.
+     */
+    void toHtmlTransposed(Writer w) throws IOException,SQLException
     {
         var b = new StringBuilder();
         b.append("<ol>");
@@ -112,7 +118,20 @@ implements TableModel,AutoCloseable
                 });
                 b.append("</th>");
                 b.append("<td>");
-                if(row[i] != null)
+                if(row[i] instanceof Clob) try(var l = new LineNumberReader(
+                        ((Clob)row[i]).getCharacterStream()))
+                {
+                    
+                    for(String line=l.readLine();line!=null;line=l.readLine())
+                    {
+                        line.chars().forEach((c) ->
+                        {
+                            b.append(HtmlEscaper.nonAscii(c));
+                        });
+                        b.append("<br>\n");
+                    }
+                }
+                else if(row[i] != null)
                 {
                     row[i].toString().chars().forEach((c) ->
                     {
