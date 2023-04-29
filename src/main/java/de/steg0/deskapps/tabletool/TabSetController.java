@@ -584,7 +584,12 @@ implements KeyListener
     {
         if(workspaceFile!=null)
         {
-            return workspaceFile.getParentFile();
+            File absoluteFile = workspaceFile.getAbsoluteFile();
+            logger.log(Level.FINE,"Workspace absolute file is {0}",
+                    absoluteFile);
+            File parentFile = absoluteFile.getParentFile();
+            logger.log(Level.FINE,"Using parent file {0}",parentFile);
+            return parentFile;
         }
         return null;
     }
