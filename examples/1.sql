@@ -1,6 +1,7 @@
 select * from sysibm.sysdummy1;
 
---CSV Result
+--CSV Result "The only row fetched from derby in 58 ms and ResultSet open at Sun Apr 30 11:33:09 CEST 2023
+--"
 --IBMREQD
 --Y
 

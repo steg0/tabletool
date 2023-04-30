@@ -23,16 +23,18 @@ implements TableModel,AutoCloseable
     private List<Object[]> rows;
     int fetchsize;
     boolean resultSetClosed;
+    String connectionDescription;
     
     /**Blockingly retrieves a ResultSet from the Statement.
      * Neither one is closed; it is expected they have to be closed
      * externally. */
-    void update(Statement st,int fetchsize)
+    void update(String connectionDescription,Statement st,int fetchsize)
     throws SQLException
     {
         this.st = st;
         this.rs = st.getResultSet();
         this.fetchsize = fetchsize;
+        this.connectionDescription = connectionDescription;
         fill();
     }
     

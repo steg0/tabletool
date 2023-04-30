@@ -52,14 +52,14 @@ import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
 
 class JdbcBufferController
 {
-    static final MessageFormat FETCH_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched in {1} ms and ResultSet {2} at {3}\n");
-    static final MessageFormat FETCH_ALL_LOG_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched in {1} ms and ResultSet {2} at {3}\n");
-    static final MessageFormat UPDATE_LOG_FORMAT = 
+    private static final MessageFormat FETCH_LOG_FORMAT = 
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat UPDATE_LOG_FORMAT = 
             new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
 
-    static final Pattern QUERYPATTERN = Pattern.compile(
+    private static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
     interface Listener extends EventListener
@@ -696,18 +696,19 @@ class JdbcBufferController
 
         restoreCaretPosition();
 
-        addResultSetTable(rsm);
-        
         Object[] logargs = {
                 rsm.getRowCount(),
                 t,
                 rsm.resultSetClosed? "closed" : "open",
-                new Date().toString()
+                new Date().toString(),
+                rsm.connectionDescription
         };
         resultSetMessage = rsm.getRowCount() < rsm.fetchsize?
                 FETCH_ALL_LOG_FORMAT.format(logargs) :
                 FETCH_LOG_FORMAT.format(logargs);
         log.accept(resultSetMessage);
+        
+        addResultSetTable(rsm);
     };
 
     private KeyListener resultsetKeyListener = 
@@ -720,6 +721,7 @@ class JdbcBufferController
         resultview = new JTable(rsm);
         if(resultSetMessage!=null && !resultSetMessage.isEmpty())
         {
+            logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
             resultview.setToolTipText(resultSetMessage);
         }
         setResultViewFontSize(resultview,editor.getFont().getSize());
@@ -761,7 +763,8 @@ class JdbcBufferController
                 rsm.getRowCount(),
                 t,
                 rsm.resultSetClosed? "closed" : "open",
-                new Date().toString()
+                new Date().toString(),
+                rsm.connectionDescription
         };
         if(rsm.getRowCount() < rsm.fetchsize)
         {
