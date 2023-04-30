@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
@@ -12,6 +13,8 @@ import javax.swing.border.Border;
 
 class JdbcNotebookLogConsumer implements Consumer<String>,ActionListener
 {
+    Logger resultlog = Logger.getLogger("tabletool.result");
+
     private Border 
         regularBorder = BorderFactory.createDashedBorder(Color.WHITE),
         hilightedBorder = BorderFactory.createDashedBorder(Color.BLUE);
@@ -27,6 +30,7 @@ class JdbcNotebookLogConsumer implements Consumer<String>,ActionListener
 
     public void accept(String t)
     {
+        resultlog.fine(t);
         log.setBorder(hilightedBorder);
         log.setText(t);
         if(unhilighter!=null) unhilighter.stop();
