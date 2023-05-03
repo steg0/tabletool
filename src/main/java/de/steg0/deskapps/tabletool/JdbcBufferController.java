@@ -457,15 +457,16 @@ class JdbcBufferController
     
     private void openAsHtml(boolean transposed)
     {
-        var htmlbuf = new StringBuilder();
-        htmlbuf.append("<pre>");
-        editor.getText().chars().forEach((c) -> 
-        {
-            htmlbuf.append(HtmlEscaper.nonAscii(c));
-        });
-        htmlbuf.append("</pre>");
         try(var exporter = new HtmlExporter())
         {
+            var htmlbuf = new StringBuilder();
+            htmlbuf.append("<pre>");
+            editor.getText().chars().forEach((c) -> 
+            {
+                htmlbuf.append(HtmlEscaper.nonAscii(c));
+            });
+            htmlbuf.append("</pre>");
+            exporter.getWriter().write(htmlbuf.toString());                
             if(transposed)
             {
                 getResultSetTableModel().toHtmlTransposed(exporter.getWriter());
