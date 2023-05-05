@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -22,16 +23,18 @@ implements TableModel,AutoCloseable
     private List<Object[]> rows;
     int fetchsize;
     boolean resultSetClosed;
+    String connectionDescription;
     
     /**Blockingly retrieves a ResultSet from the Statement.
      * Neither one is closed; it is expected they have to be closed
      * externally. */
-    void update(Statement st,int fetchsize)
+    void update(String connectionDescription,Statement st,int fetchsize)
     throws SQLException
     {
         this.st = st;
         this.rs = st.getResultSet();
         this.fetchsize = fetchsize;
+        this.connectionDescription = connectionDescription;
         fill();
     }
     
@@ -94,7 +97,12 @@ implements TableModel,AutoCloseable
         return b.toString();
     }
 
-    String toHtmlTransposed()
+    /**
+     * In contrast to the regular export, this exports CLOB text as well.
+     * The assumption is that this will fit okay in such a more vertically
+     * expanding document.
+     */
+    void toHtmlTransposed(Writer w) throws IOException,SQLException
     {
         var b = new StringBuilder();
         b.append("<ol>");
@@ -112,7 +120,20 @@ implements TableModel,AutoCloseable
                 });
                 b.append("</th>");
                 b.append("<td>");
-                if(row[i] != null)
+                if(row[i] instanceof Clob) try(var l = new LineNumberReader(
+                        ((Clob)row[i]).getCharacterStream()))
+                {
+                    
+                    for(String line=l.readLine();line!=null;line=l.readLine())
+                    {
+                        line.chars().forEach((c) ->
+                        {
+                            b.append(HtmlEscaper.nonAscii(c));
+                        });
+                        b.append("<br>\n");
+                    }
+                }
+                else if(row[i] != null)
                 {
                     row[i].toString().chars().forEach((c) ->
                     {
@@ -125,13 +146,13 @@ implements TableModel,AutoCloseable
             b.append("</table>");
         }
         b.append("</ol>");
-        return b.toString();
+        w.write(b.toString());
     }
     
     void store(Writer w,boolean asSqlComment)
     throws IOException
     {
-        if(asSqlComment) w.write("--CSV Result\n--");
+        if(asSqlComment) w.write("--");
         for(int i=0;i<cols.length;i++)
         {
             if(i>0) w.write(',');

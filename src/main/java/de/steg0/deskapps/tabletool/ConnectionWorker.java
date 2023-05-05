@@ -17,11 +17,14 @@ import java.util.function.Consumer;
  */
 class ConnectionWorker
 {
+    final String description;
+
     private final Connection connection;
     private final Executor executor;
     
-    ConnectionWorker(Connection connection,Executor executor)
+    ConnectionWorker(String description,Connection connection,Executor executor)
     {
+        this.description=description;
         this.connection=connection;
         this.executor=executor;
     }
@@ -30,7 +33,7 @@ class ConnectionWorker
     {
         invokeLater(() -> log.accept(str));
     }
-    
+
     ResultSetTableModel lastReportedResult;
     
     /**
@@ -169,7 +172,7 @@ class ConnectionWorker
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(statement,fetchsize);
+            lastReportedResult.update(description,statement,fetchsize);
             long now = System.currentTimeMillis();
             invokeLater(() -> resultConsumer.accept(lastReportedResult,now-ts));
         }

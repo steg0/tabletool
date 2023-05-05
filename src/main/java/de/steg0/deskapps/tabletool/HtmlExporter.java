@@ -3,32 +3,36 @@ package de.steg0.deskapps.tabletool;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
-public class HtmlExporter
+public class HtmlExporter implements AutoCloseable
 {
-    static void openTemp(JFrame parent,String html)
+    File tmpfile;
+    Writer w;
+
+    HtmlExporter() throws IOException
     {
-        try
-        {
-            var tmpfile = File.createTempFile("tthtml",".html");
-            tmpfile.deleteOnExit();
-            try(var ow = new OutputStreamWriter(new FileOutputStream(tmpfile)))
-            {
-                ow.write(html);
-            }
-            Desktop.getDesktop().open(tmpfile);
-        }
-        catch(Exception e)
-        {
-            JOptionPane.showMessageDialog(
-                    parent,
-                    "Error exporting: "+e.getMessage(),
-                    "Error exporting",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        tmpfile = File.createTempFile("tthtml",".html");
+        tmpfile.deleteOnExit();
+        w = new OutputStreamWriter(new FileOutputStream(tmpfile));
+    }
+
+    Writer getWriter()
+    {
+        return w;
+    }
+
+    void openWithDesktop() throws Exception
+    {
+        w.flush();
+        Desktop.getDesktop().open(tmpfile);
+    }
+
+    @Override
+    public void close() throws IOException
+    {
+        w.close();
     }
 }

@@ -60,6 +60,13 @@ completionTemplate, infoTemplate, initSql and snippets can be specified for driv
 initSql is a statement which will be executed whenever a matching connection is opened. There will be no output possibility for such statements.
 
 
+▶ Notebook file format
+
+The tool loads and saves text files, which can contain CSV result sections marked up with a special comment syntax. These are shown as table widgets when opening such a file, to provide a way to carry over results in a pretty way from one session to the next. LOB information will not be part of this format, however.
+
+The files can start with the string "-- connect ", followed by one of the connection names from the property file, enabling the menu item Connection > Open to directly select that connection for the notebook.
+
+
 ▶ Actions in a notebook
 
 While editing SQL in a notebook, the following keys are supported:

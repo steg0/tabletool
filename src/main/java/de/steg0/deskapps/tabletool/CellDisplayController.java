@@ -115,10 +115,10 @@ class CellDisplayController
         
         String dialogtitle;
         
-        if(value instanceof Clob)
+        if(value instanceof Clob) try(var l = new LineNumberReader(
+                ((Clob)value).getCharacterStream()))
         {
             var b = new StringBuilder();
-            var l = new LineNumberReader(((Clob)value).getCharacterStream());
             for(String line=l.readLine();line!=null;line=l.readLine())
             {
                 b.append(line);

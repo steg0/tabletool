@@ -364,6 +364,14 @@ implements KeyListener
                 notebooks.get(index).rollback();
             }
         },
+        openAction = new AbstractAction("Open")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                int index=tabbedPane.getSelectedIndex();
+                notebooks.get(index).openConnection();
+            }
+        },
         disconnectAction = new AbstractAction("Disconnect")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -576,7 +584,12 @@ implements KeyListener
     {
         if(workspaceFile!=null)
         {
-            return workspaceFile.getParentFile();
+            File absoluteFile = workspaceFile.getAbsoluteFile();
+            logger.log(Level.FINE,"Workspace absolute file is {0}",
+                    absoluteFile);
+            File parentFile = absoluteFile.getParentFile();
+            logger.log(Level.FINE,"Using parent file {0}",parentFile);
+            return parentFile;
         }
         return null;
     }
@@ -687,6 +700,10 @@ implements KeyListener
         item.setMnemonic(KeyEvent.VK_R);
         menu.add(item);
         
+        item = new JMenuItem(openAction);
+        item.setMnemonic(KeyEvent.VK_O);
+        menu.add(item);
+
         item = new JMenuItem(disconnectAction);
         item.setMnemonic(KeyEvent.VK_D);
         menu.add(item);

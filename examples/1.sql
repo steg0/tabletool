@@ -1,6 +1,7 @@
 select * from sysibm.sysdummy1;
 
---CSV Result
+--CSV Result "The only row fetched from derby in 58 ms and ResultSet open at Sun Apr 30 11:33:09 CEST 2023
+--"
 --IBMREQD
 --Y
 
@@ -79,4 +80,13 @@ select * from sysibm.sysdummy1;
 --CSV Result
 --IBMREQD
 --Y
+
+
+create table tabtype.t(c clob);
+insert into tabtype.t(c) values('abc
+def');
+select * from tabtype.t;
+--CSV Result
+--C
+--org.apache.derby.impl.jdbc.EmbedClob@2851f874
 

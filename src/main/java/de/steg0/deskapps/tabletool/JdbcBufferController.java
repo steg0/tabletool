@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -51,14 +52,14 @@ import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
 
 class JdbcBufferController
 {
-    static final MessageFormat FETCH_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched in {1} ms and ResultSet {2} at {3}\n");
-    static final MessageFormat FETCH_ALL_LOG_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched in {1} ms and ResultSet {2} at {3}\n");
-    static final MessageFormat UPDATE_LOG_FORMAT = 
+    private static final MessageFormat FETCH_LOG_FORMAT = 
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat UPDATE_LOG_FORMAT = 
             new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
 
-    static final Pattern QUERYPATTERN = Pattern.compile(
+    private static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
     
     interface Listener extends EventListener
@@ -456,17 +457,34 @@ class JdbcBufferController
     
     private void openAsHtml(boolean transposed)
     {
-        var htmlbuf = new StringBuilder();
-        htmlbuf.append("<pre>");
-        editor.getText().chars().forEach((c) -> 
+        try(var exporter = new HtmlExporter())
         {
-            htmlbuf.append(HtmlEscaper.nonAscii(c));
-        });
-        htmlbuf.append("</pre>");
-        htmlbuf.append(transposed?
-                getResultSetTableModel().toHtmlTransposed() :
-                getResultSetTableModel().toHtml());
-        HtmlExporter.openTemp(cellDisplay,htmlbuf.toString());
+            var htmlbuf = new StringBuilder();
+            htmlbuf.append("<pre>");
+            editor.getText().chars().forEach((c) -> 
+            {
+                htmlbuf.append(HtmlEscaper.nonAscii(c));
+            });
+            htmlbuf.append("</pre>");
+            exporter.getWriter().write(htmlbuf.toString());                
+            if(transposed)
+            {
+                getResultSetTableModel().toHtmlTransposed(exporter.getWriter());
+            }
+            else
+            {
+                exporter.getWriter().write(getResultSetTableModel().toHtml());
+            }
+            exporter.openWithDesktop();
+        }
+        catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(
+                    cellDisplay,
+                    "Error exporting to file: "+e.getMessage(),
+                    "Error exporting",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void openAsCsv()
@@ -491,6 +509,14 @@ class JdbcBufferController
         if(rsm != null)
         {
             w.write('\n');
+            w.write("--CSV Result");
+            if(resultSetMessage!=null && !resultSetMessage.isEmpty())
+            {
+                w.write(" ");
+                w.write(ResultSetTableModel.sanitizeForCsv(
+                        resultSetMessage,true));
+            }
+            w.write("\n");
             rsm.store(w,true);
         }
     }
@@ -507,8 +533,11 @@ class JdbcBufferController
         while((line=r.readLine())!=null)
         {
             linesRead++;
-            if(line.equals("--CSV Result"))
+            if(line.startsWith("--CSV Result"))
             {
+                var lmr = new CsvResultLogMessageReader();
+                lmr.load(line.substring(12),r);
+                resultSetMessage = lmr.message;
                 var rsm = new ResultSetTableModel();
                 rsm.load(r);
                 addResultSetTable(rsm);
@@ -645,6 +674,14 @@ class JdbcBufferController
     };
     
     /**
+     * The log message associated with the last fetch operation. Empty
+     * or <code>null</code> means that no message is available, either because
+     * no result is available, or one was loaded back from a file that didn't
+     * carry a message.
+     */
+    String resultSetMessage;
+
+    /**
      * The first argument is the result data; <code>null</code> means there is
      * nothing to display, which can lead to the buffer being closed.
      */
@@ -660,22 +697,19 @@ class JdbcBufferController
 
         restoreCaretPosition();
 
-        addResultSetTable(rsm);
-        
         Object[] logargs = {
                 rsm.getRowCount(),
                 t,
                 rsm.resultSetClosed? "closed" : "open",
-                new Date().toString()
+                new Date().toString(),
+                rsm.connectionDescription
         };
-        if(rsm.getRowCount() < rsm.fetchsize)
-        {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
-        }
-        else
-        {
-            log.accept(FETCH_LOG_FORMAT.format(logargs));
-        }
+        resultSetMessage = rsm.getRowCount() < rsm.fetchsize?
+                FETCH_ALL_LOG_FORMAT.format(logargs) :
+                FETCH_LOG_FORMAT.format(logargs);
+        log.accept(resultSetMessage);
+        
+        addResultSetTable(rsm);
     };
 
     private KeyListener resultsetKeyListener = 
@@ -686,6 +720,11 @@ class JdbcBufferController
         if(panel.getComponentCount()==2) panel.remove(1);
 
         resultview = new JTable(rsm);
+        if(resultSetMessage!=null && !resultSetMessage.isEmpty())
+        {
+            logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
+            resultview.setToolTipText(resultSetMessage);
+        }
         setResultViewFontSize(resultview,editor.getFont().getSize());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
@@ -725,7 +764,8 @@ class JdbcBufferController
                 rsm.getRowCount(),
                 t,
                 rsm.resultSetClosed? "closed" : "open",
-                new Date().toString()
+                new Date().toString(),
+                rsm.connectionDescription
         };
         if(rsm.getRowCount() < rsm.fetchsize)
         {
@@ -749,6 +789,7 @@ class JdbcBufferController
     {
         closeCurrentResultSet();
         resultview=null;
+        resultSetMessage=null;
         if(panel.getComponentCount()>1)
         {
             panel.remove(1);

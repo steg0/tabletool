@@ -159,6 +159,7 @@ class JdbcNotebookController
                 Boolean.TRUE);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
         var im = connectionsSelector.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_PAGE_UP,0),"Focus Buffer");
         im.put(getKeyStroke(KeyEvent.VK_PAGE_DOWN,0),"Focus Buffer");
         var am = connectionsSelector.getActionMap();
         am.put("Focus Buffer",focusBufferAction);
@@ -676,6 +677,20 @@ class JdbcNotebookController
     void rollback()
     {
         onConnection((c) -> c.rollback(logConsumer));
+    }
+
+    void openConnection()
+    {
+        for(int i=0;i<connections.getSize();i++)
+        {
+            if(firstBuffer().editor.getText().startsWith(
+                    "-- connect "+connections.getElementAt(i).info().name))
+            {
+                connectionsSelector.setSelectedIndex(i);
+                return;
+            }
+        }
+        connectionsSelector.requestFocusInWindow();
     }
 
     void disconnect()
