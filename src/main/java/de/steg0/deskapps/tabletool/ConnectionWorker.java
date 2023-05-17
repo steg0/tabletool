@@ -84,7 +84,7 @@ class ConnectionWorker
                        !lastReportedResult.isClosed()) try
                     {
                         lastReportedResult.close();
-                        report(log,"Closed prior ResultSet and query enqueued "+
+                        report(log,"Closed prior ResultSet and accepted query "+
                                 "at "+new Date());
                     }
                     catch(SQLException e)
@@ -93,7 +93,7 @@ class ConnectionWorker
                     }
                     else
                     {
-                        report(log,"Query enqueued at "+new Date());
+                        report(log,"Query accepted at "+new Date());
                     }
                     getResult(sql);
                 }
