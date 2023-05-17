@@ -72,6 +72,7 @@ implements KeyListener
         this.workspaceFile = workspaceFile;
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         
         Point parentLocation = parent.getLocation();
         int dialogx = (int)parentLocation.getX()+30,
