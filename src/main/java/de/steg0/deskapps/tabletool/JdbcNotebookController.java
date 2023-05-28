@@ -429,7 +429,7 @@ class JdbcNotebookController
                 break;
                 
             case DRY_FETCH:
-                connectionsSelector.requestFocusInWindow();
+                openConnection();
                 break;
 
             case CHANGED:

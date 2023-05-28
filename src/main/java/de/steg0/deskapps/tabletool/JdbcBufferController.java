@@ -582,7 +582,7 @@ class JdbcBufferController
         {
             log.accept("No connection available at "+new Date());
             fireBufferEvent(Type.DRY_FETCH);
-            return;
+            if(connection == null) return;
         }
         
         if(split) try
