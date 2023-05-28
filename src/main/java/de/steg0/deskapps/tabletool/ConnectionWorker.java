@@ -31,7 +31,7 @@ class ConnectionWorker
     
     private void report(Consumer<String> log,String str)
     {
-        invokeLater(() -> log.accept(str));
+        log.accept(str);
     }
 
     ResultSetTableModel lastReportedResult;
@@ -44,8 +44,8 @@ class ConnectionWorker
      * <code>execute()</code> on the Swing event thread, if execute() returned
      * <code>false</code> 
      * on the Swing event thread once available
-     * @param log where log messages will be pushed to on the Swing event thread
-     * as far as available
+     * @param log where log messages will be pushed to as far as available. This
+     * is not necessarily called from the event thread.
      */
     void submit(
             String sql,

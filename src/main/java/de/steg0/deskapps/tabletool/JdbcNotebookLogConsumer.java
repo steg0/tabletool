@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 
@@ -28,15 +29,18 @@ class JdbcNotebookLogConsumer implements Consumer<String>,ActionListener
         log.setBorder(regularBorder);
     }
 
-    public void accept(String t)
+    public synchronized void accept(String t)
     {
         resultlog.fine(t);
-        log.setBorder(hilightedBorder);
-        log.setText(t);
-        if(unhilighter!=null) unhilighter.stop();
-        unhilighter = new Timer(1500,this);
-        unhilighter.setRepeats(false);
-        unhilighter.start();
+        SwingUtilities.invokeLater(() ->
+        {
+            log.setBorder(hilightedBorder);
+            log.setText(t);
+            if(unhilighter!=null) unhilighter.stop();
+            unhilighter = new Timer(1500,this);
+            unhilighter.setRepeats(false);
+            unhilighter.start();
+        });
     }
 
     @Override
