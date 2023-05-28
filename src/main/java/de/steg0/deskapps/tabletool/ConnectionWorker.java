@@ -43,7 +43,6 @@ class ConnectionWorker
      * @param resultConsumer where an update count will be pushed to right after
      * <code>execute()</code> on the Swing event thread, if execute() returned
      * <code>false</code> 
-     * on the Swing event thread once available
      * @param log where log messages will be pushed to as far as available. This
      * is not necessarily called from the event thread.
      */
