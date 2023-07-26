@@ -687,6 +687,7 @@ class JdbcNotebookController
                     "-- connect "+connections.getElementAt(i).info().name))
             {
                 connectionsSelector.setSelectedIndex(i);
+                connectionsSelector.repaint();
                 return;
             }
         }
