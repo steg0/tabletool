@@ -72,6 +72,7 @@ implements KeyListener
         this.workspaceFile = workspaceFile;
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         
         Point parentLocation = parent.getLocation();
         int dialogx = (int)parentLocation.getX()+30,
@@ -86,10 +87,11 @@ implements KeyListener
 
     class SelectTabAction extends AbstractAction
     {
-        int tabindex;
-        SelectTabAction(int tabindex)
+        int tabindex,multiDigitTabindex;
+        SelectTabAction(int tabindex,int multiDigitTabindex)
         {
             this.tabindex = tabindex;
+            this.multiDigitTabindex = multiDigitTabindex;
         }
         private int computeMultiDigitIndex(long time)
         {
@@ -97,7 +99,7 @@ implements KeyListener
             if(time-lastSelectTabActionTime < 700)
             {
                 int firstDigit = tabbedPane.getSelectedIndex() + 1;
-                index = firstDigit * 10 + tabindex;
+                index = firstDigit * 10 + multiDigitTabindex;
                 if(index >= tabbedPane.getTabCount()) index = tabindex;
             }
             if(index >= tabbedPane.getTabCount())
@@ -446,16 +448,16 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_F,CTRL_MASK),"Find");
         im.put(getKeyStroke(KeyEvent.VK_F3,0),"Find Next");
         var am = tabbedPane.getActionMap();
-        am.put("Select Tab 1",new SelectTabAction(0));
-        am.put("Select Tab 2",new SelectTabAction(1));
-        am.put("Select Tab 3",new SelectTabAction(2));
-        am.put("Select Tab 4",new SelectTabAction(3));
-        am.put("Select Tab 5",new SelectTabAction(4));
-        am.put("Select Tab 6",new SelectTabAction(5));
-        am.put("Select Tab 7",new SelectTabAction(6));
-        am.put("Select Tab 8",new SelectTabAction(7));
-        am.put("Select Tab 9",new SelectTabAction(8));
-        am.put("Select Tab 10",new SelectTabAction(9));
+        am.put("Select Tab 1",new SelectTabAction(0,0));
+        am.put("Select Tab 2",new SelectTabAction(1,1));
+        am.put("Select Tab 3",new SelectTabAction(2,2));
+        am.put("Select Tab 4",new SelectTabAction(3,3));
+        am.put("Select Tab 5",new SelectTabAction(4,4));
+        am.put("Select Tab 6",new SelectTabAction(5,5));
+        am.put("Select Tab 7",new SelectTabAction(6,6));
+        am.put("Select Tab 8",new SelectTabAction(7,7));
+        am.put("Select Tab 9",new SelectTabAction(8,8));
+        am.put("Select Tab 10",new SelectTabAction(9,-1));
         am.put("Select Previous Tab",selectPreviousTabAction);
         am.put("Select Next Tab",selectNextTabAction);
         am.put("Move Tab Left",moveTabLeftAction);

@@ -31,7 +31,7 @@ class ConnectionWorker
     
     private void report(Consumer<String> log,String str)
     {
-        invokeLater(() -> log.accept(str));
+        log.accept(str);
     }
 
     ResultSetTableModel lastReportedResult;
@@ -43,9 +43,8 @@ class ConnectionWorker
      * @param resultConsumer where an update count will be pushed to right after
      * <code>execute()</code> on the Swing event thread, if execute() returned
      * <code>false</code> 
-     * on the Swing event thread once available
-     * @param log where log messages will be pushed to on the Swing event thread
-     * as far as available
+     * @param log where log messages will be pushed to as far as available. This
+     * is not necessarily called from the event thread.
      */
     void submit(
             String sql,
@@ -84,11 +83,16 @@ class ConnectionWorker
                        !lastReportedResult.isClosed()) try
                     {
                         lastReportedResult.close();
-                        report(log,"Closed prior ResultSet at "+new Date());
+                        report(log,"Closed prior ResultSet and accepted query "+
+                                "at "+new Date());
                     }
                     catch(SQLException e)
                     {
                         report(log,SQLExceptionPrinter.toString(e));
+                    }
+                    else
+                    {
+                        report(log,"Query accepted at "+new Date());
                     }
                     getResult(sql);
                 }
