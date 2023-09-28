@@ -75,7 +75,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Alt+Left, Alt+Right - select prior/next tab.
 • Ctrl+Alt+Left, Ctrl+Alt+Right - move tab left/right.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
-• Ctrl+Shift+Enter - like Ctrl+Enter, but always create a new result table.
+• Ctrl+Shift+Enter or F5 - like Ctrl+Enter, but reuse the nearest result table.
 • Ctrl+Tab - select the next result table or buffer section.
 • Ctrl+Shift+Tab - select the previous result table or buffer section.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
