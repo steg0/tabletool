@@ -195,6 +195,7 @@ class JdbcBufferController
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
         setResultViewFontSize(resultview,newSize);
+        setResultSetMessageLabelFontSize();
     }
 
     int searchNext(int loc,String text)
@@ -233,7 +234,10 @@ class JdbcBufferController
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
         resultview.setPreferredScrollableViewportSize(viewportSize);
+    }
 
+    private void setResultSetMessageLabelFontSize()
+    {
         if(resultSetMessageLabel==null) return;
         Font resultSetMessageFont = new Font(
                 resultview.getFont().getName(),
@@ -757,6 +761,7 @@ class JdbcBufferController
         if(resultSetMessage!=null && !resultSetMessage.isEmpty())
         {
             logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
+            resultview.setToolTipText(resultSetMessage);
             resultSetMessageLabel = new JLabel(resultSetMessage);
             resultSetMessageLabel.setForeground(Color.GRAY);
             var resultSetMessageConstraints = new GridBagConstraints();
@@ -765,6 +770,7 @@ class JdbcBufferController
         }
 
         setResultViewFontSize(resultview,editor.getFont().getSize());
+        setResultSetMessageLabelFontSize();
 
         panel.revalidate();
         
