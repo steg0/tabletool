@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -232,6 +233,14 @@ class JdbcBufferController
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
         resultview.setPreferredScrollableViewportSize(viewportSize);
+
+        if(resultSetMessageLabel==null) return;
+        Font resultSetMessageFont = new Font(
+                resultview.getFont().getName(),
+                Font.ITALIC,
+                (int)(resultview.getFont().getSize() * .9)
+        );
+        resultSetMessageLabel.setFont(resultSetMessageFont);
     }
     
     private static JViewport findViewportParent(Component c)
@@ -680,6 +689,7 @@ class JdbcBufferController
      * carry a message.
      */
     String resultSetMessage;
+    JLabel resultSetMessageLabel;
 
     /**
      * The first argument is the result data; <code>null</code> means there is
@@ -717,15 +727,9 @@ class JdbcBufferController
 
     private void addResultSetTable(ResultSetTableModel rsm)
     {
-        if(panel.getComponentCount()==2) panel.remove(1);
+        while(panel.getComponentCount()>1) panel.remove(1);
 
         resultview = new JTable(rsm);
-        if(resultSetMessage!=null && !resultSetMessage.isEmpty())
-        {
-            logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
-            resultview.setToolTipText(resultSetMessage);
-        }
-        setResultViewFontSize(resultview,editor.getFont().getSize());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
         addResultSetPopup();
@@ -749,6 +753,19 @@ class JdbcBufferController
         resultscrollpane.addMouseWheelListener(newMl);
         
         panel.add(resultscrollpane,resultviewConstraints);
+
+        if(resultSetMessage!=null && !resultSetMessage.isEmpty())
+        {
+            logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
+            resultSetMessageLabel = new JLabel(resultSetMessage);
+            resultSetMessageLabel.setForeground(Color.GRAY);
+            var resultSetMessageConstraints = new GridBagConstraints();
+            resultSetMessageConstraints.gridy = 2;
+            panel.add(resultSetMessageLabel,resultSetMessageConstraints);
+        }
+
+        setResultViewFontSize(resultview,editor.getFont().getSize());
+
         panel.revalidate();
         
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
@@ -790,7 +807,8 @@ class JdbcBufferController
         closeCurrentResultSet();
         resultview=null;
         resultSetMessage=null;
-        if(panel.getComponentCount()>1)
+        resultSetMessageLabel=null;
+        while(panel.getComponentCount()>1)
         {
             panel.remove(1);
             panel.revalidate();
