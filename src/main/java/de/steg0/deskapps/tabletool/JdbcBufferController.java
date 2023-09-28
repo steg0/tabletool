@@ -298,7 +298,7 @@ class JdbcBufferController
      * @param characterX
      *            the X position to set the caret to, which is a character
      *            position relative to the start of the line that has the caret.
-     * @param y
+     * @param pointY
      *            the Y position (in point units) to set the caret to. If
      *            negative, measures from the bottom of the editor area. If
      *            provided without <code>characterX</code>, this will result in
