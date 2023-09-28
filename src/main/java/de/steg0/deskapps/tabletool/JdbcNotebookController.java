@@ -617,11 +617,14 @@ class JdbcNotebookController
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        String newname = JOptionPane.showInputDialog(
+        String newname = (String)JOptionPane.showInputDialog(
                 bufferPane,
                 "Please enter a new name:",
                 "Rename file",
-                JOptionPane.QUESTION_MESSAGE);
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                null,
+                file.getName());
         File newFile = new File(file.getParentFile(),newname);
         if(!newname.isEmpty()&&!newFile.exists()&&file.renameTo(newFile))
         {
