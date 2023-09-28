@@ -155,6 +155,7 @@ class JdbcNotebookController
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         connectionsSelector = new JComboBox<>(this.connections);
+        connectionsSelector.setMaximumRowCount(25);
         connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
                 Boolean.TRUE);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
