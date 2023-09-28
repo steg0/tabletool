@@ -808,7 +808,7 @@ class JdbcBufferController
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
-    private void closeBuffer()
+    void closeBuffer()
     {
         closeCurrentResultSet();
         resultview=null;

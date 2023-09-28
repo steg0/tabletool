@@ -70,6 +70,9 @@ class JdbcBufferResultSetKeyListener implements KeyListener
         case KeyEvent.VK_PAGE_DOWN:
         case KeyEvent.VK_PAGE_UP:
             scrollToView();
+            break;
+        case KeyEvent.VK_BACK_SPACE:
+            if(e.isControlDown()) b.closeBuffer();
         }
     }
 }
