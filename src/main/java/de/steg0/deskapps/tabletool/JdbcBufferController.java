@@ -765,6 +765,7 @@ class JdbcBufferController
             resultSetMessageLabel = new JLabel(resultSetMessage);
             resultSetMessageLabel.setForeground(Color.GRAY);
             var resultSetMessageConstraints = new GridBagConstraints();
+            resultSetMessageConstraints.anchor = GridBagConstraints.WEST;
             resultSetMessageConstraints.gridy = 2;
             panel.add(resultSetMessageLabel,resultSetMessageConstraints);
         }
