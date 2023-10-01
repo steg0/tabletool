@@ -14,6 +14,7 @@ class JdbcBufferEvent extends EventObject
         SCROLLED_WEST,
         SELECTED_RECT_CHANGED,
         SPLIT_REQUESTED,
+        SPLIT_FAILED,
         RESULT_VIEW_CLOSED,
         RESULT_VIEW_UPDATED,
         DRY_FETCH,

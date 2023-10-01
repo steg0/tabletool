@@ -411,6 +411,19 @@ class JdbcNotebookController
                 newBufferController.fetch(false);
                 break;
                 
+            case SPLIT_FAILED:
+                i=buffers.indexOf(source);
+                if(i<buffers.size()-1)
+                {
+                    logger.fine("Undoing after failed split");
+                    buffers.get(i+1).undoManager.undo();
+                    buffers.get(i+1).focusEditor(null,null);
+                    buffers.get(i+1).editor.setCaretPosition(
+                            source.editor.getCaretPosition());
+                    remove(i);
+                }
+                break;
+
             case RESULT_VIEW_CLOSED:
                 i=buffers.indexOf(source);
                 if(i<buffers.size()-1)

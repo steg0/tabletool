@@ -719,7 +719,7 @@ class JdbcBufferController
          * nothing to display */
         if(rsm==null)
         {
-            if(resultview==null) closeBuffer();
+            if(resultview==null) closeBuffer(Type.SPLIT_FAILED);
             return;
         }
 
@@ -829,7 +829,7 @@ class JdbcBufferController
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
-    void closeBuffer()
+    void closeBuffer(JdbcBufferEvent.Type eventToEmit)
     {
         closeCurrentResultSet();
         resultview=null;
@@ -840,7 +840,7 @@ class JdbcBufferController
             panel.remove(1);
             panel.revalidate();
         }
-        fireBufferEvent(Type.RESULT_VIEW_CLOSED);
+        fireBufferEvent(eventToEmit);
     }
     
     private void addResultSetPopup()
@@ -857,7 +857,7 @@ class JdbcBufferController
         item.addActionListener((e) -> openAsCsv());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
-        item.addActionListener((e) -> closeBuffer());
+        item.addActionListener((e) -> closeBuffer(Type.RESULT_VIEW_CLOSED));
         popup.add(item);
         var popuplistener = new MouseAdapter()
         {
