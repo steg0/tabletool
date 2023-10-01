@@ -403,6 +403,7 @@ class JdbcNotebookController
                 bufferPanel.revalidate();
                 newBufferController.focusEditor(null,null);
                 newBufferController.editor.append(e.text);
+                newBufferController.undoManager.discardAllEdits();
                 /* We don't have enough info here to restore the caret position.
                  * This should be acceptable. */
                 newBufferController.editor.select(e.selectionStart,
