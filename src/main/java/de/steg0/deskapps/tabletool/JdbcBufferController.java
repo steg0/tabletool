@@ -30,10 +30,12 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -54,8 +56,12 @@ class JdbcBufferController
 {
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat FETCH_INFO_FORMAT = 
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms at {3}\n");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat FETCH_ALL_INFO_FORMAT = 
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms at {3}\n");
     private static final MessageFormat UPDATE_LOG_FORMAT = 
             new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
 
@@ -142,9 +148,9 @@ class JdbcBufferController
         
         var actions = new JdbcBufferActions(this);
         var im = editor.getInputMap();
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute");
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),
-                "Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
         im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
         im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
@@ -194,6 +200,7 @@ class JdbcBufferController
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
         setResultViewFontSize(resultview,newSize);
+        setResultSetMessageLabelFontSize();
     }
 
     int searchNext(int loc,String text)
@@ -232,6 +239,17 @@ class JdbcBufferController
         logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
                 "lineHeight={1}",new Object[]{viewportSize,lineHeight});
         resultview.setPreferredScrollableViewportSize(viewportSize);
+    }
+
+    private void setResultSetMessageLabelFontSize()
+    {
+        if(resultSetMessageLabel==null) return;
+        Font resultSetMessageFont = new Font(
+                resultview.getFont().getName(),
+                Font.ITALIC,
+                (int)(resultview.getFont().getSize() * .9)
+        );
+        resultSetMessageLabel.setFont(resultSetMessageFont);
     }
     
     private static JViewport findViewportParent(Component c)
@@ -298,7 +316,7 @@ class JdbcBufferController
      * @param characterX
      *            the X position to set the caret to, which is a character
      *            position relative to the start of the line that has the caret.
-     * @param y
+     * @param pointY
      *            the Y position (in point units) to set the caret to. If
      *            negative, measures from the bottom of the editor area. If
      *            provided without <code>characterX</code>, this will result in
@@ -582,7 +600,7 @@ class JdbcBufferController
         {
             log.accept("No connection available at "+new Date());
             fireBufferEvent(Type.DRY_FETCH);
-            if(connection == null) return;
+            return;
         }
         
         if(split) try
@@ -646,7 +664,15 @@ class JdbcBufferController
             if(match.trim().isEmpty()) return null;
             if(match.length() >= position) 
             {
-                editor.select(offset + m.start(),offset + m.end());
+                /* Remove block prefixes if possible, they don't make much
+                 * sense for what's supported with our query detection */
+                Matcher blockMatcher = CallableStatementMatchers
+                        .prefixMatch(match);
+                int prefixLen = match.length()-blockMatcher.group(2).length();
+                editor.select(
+                        offset + m.start() + prefixLen,
+                        offset + m.end());
+
                 return match;
             }
             text = text.substring(match.length());
@@ -657,6 +683,7 @@ class JdbcBufferController
         return null;
     }
     
+    /**Removes selection highlight when a query has returned. */
     private void restoreCaretPosition()
     {
         if(editor.getSelectionStart()!=savedSelectionStart ||
@@ -680,6 +707,7 @@ class JdbcBufferController
      * carry a message.
      */
     String resultSetMessage;
+    JLabel resultSetMessageLabel;
 
     /**
      * The first argument is the result data; <code>null</code> means there is
@@ -691,7 +719,7 @@ class JdbcBufferController
          * nothing to display */
         if(rsm==null)
         {
-            if(resultview==null) closeBuffer();
+            if(resultview==null) closeBuffer(Type.SPLIT_FAILED);
             return;
         }
 
@@ -704,10 +732,16 @@ class JdbcBufferController
                 new Date().toString(),
                 rsm.connectionDescription
         };
-        resultSetMessage = rsm.getRowCount() < rsm.fetchsize?
-                FETCH_ALL_LOG_FORMAT.format(logargs) :
-                FETCH_LOG_FORMAT.format(logargs);
-        log.accept(resultSetMessage);
+        if(rsm.getRowCount() < rsm.fetchsize)
+        {
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
+            resultSetMessage = FETCH_ALL_INFO_FORMAT.format(logargs);
+        }
+        else
+        {
+            log.accept(FETCH_LOG_FORMAT.format(logargs));
+            resultSetMessage = FETCH_INFO_FORMAT.format(logargs);
+        }
         
         addResultSetTable(rsm);
     };
@@ -717,15 +751,9 @@ class JdbcBufferController
 
     private void addResultSetTable(ResultSetTableModel rsm)
     {
-        if(panel.getComponentCount()==2) panel.remove(1);
+        while(panel.getComponentCount()>1) panel.remove(1);
 
         resultview = new JTable(rsm);
-        if(resultSetMessage!=null && !resultSetMessage.isEmpty())
-        {
-            logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
-            resultview.setToolTipText(resultSetMessage);
-        }
-        setResultViewFontSize(resultview,editor.getFont().getSize());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
         addResultSetPopup();
@@ -749,6 +777,22 @@ class JdbcBufferController
         resultscrollpane.addMouseWheelListener(newMl);
         
         panel.add(resultscrollpane,resultviewConstraints);
+
+        if(resultSetMessage!=null && !resultSetMessage.isEmpty())
+        {
+            logger.log(Level.FINE,"resultSetMessage={0}",resultSetMessage);
+            resultview.setToolTipText(resultSetMessage);
+            resultSetMessageLabel = new JLabel(resultSetMessage);
+            resultSetMessageLabel.setForeground(Color.GRAY);
+            var resultSetMessageConstraints = new GridBagConstraints();
+            resultSetMessageConstraints.anchor = GridBagConstraints.WEST;
+            resultSetMessageConstraints.gridy = 2;
+            panel.add(resultSetMessageLabel,resultSetMessageConstraints);
+        }
+
+        setResultViewFontSize(resultview,editor.getFont().getSize());
+        setResultSetMessageLabelFontSize();
+
         panel.revalidate();
         
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
@@ -785,17 +829,18 @@ class JdbcBufferController
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
-    private void closeBuffer()
+    void closeBuffer(JdbcBufferEvent.Type eventToEmit)
     {
         closeCurrentResultSet();
         resultview=null;
         resultSetMessage=null;
-        if(panel.getComponentCount()>1)
+        resultSetMessageLabel=null;
+        while(panel.getComponentCount()>1)
         {
             panel.remove(1);
             panel.revalidate();
         }
-        fireBufferEvent(Type.RESULT_VIEW_CLOSED);
+        fireBufferEvent(eventToEmit);
     }
     
     private void addResultSetPopup()
@@ -812,7 +857,7 @@ class JdbcBufferController
         item.addActionListener((e) -> openAsCsv());
         popup.add(item);
         item = new JMenuItem("Close",KeyEvent.VK_C);
-        item.addActionListener((e) -> closeBuffer());
+        item.addActionListener((e) -> closeBuffer(Type.RESULT_VIEW_CLOSED));
         popup.add(item);
         var popuplistener = new MouseAdapter()
         {

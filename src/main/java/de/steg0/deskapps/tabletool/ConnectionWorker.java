@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
 
 /**
  * A wrapper to run operations on top of a JDBC <code>Connection</code>.
@@ -108,13 +109,10 @@ class ConnectionWorker
         {
             try
             {
+                Matcher callableStatementParts = CallableStatementMatchers
+                        .prefixMatch(text);
                 String lc = text.toLowerCase();
-                if(lc.startsWith("begin") || 
-                    lc.startsWith("declare") ||
-                    lc.startsWith("create") ||
-                    lc.startsWith("call") ||
-                    lc.startsWith("{")
-                )
+                if(callableStatementParts.group(1).length() > 0)
                 {
                     if(text.endsWith(";"))
                     {
@@ -274,8 +272,8 @@ class ConnectionWorker
                 try
                 {
                     connection.setAutoCommit(enabled);
-                    report(log,"Autocommit set to "+enabled+" at "+
-                            new Date());
+                    report(log,"Autocommit set to "+enabled+" at "+new Date()+
+                            ". Use Ctrl+ENTER to execute statements.");
                     invokeLater(cb);
                 }
                 catch(SQLException e)

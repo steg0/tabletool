@@ -75,7 +75,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Alt+Left, Alt+Right - select prior/next tab.
 • Ctrl+Alt+Left, Ctrl+Alt+Right - move tab left/right.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
-• Ctrl+Shift+Enter - like Ctrl+Enter, but always create a new result table.
+• Ctrl+Shift+Enter or F5 - like Ctrl+Enter, but reuse the nearest result table.
 • Ctrl+Tab - select the next result table or buffer section.
 • Ctrl+Shift+Tab - select the previous result table or buffer section.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
@@ -90,12 +90,14 @@ While editing SQL in a notebook, the following keys are supported:
 
 To navigate across a result table, use Up/Down arrow keys.
 
-In a result table, a double click or Enter on a cell brings up a window to view the cell content in a larger space. For CLOBs, this fetches the complete content instead of displaying the standard Object::toString(). For BLOBs, it displays the first couple of bytes as a dump but offers export/import functionality. For DB2, connect with the "progressiveStreaming=2" option to be able to export BLOBs. Also see notes about the import function below.
+In a result table, a double click or Enter on a cell brings up a window to view the cell content in a larger space. For CLOBs, this fetches the complete content instead of displaying the standard Object::toString(). For BLOBs, it displays the first couple of bytes as a dump but offers export/import functionality. For DB2, connect with the "progressiveStreaming=2" option to be able to export BLOBs. Also see notes about the import function below. Ctrl+Backspace closes the table. Note that there is no undo function for any actions on result tables.
 
-A right click on the result table brings up a popup menu which allows closing the table, or exporting the buffer with desktop actions. Closing also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
+A right click on the result table brings up a popup menu which also allows closing the table, or exporting the buffer with desktop actions.
+
+Closing also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
 
 Ⓐ a subsequent query is submitted over the connection; and, as mentioned,
-Ⓑ the result table is closed (either with the popup action or by closing the tab).
+Ⓑ the result table is closed (either with the UI action or by closing the tab).
 
 Some JDBC drivers close ResultSets automatically when the cursor moves beyond the last row.
 

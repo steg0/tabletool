@@ -140,7 +140,7 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                add();
+                add(-1);
             }
         },
         loadAction = new AbstractAction("Load...")
@@ -222,6 +222,13 @@ implements KeyListener
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                     addRecent(notebook.file);
                 }
+            }
+        },
+        revertAction = new AbstractAction("Revert")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                revert();
             }
         },
         closeAction = new AbstractAction("Close")
@@ -504,12 +511,9 @@ implements KeyListener
     /**
      * Adds a tab and selects it.
      * 
-     * @param unnamed whether a new, generic name should be set on the tab.
-     * If <code>false</code>, the tab will not have a name; it is expected
-     * that the caller sets one.
      * @return the controller responsible for the new tab.
      */
-    JdbcNotebookController add()
+    JdbcNotebookController add(int index)
     {
         var notebook = new JdbcNotebookController(
                 cellDisplay,
@@ -519,9 +523,9 @@ implements KeyListener
                 getPwd(),
                 notebookListener
         );
-        notebooks.add(notebook);
-        int newIndex = tabbedPane.getTabCount();
-        tabbedPane.add(notebook.notebookPanel);
+        int newIndex = index<0?tabbedPane.getTabCount():index;
+        notebooks.add(newIndex,notebook);
+        tabbedPane.add(notebook.notebookPanel,newIndex);
         retitle();
         tabbedPane.setSelectedIndex(newIndex);
         return notebook;
@@ -547,7 +551,7 @@ implements KeyListener
         notebooks.remove(tabbedPane.getSelectedIndex());
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         retitle();
-        if(notebooks.size()==0) add();
+        if(notebooks.size()==0) add(-1);
         SwingUtilities.invokeLater(() -> {
             int selectedIndex = tabbedPane.getSelectedIndex();
             JdbcNotebookController c = notebooks.get(selectedIndex);
@@ -606,9 +610,10 @@ implements KeyListener
             file=filechooser.getSelectedFile();
         }
         
+        int oldSelectedIndex = tabbedPane.getSelectedIndex();
         try
         {
-            JdbcNotebookController notebook = add();
+            JdbcNotebookController notebook = add(-1);
             notebook.load(file);
             int index = tabbedPane.getSelectedIndex();
             retitle();
@@ -622,6 +627,56 @@ implements KeyListener
                     "Error loading: "+e.getMessage(),
                     "Error loading",
                     JOptionPane.ERROR_MESSAGE);
+            removeSelected();
+            tabbedPane.setSelectedIndex(oldSelectedIndex);
+        }
+    }
+
+    void revert()
+    {
+        int index=tabbedPane.getSelectedIndex();
+        JdbcNotebookController notebook=notebooks.get(index);
+        if(notebook.file == null)
+        {
+            JOptionPane.showMessageDialog(
+                    tabbedPane,
+                    "Error reverting: Buffer not present on disk",
+                    "Error reverting",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        int option = JOptionPane.showConfirmDialog(
+                parent,
+                "Revert to saved?",
+                "Confirm revert buffer",
+                JOptionPane.YES_NO_OPTION);
+        if(option!=JOptionPane.YES_OPTION)
+        {
+            return;
+        }
+        notebook.closeCurrentResultSet();
+        notebooks.remove(index);
+        tabbedPane.remove(index);
+        add(index);
+        JdbcNotebookController newNotebook = notebooks.get(index);
+        try
+        {
+            newNotebook.load(notebook.file);
+            retitle();
+        }
+        catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(
+                    tabbedPane,
+                    "Error loading: "+e.getMessage(),
+                    "Error loading",
+                    JOptionPane.ERROR_MESSAGE);
+            notebooks.remove(index);
+            tabbedPane.remove(index);
+            notebooks.add(index,notebook);
+            tabbedPane.add(notebook.notebookPanel,index);
+            retitle();
+            tabbedPane.setSelectedIndex(index);
         }
     }
 
@@ -670,6 +725,10 @@ implements KeyListener
 
         item = new JMenuItem(renameAction);
         item.setMnemonic(KeyEvent.VK_M);
+        menu.add(item);
+
+        item = new JMenuItem(revertAction);
+        item.setMnemonic(KeyEvent.VK_R);
         menu.add(item);
 
         item = new JMenuItem(closeAction);
@@ -735,14 +794,14 @@ implements KeyListener
             for(var path : w.getRecentFiles()) recents.add(path);
         }
         
-        if(w.getFiles().length==0) add();
+        if(w.getFiles().length==0) add(-1);
         int selectedIndex=0;
         for(String fn : w.getFiles())
         {
             File sqlFile = new File(fn);
             try
             {
-                JdbcNotebookController notebook = add();
+                JdbcNotebookController notebook = add(-1);
                 notebook.load(sqlFile);
                 int index = tabbedPane.getSelectedIndex();
                 if(fn.equals(w.getActiveFile())) selectedIndex = index;

@@ -155,6 +155,7 @@ class JdbcNotebookController
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         connectionsSelector = new JComboBox<>(this.connections);
+        connectionsSelector.setMaximumRowCount(25);
         connectionsSelector.putClientProperty("JComboBox.isTableCellEditor",
                 Boolean.TRUE);
         connectionsSelector.addItemListener((e) -> updateConnection(e));
@@ -402,6 +403,7 @@ class JdbcNotebookController
                 bufferPanel.revalidate();
                 newBufferController.focusEditor(null,null);
                 newBufferController.editor.append(e.text);
+                newBufferController.undoManager.discardAllEdits();
                 /* We don't have enough info here to restore the caret position.
                  * This should be acceptable. */
                 newBufferController.editor.select(e.selectionStart,
@@ -409,14 +411,32 @@ class JdbcNotebookController
                 newBufferController.fetch(false);
                 break;
                 
+            case SPLIT_FAILED:
+                i=buffers.indexOf(source);
+                if(i<buffers.size()-1)
+                {
+                    logger.fine("Undoing after failed split");
+                    buffers.get(i+1).undoManager.undo();
+                    buffers.get(i+1).focusEditor(null,null);
+                    buffers.get(i+1).editor.setCaretPosition(
+                            source.editor.getCaretPosition());
+                    remove(i);
+                }
+                break;
+
             case RESULT_VIEW_CLOSED:
                 i=buffers.indexOf(source);
                 if(i<buffers.size()-1)
                 {
                     buffers.get(i+1).prepend(source);
                     buffers.get(i+1).focusEditor(null,null);
+                    buffers.get(i+1).editor.setCaretPosition(
+                            source.editor.getCaretPosition());
                     remove(i);
                 }
+                bufferPanel.repaint();
+                break;
+
             case RESULT_VIEW_UPDATED:
                 /* arbitrarily expose a couple of lines of table content. Just
                  * to give a visual hint that something's there. If the table is
@@ -616,11 +636,14 @@ class JdbcNotebookController
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        String newname = JOptionPane.showInputDialog(
+        String newname = (String)JOptionPane.showInputDialog(
                 bufferPane,
                 "Please enter a new name:",
                 "Rename file",
-                JOptionPane.QUESTION_MESSAGE);
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                null,
+                file.getName());
         File newFile = new File(file.getParentFile(),newname);
         if(!newname.isEmpty()&&!newFile.exists()&&file.renameTo(newFile))
         {
