@@ -272,8 +272,8 @@ class ConnectionWorker
                 try
                 {
                     connection.setAutoCommit(enabled);
-                    report(log,"Autocommit set to "+enabled+" at "+
-                            new Date());
+                    report(log,"Autocommit set to "+enabled+" at "+new Date()+
+                            ". Use Ctrl+ENTER to execute statements.");
                     invokeLater(cb);
                 }
                 catch(SQLException e)
