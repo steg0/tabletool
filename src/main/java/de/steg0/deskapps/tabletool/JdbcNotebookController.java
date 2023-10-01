@@ -417,6 +417,8 @@ class JdbcNotebookController
                 {
                     buffers.get(i+1).prepend(source);
                     buffers.get(i+1).focusEditor(null,null);
+                    buffers.get(i+1).editor.setCaretPosition(
+                            source.editor.getCaretPosition());
                     remove(i);
                 }
             case RESULT_VIEW_UPDATED:
