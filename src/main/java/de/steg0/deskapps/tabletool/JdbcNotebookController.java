@@ -434,6 +434,9 @@ class JdbcNotebookController
                             source.editor.getCaretPosition());
                     remove(i);
                 }
+                bufferPanel.repaint();
+                break;
+
             case RESULT_VIEW_UPDATED:
                 /* arbitrarily expose a couple of lines of table content. Just
                  * to give a visual hint that something's there. If the table is
