@@ -30,6 +30,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
@@ -55,8 +56,12 @@ class JdbcBufferController
 {
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat FETCH_INFO_FORMAT = 
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms at {3}\n");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+    private static final MessageFormat FETCH_ALL_INFO_FORMAT = 
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms at {3}\n");
     private static final MessageFormat UPDATE_LOG_FORMAT = 
             new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
 
@@ -595,7 +600,7 @@ class JdbcBufferController
         {
             log.accept("No connection available at "+new Date());
             fireBufferEvent(Type.DRY_FETCH);
-            if(connection == null) return;
+            return;
         }
         
         if(split) try
@@ -659,7 +664,15 @@ class JdbcBufferController
             if(match.trim().isEmpty()) return null;
             if(match.length() >= position) 
             {
-                editor.select(offset + m.start(),offset + m.end());
+                /* Remove block prefixes if possible, they don't make much
+                 * sense for what's supported with our query detection */
+                Matcher blockMatcher = CallableStatementMatchers
+                        .prefixMatch(match);
+                int prefixLen = match.length()-blockMatcher.group(2).length();
+                editor.select(
+                        offset + m.start() + prefixLen,
+                        offset + m.end());
+
                 return match;
             }
             text = text.substring(match.length());
@@ -670,6 +683,7 @@ class JdbcBufferController
         return null;
     }
     
+    /**Removes selection highlight when a query has returned. */
     private void restoreCaretPosition()
     {
         if(editor.getSelectionStart()!=savedSelectionStart ||
@@ -718,10 +732,16 @@ class JdbcBufferController
                 new Date().toString(),
                 rsm.connectionDescription
         };
-        resultSetMessage = rsm.getRowCount() < rsm.fetchsize?
-                FETCH_ALL_LOG_FORMAT.format(logargs) :
-                FETCH_LOG_FORMAT.format(logargs);
-        log.accept(resultSetMessage);
+        if(rsm.getRowCount() < rsm.fetchsize)
+        {
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
+            resultSetMessage = FETCH_ALL_INFO_FORMAT.format(logargs);
+        }
+        else
+        {
+            log.accept(FETCH_LOG_FORMAT.format(logargs));
+            resultSetMessage = FETCH_INFO_FORMAT.format(logargs);
+        }
         
         addResultSetTable(rsm);
     };
