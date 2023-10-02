@@ -728,7 +728,7 @@ implements KeyListener
         menu.add(item);
 
         item = new JMenuItem(revertAction);
-        item.setMnemonic(KeyEvent.VK_R);
+        item.setMnemonic(KeyEvent.VK_V);
         menu.add(item);
 
         item = new JMenuItem(closeAction);

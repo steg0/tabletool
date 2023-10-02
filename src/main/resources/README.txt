@@ -104,7 +104,7 @@ Some JDBC drivers close ResultSets automatically when the cursor moves beyond th
 
 ▶ Submitting blocks
 
-If a query begins with "{", "create", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
+If a query begins with "{", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
 
 
 ▶ Update function
