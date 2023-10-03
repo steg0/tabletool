@@ -8,7 +8,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.swing.event.TableModelListener;
@@ -17,6 +19,11 @@ import javax.swing.table.TableModel;
 class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
+    private static final MessageFormat FETCH_INFO_FORMAT = 
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {2} at {1}\n");
+    private static final MessageFormat FETCH_ALL_INFO_FORMAT = 
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {2} at {1}\n");
+
     private Statement st;
     ResultSet rs;
     private String cols[];
@@ -24,6 +31,14 @@ implements TableModel,AutoCloseable
     int fetchsize;
     boolean resultSetClosed;
     String connectionDescription;
+    /**
+     * The log message associated with the last fetch operation. Empty
+     * or <code>null</code> means that no message is available, either because
+     * no result is available, or one was loaded back from a file that didn't
+     * carry a message.
+     */
+    String resultMessage;
+    Date date;
     
     /**Blockingly retrieves a ResultSet from the Statement.
      * Neither one is closed; it is expected they have to be closed
@@ -60,6 +75,20 @@ implements TableModel,AutoCloseable
             rowcount++;
         }
         resultSetClosed = rs.isClosed();
+        date = new Date();
+        Object[] logargs = {
+                getRowCount(),
+                date.toString(),
+                connectionDescription
+        };
+        if(getRowCount() < fetchsize)
+        {
+            resultMessage = FETCH_ALL_INFO_FORMAT.format(logargs);
+        }
+        else
+        {
+            resultMessage = FETCH_INFO_FORMAT.format(logargs);
+        }
     }
     
     String toHtml()
@@ -292,7 +321,7 @@ implements TableModel,AutoCloseable
     public void removeTableModelListener(TableModelListener l)
     {
     }
-    
+
     boolean isClosed() throws SQLException
     {
         return rs==null || rs.isClosed();

@@ -14,7 +14,7 @@ class JdbcBufferEvent extends EventObject
         SCROLLED_WEST,
         SELECTED_RECT_CHANGED,
         SPLIT_REQUESTED,
-        SPLIT_FAILED,
+        FETCH_FAILED,
         RESULT_VIEW_CLOSED,
         RESULT_VIEW_UPDATED,
         DRY_FETCH,
@@ -22,8 +22,8 @@ class JdbcBufferEvent extends EventObject
     }
     
     Type type;
-    String text;
-    int selectionStart,selectionEnd;
+    String removedText;
+    ResultSetTableModel removedRsm;
     Rectangle selectedRect;
     
     JdbcBufferEvent(JdbcBufferController source,Type type)
