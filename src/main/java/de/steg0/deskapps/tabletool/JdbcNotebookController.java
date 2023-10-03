@@ -408,8 +408,8 @@ class JdbcNotebookController
                 newBufferController.addResultSetTable(e.removedRsm);
                 break;
                 
-            case FETCH_FAILED:
-                logger.log(Level.FINE,"Fetch failed at #{0}",i);
+            case NULL_FETCH:
+                logger.log(Level.FINE,"No fetch result at #{0}",i);
                 if(next!=null && source.resultview==null)
                 {
                     logger.log(Level.FINE,"Undoing #{0} after split",i);

@@ -709,7 +709,7 @@ class JdbcBufferController
     {
         if(rsm==null)
         {
-            fireBufferEvent(Type.FETCH_FAILED);
+            fireBufferEvent(Type.NULL_FETCH);
             return;
         }
 
