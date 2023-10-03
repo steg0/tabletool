@@ -148,8 +148,8 @@ extends WindowAdapter
         {
             int option = JOptionPane.showConfirmDialog(
                     frame,
-                    "Unsaved buffers exist. Exit?",
-                    "Unsaved buffer warning",
+                    "Unsaved notebooks exist. Exit?",
+                    "Unsaved notebook warning",
                     JOptionPane.YES_NO_OPTION);
             if(option!=JOptionPane.YES_OPTION)
             {

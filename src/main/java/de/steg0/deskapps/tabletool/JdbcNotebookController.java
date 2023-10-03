@@ -352,10 +352,12 @@ class JdbcNotebookController
         public void bufferActionPerformed(JdbcBufferEvent e)
         {
             JdbcBufferController source = e.getSource();
+            int i = buffers.indexOf(source);
+            JdbcBufferController next = i < buffers.size()-1?
+                    buffers.get(i+1) : null;
             switch(e.type)
             {
             case EXITED_NORTH:
-                int i=buffers.indexOf(source);
                 if(i > 0) 
                 {
                     JdbcBufferController target = buffers.get(i-1);
@@ -395,46 +397,53 @@ class JdbcNotebookController
                 break;
                 
             case SPLIT_REQUESTED:
-                i=buffers.indexOf(source);
+                logger.log(Level.FINE,"Split requested by #{0}",i);
                 var newBufferController = newBufferController();
                 newBufferController.connection = source.connection;
                 newBufferController.setBackground(source.getBackground());
-                add(i,newBufferController);
+                add(i+1,newBufferController);
                 bufferPanel.revalidate();
-                newBufferController.focusEditor(null,null);
-                newBufferController.editor.append(e.text);
+                newBufferController.append(e.removedText);
                 newBufferController.undoManager.discardAllEdits();
-                /* We don't have enough info here to restore the caret position.
-                 * This should be acceptable. */
-                newBufferController.editor.select(e.selectionStart,
-                        e.selectionEnd);
-                newBufferController.fetch(false);
+                newBufferController.addResultSetTable(e.removedRsm);
                 break;
                 
-            case SPLIT_FAILED:
-                i=buffers.indexOf(source);
-                if(i<buffers.size()-1)
+            case NULL_FETCH:
+                logger.log(Level.FINE,"No fetch result at #{0}",i);
+                if(next!=null && source.resultview==null)
                 {
-                    logger.fine("Undoing after failed split");
-                    buffers.get(i+1).undoManager.undo();
-                    buffers.get(i+1).focusEditor(null,null);
-                    buffers.get(i+1).editor.setCaretPosition(
-                            source.editor.getCaretPosition());
-                    remove(i);
+                    logger.log(Level.FINE,"Undoing #{0} after split",i);
+                    if(next.editor.getText().length() > 0 &&
+                       source.undoManager.canUndo()) 
+                    {
+                        source.undoManager.undo();
+                    }
+                    if(next.resultview != null) 
+                    {
+                        source.addResultSetTable(next.getResultSetTableModel());
+                    }
+                    remove(i+1);
                 }
+                source.restoreCaretPosition(true);
+                source.focusEditor(null,null);
                 break;
 
             case RESULT_VIEW_CLOSED:
-                i=buffers.indexOf(source);
-                if(i<buffers.size()-1)
+                if(next != null)
                 {
-                    buffers.get(i+1).prepend(source);
-                    buffers.get(i+1).focusEditor(null,null);
-                    buffers.get(i+1).editor.setCaretPosition(
-                            source.editor.getCaretPosition());
-                    remove(i);
+                    String text = next.editor.getText();
+                    if(text.length() > 0)
+                    {
+                        source.append(text);
+                    }
+                    if(next.resultview != null) 
+                    {
+                        source.addResultSetTable(next.getResultSetTableModel());
+                    }
+                    remove(i+1);
                 }
-                bufferPanel.repaint();
+                source.focusEditor(null,null);
+                bufferPanel.revalidate();
                 break;
 
             case RESULT_VIEW_UPDATED:

@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 class CallableStatementMatchers
 {
     private static final Pattern CALLABLE_STATEMENT_PATTERN = Pattern.compile(
-        "^(?:\\-\\-[^\\n]*\\n|\\s*\\n)*(begin|declare|create|call|\\{|)(.*)$",
+        "^(?:\\-\\-[^\\n]*\\n|\\s*\\n)*(begin|declare|call|\\{|)(.*)$",
         Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 
     static Matcher prefixMatch(String s)

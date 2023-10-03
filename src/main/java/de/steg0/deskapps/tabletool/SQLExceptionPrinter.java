@@ -1,5 +1,8 @@
 package de.steg0.deskapps.tabletool;
 
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.Date;
 
@@ -22,5 +25,19 @@ class SQLExceptionPrinter
         b.append("Error executing SQL at ");
         b.append(new Date());
         return b.toString();
+    }
+
+    static String toString(String sql,SQLException e)
+    {
+        StringBuilder b=new StringBuilder();
+        b.append("Given:\n");
+        for(int i=0;i<sql.length();i++)
+        {
+            if(i%10==0) b.append("[").append(i).append(":]");
+            b.append(sql.charAt(i));
+        }
+        b.append("\nGot:\n");
+        var msg=toString(e);
+        return b+msg;
     }
 }

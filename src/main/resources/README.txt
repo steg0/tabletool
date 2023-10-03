@@ -76,8 +76,8 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+Alt+Left, Ctrl+Alt+Right - move tab left/right.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
 • Ctrl+Shift+Enter or F5 - like Ctrl+Enter, but reuse the nearest result table.
-• Ctrl+Tab - select the next result table or buffer section.
-• Ctrl+Shift+Tab - select the previous result table or buffer section.
+• Ctrl+Tab - select the next result table or editor pane.
+• Ctrl+Shift+Tab - select the previous result table or editor pane.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+/ - comment/uncomment.
 • Ctrl+F - find text (case-insensitively), starting on currently selected tab.
@@ -104,7 +104,7 @@ Some JDBC drivers close ResultSets automatically when the cursor moves beyond th
 
 ▶ Submitting blocks
 
-If a query begins with "{", "create", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
+If a query begins with "{", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
 
 
 ▶ Update function

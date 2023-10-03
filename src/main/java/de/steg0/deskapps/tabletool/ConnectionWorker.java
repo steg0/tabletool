@@ -99,7 +99,7 @@ class ConnectionWorker
                 }
                 catch(SQLException e)
                 {
-                    report(log,SQLExceptionPrinter.toString(e));
+                    report(log,SQLExceptionPrinter.toString(sql,e));
                 }
             }
         }
@@ -137,7 +137,8 @@ class ConnectionWorker
                             ResultSet.TYPE_FORWARD_ONLY,
                             ResultSet.CONCUR_UPDATABLE
                     );
-                    if(text.endsWith(";")) text = text.substring(0,text.length()-1);
+                    if(text.endsWith(";")) text =
+                            text.substring(0,text.length()-1);
                     if(st.execute(text))
                     {
                         reportResult(st);
