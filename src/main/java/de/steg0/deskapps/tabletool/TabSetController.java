@@ -539,8 +539,8 @@ implements KeyListener
         {
             int option = JOptionPane.showConfirmDialog(
                     parent,
-                    "Buffer is unsaved. Close?",
-                    "Unsaved buffer warning",
+                    "Notebook is unsaved. Close?",
+                    "Unsaved notebook warning",
                     JOptionPane.YES_NO_OPTION);
             if(option!=JOptionPane.YES_OPTION)
             {
@@ -640,7 +640,7 @@ implements KeyListener
         {
             JOptionPane.showMessageDialog(
                     tabbedPane,
-                    "Error reverting: Buffer not present on disk",
+                    "Error reverting: Notebook not present on disk",
                     "Error reverting",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -648,7 +648,7 @@ implements KeyListener
         int option = JOptionPane.showConfirmDialog(
                 parent,
                 "Revert to saved?",
-                "Confirm revert buffer",
+                "Confirm revert notebook",
                 JOptionPane.YES_NO_OPTION);
         if(option!=JOptionPane.YES_OPTION)
         {
