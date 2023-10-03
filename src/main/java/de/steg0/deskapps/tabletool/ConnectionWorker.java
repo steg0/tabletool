@@ -99,7 +99,7 @@ class ConnectionWorker
                 }
                 catch(SQLException e)
                 {
-                    report(log,SQLExceptionPrinter.toString(e));
+                    report(log,SQLExceptionPrinter.toString(sql,e));
                 }
             }
         }
