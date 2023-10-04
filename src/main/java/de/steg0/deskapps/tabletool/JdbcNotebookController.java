@@ -405,7 +405,10 @@ class JdbcNotebookController
                 bufferPanel.revalidate();
                 newBufferController.append(e.removedText);
                 newBufferController.undoManager.discardAllEdits();
-                newBufferController.addResultSetTable(e.removedRsm);
+                if(e.removedRsm != null)
+                {
+                    newBufferController.addResultSetTable(e.removedRsm);
+                }
                 break;
                 
             case NULL_FETCH:
