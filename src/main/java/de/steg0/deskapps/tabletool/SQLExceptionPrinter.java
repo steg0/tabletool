@@ -1,8 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.StringReader;
 import java.sql.SQLException;
 import java.util.Date;
 
@@ -31,10 +28,12 @@ class SQLExceptionPrinter
     {
         StringBuilder b=new StringBuilder();
         b.append("Given:\n");
-        for(int i=0;i<sql.length();i++)
+        b.append("1:");
+        for(int i=0,l=1;i<sql.length();i++)
         {
             if(i%10==0) b.append("[").append(i).append(":]");
             b.append(sql.charAt(i));
+            if(sql.charAt(i)=='\n') b.append(++l).append(":");
         }
         b.append("\nGot:\n");
         var msg=toString(e);
