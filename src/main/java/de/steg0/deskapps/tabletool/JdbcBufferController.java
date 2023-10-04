@@ -601,7 +601,7 @@ class JdbcBufferController
             return;
         }
         
-        if(split&&resultview!=null) try
+        if(split) try
         {
             int end = savedSelectionEnd;
             logger.log(Level.FINE,"Cutting to new buffer at {0}",end);
@@ -614,6 +614,7 @@ class JdbcBufferController
             fireBufferEvent(e);
 
             resultview=null;  /* this acts as a flag that we're in a split */
+            while(panel.getComponentCount()>1) panel.remove(1);
             
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -732,6 +733,8 @@ class JdbcBufferController
         }
         
         addResultSetTable(rsm);
+
+        fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     };
 
     private KeyListener resultsetKeyListener = 
@@ -781,8 +784,6 @@ class JdbcBufferController
         setResultSetMessageLabelFontSize();
 
         panel.revalidate();
-        
-        fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     }
 
     BiConsumer<ResultSetTableModel,Long> infoResultConsumer = (rsm,t) ->
