@@ -669,7 +669,7 @@ class JdbcBufferController
                         offset + m.start() + prefixLen,
                         offset + m.end());
 
-                return match;
+                return match.substring(prefixLen);
             }
             text = text.substring(match.length());
             position -= match.length();

@@ -723,6 +723,7 @@ class JdbcNotebookController
             {
                 connectionsSelector.setSelectedIndex(i);
                 connectionsSelector.repaint();
+                restoreFocus();
                 return;
             }
         }
