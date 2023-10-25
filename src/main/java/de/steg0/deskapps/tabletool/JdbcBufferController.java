@@ -1,7 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
-import static java.awt.event.ActionEvent.SHIFT_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
@@ -145,7 +144,6 @@ class JdbcBufferController
         
         var actions = new JdbcBufferActions(this);
         var im = editor.getInputMap();
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
