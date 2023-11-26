@@ -47,7 +47,7 @@ extends WindowAdapter
     private void showBuffer()
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
-            "(.)\\.[^.]+$","$1")+" - " : "");
+                "(.)\\.[^.]+$","$1")+" - " : "");
         String jvmName = ManagementFactory.getRuntimeMXBean().getName();
         String title = wsprefix + "Tabtype " + jvmName;
         frame = new JFrame(title);
