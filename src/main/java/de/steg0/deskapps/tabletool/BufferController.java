@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.lang.Math.max;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
@@ -53,6 +54,8 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
 class BufferController
 {
+    static final String CONNECT_COMMENT = "-- connect ";
+
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
@@ -267,7 +270,15 @@ class BufferController
         if(index<0) return caret;
         return caret-1-index;
     }
-    
+
+    String getTextFromCurrentLine()
+    {
+        String t = editor.getText();
+        int caret = editor.getCaretPosition();
+        int index = t.lastIndexOf('\n',caret-1)+1;
+        return t.substring(index);
+    }
+
     private void setCaretPositionInLine(int position)
     {
         String t = editor.getText();
@@ -291,7 +302,7 @@ class BufferController
         {
             if(t.charAt(i)=='\n') nl++;
         }
-        editor.setCaretPosition(Math.max(0,i));
+        editor.setCaretPosition(max(0,i));
         setCaretPositionInLine(offset);
     }
 
@@ -325,7 +336,7 @@ class BufferController
                     editor.getWidth() - 1,
                     pointY>=0? pointY : editor.getHeight() - pointY
             );
-            int position=Math.max(0,editor.viewToModel2D(p));
+            int position=max(0,editor.viewToModel2D(p));
             editor.setSelectionEnd(position);
             editor.setSelectionStart(position);
             editor.setCaretPosition(position);
@@ -422,7 +433,7 @@ class BufferController
             if(start<0 || start==end)
             {
                 /* no or zero-size selection -- treat like one char selection */
-                start=(end=Math.max(1,editor.getCaretPosition()))-1;
+                start=(end=max(1,editor.getCaretPosition()))-1;
             }
             else
             {
@@ -583,6 +594,12 @@ class BufferController
     void fetch(boolean split)
     {
         savedCaretPosition = editor.getCaretPosition();
+        if(getTextFromCurrentLine().startsWith(CONNECT_COMMENT))
+        {
+            logger.log(Level.FINE,"Found connect alias");
+            fireBufferEvent(Type.DRY_FETCH);
+            return;
+        }
         String text = editor.getSelectedText() != null?
                 editor.getSelectedText().trim() : selectCurrentQuery();
         savedSelectionStart = editor.getSelectionStart();

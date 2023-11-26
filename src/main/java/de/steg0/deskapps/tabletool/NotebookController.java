@@ -132,6 +132,7 @@ class NotebookController
     private final List<BufferController> buffers = new ArrayList<>();
     private BufferController firstBuffer() { return buffers.get(0); }
     private int lastFocusedBuffer;
+    private BufferController lastFocusedBuffer() { return buffers.get(lastFocusedBuffer); }
     boolean hasSavedFocusPosition;
     private final JPanel bufferPanel = new JPanel(new GridBagLayout());
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
@@ -716,18 +717,30 @@ class NotebookController
 
     void openConnection()
     {
+        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine()) &&
+           !openConnection(firstBuffer().editor.getText()))
+        {
+            logger.fine("No suitable connection definition found");
+            connectionsSelector.requestFocusInWindow();
+        }
+    }
+
+    private boolean openConnection(String contextline)
+    {
+        logger.log(Level.FINE,"Looking for alias in context: {0}",contextline);
         for(int i=0;i<connections.getSize();i++)
         {
-            if(firstBuffer().editor.getText().startsWith(
-                    "-- connect "+connections.getElementAt(i).info().name))
+            if(contextline.startsWith(
+                    BufferController.CONNECT_COMMENT+
+                    connections.getElementAt(i).info().name))
             {
                 connectionsSelector.setSelectedIndex(i);
                 connectionsSelector.repaint();
                 restoreFocus();
-                return;
+                return true;
             }
         }
-        connectionsSelector.requestFocusInWindow();
+        return false;
     }
 
     void disconnect()
@@ -743,7 +756,7 @@ class NotebookController
     
     void restoreFocus()
     {
-        buffers.get(lastFocusedBuffer).focusEditor(null,null);
+        lastFocusedBuffer().focusEditor(null,null);
     }
     
     void increaseFetchsize()
