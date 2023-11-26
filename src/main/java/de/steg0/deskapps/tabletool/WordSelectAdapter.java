@@ -22,7 +22,7 @@ import javax.swing.JTextArea;
  * 
  * The number of clicks used to start the selection, as well as character
  * positions, are maintained in the instance to be used by
- * {@link JdbcNotebookController} too. The reason for this is that a mouse
+ * {@link NotebookController} too. The reason for this is that a mouse
  * operation might also have been started in the right panel area next to the
  * editor. Such actions should interoperate as well as possible.
  */

@@ -44,10 +44,10 @@ extends WindowAdapter
                 .toArray(File[]::new);
     }
     
-    private void showJdbcBuffer()
+    private void showBuffer()
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
-            "(.)\\.[^.]+$","$1")+" - " : "");
+                "(.)\\.[^.]+$","$1")+" - " : "");
         String jvmName = ManagementFactory.getRuntimeMXBean().getName();
         String title = wsprefix + "Tabtype " + jvmName;
         frame = new JFrame(title);
@@ -121,7 +121,7 @@ extends WindowAdapter
                 if(sqlFiles==null) controller.add(-1);
                 else for(File f : sqlFiles) controller.load(f);
             }
-            else if(!workspace.exists())
+            else if(!workspace.exists() || workspace.length()==0)
             {
                 controller.add(-1);
             }
@@ -216,7 +216,7 @@ extends WindowAdapter
         {
             m = new Tabtype(propertiesfile,(String)null);
         }
-        m.showJdbcBuffer();
+        m.showBuffer();
     }
     
 }

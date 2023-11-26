@@ -1,7 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import static java.awt.event.ActionEvent.CTRL_MASK;
-import static java.awt.event.ActionEvent.SHIFT_MASK;
+import static java.lang.Math.max;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
@@ -50,10 +50,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferController
+class BufferController
 {
+    static final String CONNECT_COMMENT = "-- connect ";
+
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
@@ -66,7 +68,7 @@ class JdbcBufferController
     
     interface Listener extends EventListener
     {
-        void bufferActionPerformed(JdbcBufferEvent e);
+        void bufferActionPerformed(BufferEvent e);
     }
     
     Logger logger = Logger.getLogger("tabletool.editor");
@@ -77,10 +79,10 @@ class JdbcBufferController
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
     private KeyListener editorKeyListener =
-            new JdbcBufferEditorKeyListener(this);
+            new BufferEditorKeyListener(this);
     WordSelectAdapter selectListener = new WordSelectAdapter(editor);
-    private JdbcBufferDocumentListener documentListener = 
-            new JdbcBufferDocumentListener(this);
+    private BufferDocumentListener documentListener = 
+            new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
     private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
     void setSaved()
@@ -114,12 +116,12 @@ class JdbcBufferController
     
     JTable resultview;
     JLabel resultMessageLabel;
-    JdbcBufferConfigSource configSource;
+    BufferConfigSource configSource;
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame cellDisplay,JFrame infoDisplay,
-            Consumer<String> updateLog,JdbcBufferConfigSource configSource,
+    BufferController(JFrame cellDisplay,JFrame infoDisplay,
+            Consumer<String> updateLog,BufferConfigSource configSource,
             Listener listener)
     {
         this.cellDisplay = cellDisplay;
@@ -143,9 +145,8 @@ class JdbcBufferController
         }
         editor.setTabSize(configSource.getEditorTabsize());
         
-        var actions = new JdbcBufferActions(this);
+        var actions = new BufferActions(this);
         var im = editor.getInputMap();
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK|SHIFT_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
@@ -269,7 +270,15 @@ class JdbcBufferController
         if(index<0) return caret;
         return caret-1-index;
     }
-    
+
+    String getTextFromCurrentLine()
+    {
+        String t = editor.getText();
+        int caret = editor.getCaretPosition();
+        int index = t.lastIndexOf('\n',caret-1)+1;
+        return t.substring(index);
+    }
+
     private void setCaretPositionInLine(int position)
     {
         String t = editor.getText();
@@ -293,20 +302,20 @@ class JdbcBufferController
         {
             if(t.charAt(i)=='\n') nl++;
         }
-        editor.setCaretPosition(Math.max(0,i));
+        editor.setCaretPosition(max(0,i));
         setCaretPositionInLine(offset);
     }
 
     private final Listener listener;
     
-    void fireBufferEvent(JdbcBufferEvent e)
+    void fireBufferEvent(BufferEvent e)
     {
         listener.bufferActionPerformed(e);
     }
 
     void fireBufferEvent(Type type)
     {
-        fireBufferEvent(new JdbcBufferEvent(this,type));
+        fireBufferEvent(new BufferEvent(this,type));
     }
 
     /**
@@ -327,7 +336,7 @@ class JdbcBufferController
                     editor.getWidth() - 1,
                     pointY>=0? pointY : editor.getHeight() - pointY
             );
-            int position=Math.max(0,editor.viewToModel2D(p));
+            int position=max(0,editor.viewToModel2D(p));
             editor.setSelectionEnd(position);
             editor.setSelectionStart(position);
             editor.setCaretPosition(position);
@@ -424,7 +433,7 @@ class JdbcBufferController
             if(start<0 || start==end)
             {
                 /* no or zero-size selection -- treat like one char selection */
-                start=(end=Math.max(1,editor.getCaretPosition()))-1;
+                start=(end=max(1,editor.getCaretPosition()))-1;
             }
             else
             {
@@ -585,6 +594,12 @@ class JdbcBufferController
     void fetch(boolean split)
     {
         savedCaretPosition = editor.getCaretPosition();
+        if(getTextFromCurrentLine().startsWith(CONNECT_COMMENT))
+        {
+            logger.log(Level.FINE,"Found connect alias");
+            fireBufferEvent(Type.DRY_FETCH);
+            return;
+        }
         String text = editor.getSelectedText() != null?
                 editor.getSelectedText().trim() : selectCurrentQuery();
         savedSelectionStart = editor.getSelectionStart();
@@ -606,7 +621,7 @@ class JdbcBufferController
             int end = savedSelectionEnd;
             logger.log(Level.FINE,"Cutting to new buffer at {0}",end);
             Document d = editor.getDocument();
-            var e = new JdbcBufferEvent(this,Type.SPLIT_REQUESTED);
+            var e = new BufferEvent(this,Type.SPLIT_REQUESTED);
             int len = d.getLength()-end;
             logger.log(Level.FINE,"Total length {0}",len);
             e.removedRsm = getResultSetTableModel();
@@ -738,7 +753,7 @@ class JdbcBufferController
     };
 
     private KeyListener resultsetKeyListener = 
-        new JdbcBufferResultSetKeyListener(this);
+        new BufferResultSetKeyListener(this);
 
     void addResultSetTable(ResultSetTableModel rsm)
     {
@@ -762,7 +777,7 @@ class JdbcBufferController
         resultviewConstraints.gridy = 1;
         
         /* https://bugs.openjdk.java.net/browse/JDK-4890196 */
-        var newMl = new JdbcBufferResultPaneMouseWheelListener(this);
+        var newMl = new BufferResultPaneMouseWheelListener(this);
         newMl.originalListener = resultscrollpane.getMouseWheelListeners()[0];
         resultscrollpane.removeMouseWheelListener(newMl.originalListener);
         resultscrollpane.addMouseWheelListener(newMl);

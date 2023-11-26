@@ -60,7 +60,7 @@ import javax.swing.text.NumberFormatter;
  * Represents a "notebook", i. e. a series of text field/result table pairs that
  * operate on a selectable {@link ConnectionWorker}.
  */
-class JdbcNotebookController
+class NotebookController
 {
     static final int DEFAULT_FETCH_SIZE = 10;
     
@@ -75,7 +75,7 @@ class JdbcNotebookController
     
     private final JFrame cellDisplay,infoDisplay;
     private final PropertyHolder propertyHolder;
-    private final JdbcBufferConfigSource bufferConfigSource;
+    private final BufferConfigSource bufferConfigSource;
     
     File file;
     
@@ -129,14 +129,15 @@ class JdbcNotebookController
     
     private final Consumer<String> logConsumer;
     
-    private final List<JdbcBufferController> buffers = new ArrayList<>();
-    private JdbcBufferController firstBuffer() { return buffers.get(0); }
+    private final List<BufferController> buffers = new ArrayList<>();
+    private BufferController firstBuffer() { return buffers.get(0); }
     private int lastFocusedBuffer;
+    private BufferController lastFocusedBuffer() { return buffers.get(lastFocusedBuffer); }
     boolean hasSavedFocusPosition;
     private final JPanel bufferPanel = new JPanel(new GridBagLayout());
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
     
-    JdbcNotebookController(
+    NotebookController(
             JFrame cellDisplay,
             JFrame infoDisplay,
             PropertyHolder propertyHolder,
@@ -149,7 +150,7 @@ class JdbcNotebookController
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         this.listener = listener;
-        this.bufferConfigSource = new JdbcBufferConfigSource(propertyHolder,
+        this.bufferConfigSource = new BufferConfigSource(propertyHolder,
                 this.connections,pwd);
         
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -186,7 +187,7 @@ class JdbcNotebookController
         disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
-        logConsumer = new JdbcNotebookLogConsumer(log);
+        logConsumer = new NotebookLogConsumer(log);
         
         autocommitCb.addActionListener((e) -> 
         {
@@ -233,9 +234,9 @@ class JdbcNotebookController
         setBackground(null);
     }
 
-    private JdbcBufferController newBufferController()
+    private BufferController newBufferController()
     {
-        return new JdbcBufferController(cellDisplay,infoDisplay,logConsumer,
+        return new BufferController(cellDisplay,infoDisplay,logConsumer,
                 bufferConfigSource,bufferListener);
     }
 
@@ -245,12 +246,12 @@ class JdbcNotebookController
         if(bg==null) bg=firstBuffer().defaultBackground;
         bufferPanel.setBackground(bg);
         log.setBackground(bg);
-        for(JdbcBufferController buffer : buffers) buffer.setBackground(bg);
+        for(BufferController buffer : buffers) buffer.setBackground(bg);
     }
     
     void zoom(double factor)
     {
-        for(JdbcBufferController buffer : buffers)
+        for(BufferController buffer : buffers)
         {
             buffer.zoom(factor);
 
@@ -298,7 +299,7 @@ class JdbcNotebookController
                     return;
                 }
             }
-            JdbcBufferController lastBuffer = buffers.get(buffers.size() - 1);
+            BufferController lastBuffer = buffers.get(buffers.size() - 1);
             if(lastBuffer.resultview != null)
             {
                 exitedSouth(buffers.get(buffers.size() - 1));
@@ -345,22 +346,22 @@ class JdbcNotebookController
         }
     }
     
-    private final JdbcBufferController.Listener bufferListener = 
-            new JdbcBufferController.Listener()
+    private final BufferController.Listener bufferListener = 
+            new BufferController.Listener()
     {
         @Override
-        public void bufferActionPerformed(JdbcBufferEvent e)
+        public void bufferActionPerformed(BufferEvent e)
         {
-            JdbcBufferController source = e.getSource();
+            BufferController source = e.getSource();
             int i = buffers.indexOf(source);
-            JdbcBufferController next = i < buffers.size()-1?
+            BufferController next = i < buffers.size()-1?
                     buffers.get(i+1) : null;
             switch(e.type)
             {
             case EXITED_NORTH:
                 if(i > 0) 
                 {
-                    JdbcBufferController target = buffers.get(i-1);
+                    BufferController target = buffers.get(i-1);
                     target.focusEditor(source.getCaretPositionInLine(),-1);
                     int h = target.getLineHeight();
                     selectedRectChanged(target,new Rectangle(0,
@@ -472,7 +473,7 @@ class JdbcNotebookController
     
     /**Adds a buffer to the panel and wires listeners. */
     @SuppressWarnings("unchecked")
-    private void add(int index,JdbcBufferController c)
+    private void add(int index,BufferController c)
     {
         c.editor.addFocusListener(new FocusListener()
         {
@@ -523,7 +524,7 @@ class JdbcNotebookController
         bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
-    private void exitedSouth(JdbcBufferController source)
+    private void exitedSouth(BufferController source)
     {
         int i=buffers.indexOf(source);
         if(buffers.size() <= i+1)
@@ -542,7 +543,7 @@ class JdbcNotebookController
                 (int)source.panel.getBounds().getHeight(),1,h));
     }
 
-    private void selectedRectChanged(JdbcBufferController source,Rectangle rect)
+    private void selectedRectChanged(BufferController source,Rectangle rect)
     {
         Rectangle sourceRect = source.panel.getBounds();
         JViewport viewport = bufferPane.getViewport();
@@ -676,7 +677,7 @@ class JdbcNotebookController
     private void store(Writer w)
     throws IOException
     {
-        for(JdbcBufferController buffer : buffers)
+        for(BufferController buffer : buffers)
         {
             buffer.store(w);
         }
@@ -716,18 +717,30 @@ class JdbcNotebookController
 
     void openConnection()
     {
+        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine()) &&
+           !openConnection(firstBuffer().editor.getText()))
+        {
+            logger.fine("No suitable connection definition found");
+            connectionsSelector.requestFocusInWindow();
+        }
+    }
+
+    private boolean openConnection(String contextline)
+    {
+        logger.log(Level.FINE,"Looking for alias in context: {0}",contextline);
         for(int i=0;i<connections.getSize();i++)
         {
-            if(firstBuffer().editor.getText().startsWith(
-                    "-- connect "+connections.getElementAt(i).info().name))
+            if(contextline.startsWith(
+                    BufferController.CONNECT_COMMENT+
+                    connections.getElementAt(i).info().name))
             {
                 connectionsSelector.setSelectedIndex(i);
                 connectionsSelector.repaint();
                 restoreFocus();
-                return;
+                return true;
             }
         }
-        connectionsSelector.requestFocusInWindow();
+        return false;
     }
 
     void disconnect()
@@ -743,7 +756,7 @@ class JdbcNotebookController
     
     void restoreFocus()
     {
-        buffers.get(lastFocusedBuffer).focusEditor(null,null);
+        lastFocusedBuffer().focusEditor(null,null);
     }
     
     void increaseFetchsize()
@@ -768,7 +781,7 @@ class JdbcNotebookController
         fetchsizeField.setValue(fetchsize);
     }
 
-    boolean findAndAdvance(JdbcNotebookSearchState state)
+    boolean findAndAdvance(NotebookSearchState state)
     {
         if(state.buf>=buffers.size()) return false;
         assert state.text != null;
@@ -787,7 +800,7 @@ class JdbcNotebookController
     private final PropertyChangeListener fetchSizeListener = (e) ->
     {
         int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
-        for(JdbcBufferController buffer : buffers)
+        for(BufferController buffer : buffers)
         {
             buffer.fetchsize = fetchsize;
         }
@@ -821,7 +834,7 @@ class JdbcNotebookController
             {
                 listener.autocommitChanged(connection,autocommitCb.isSelected());
             });
-            for(JdbcBufferController buffer : buffers)
+            for(BufferController buffer : buffers)
             {
                 buffer.connection = connection;
             }
@@ -837,7 +850,7 @@ class JdbcNotebookController
 
     void closeCurrentResultSet()
     {
-        for(JdbcBufferController buffer : buffers)
+        for(BufferController buffer : buffers)
         {
             buffer.closeCurrentResultSet();
         }
@@ -846,7 +859,7 @@ class JdbcNotebookController
     void reportDisconnect(ConnectionWorker connection)
     {
         if(firstBuffer().connection != connection) return;
-        for(JdbcBufferController buffer : buffers)
+        for(BufferController buffer : buffers)
         {
             buffer.connection = null;
         }

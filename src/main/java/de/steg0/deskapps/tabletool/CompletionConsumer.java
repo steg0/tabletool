@@ -13,12 +13,12 @@ import javax.swing.JPopupMenu;
 
 class CompletionConsumer implements BiConsumer<ResultSetTableModel,Long>
 {
-    private JdbcBufferController buffer;
+    private BufferController buffer;
     private int x,y;
     private Consumer<String> log;
     private int maxresults;
 
-    CompletionConsumer(JdbcBufferController buffer,int x,int y,
+    CompletionConsumer(BufferController buffer,int x,int y,
             Consumer<String> log,int maxresults)
     {
         this.buffer = buffer;

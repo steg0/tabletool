@@ -9,15 +9,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferActions
+class BufferActions
 {
     Logger logger = Logger.getLogger("tabletool.editor");
 
-    private final JdbcBufferController b;
+    private final BufferController b;
 
-    JdbcBufferActions(JdbcBufferController b)
+    BufferActions(BufferController b)
     {
         this.b = b;
     }

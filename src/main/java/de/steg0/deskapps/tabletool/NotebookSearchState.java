@@ -1,6 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
-class JdbcNotebookSearchState
+class NotebookSearchState
 {
     String text;
     int tab;

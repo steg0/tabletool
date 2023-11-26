@@ -3,7 +3,7 @@ package de.steg0.deskapps.tabletool;
 import java.awt.Rectangle;
 import java.util.EventObject;
 
-class JdbcBufferEvent extends EventObject
+class BufferEvent extends EventObject
 {
     enum Type {
         EXITED_NORTH,
@@ -26,15 +26,15 @@ class JdbcBufferEvent extends EventObject
     ResultSetTableModel removedRsm;
     Rectangle selectedRect;
     
-    JdbcBufferEvent(JdbcBufferController source,Type type)
+    BufferEvent(BufferController source,Type type)
     {
         super(source);
         this.type = type;
     }
 
     @Override
-    public JdbcBufferController getSource()
+    public BufferController getSource()
     {
-        return (JdbcBufferController)super.getSource();
+        return (BufferController)super.getSource();
     }
 }

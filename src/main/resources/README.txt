@@ -64,7 +64,7 @@ initSql is a statement which will be executed whenever a matching connection is 
 
 The tool loads and saves text files, which can contain CSV result sections marked up with a special comment syntax. These are shown as table widgets when opening such a file, to provide a way to carry over results in a pretty way from one session to the next. LOB information will not be part of this format, however.
 
-The files can start with the string "-- connect ", followed by one of the connection names from the property file, enabling the menu item Connection > Open to directly select that connection for the notebook.
+The files can start with the string "-- connect ", followed by one of the connection names from the property file, enabling the menu item Connection > Open to directly select that connection for the notebook. Such lines can also occur anywhere within the notebook; they are taken into account if they currently hold the input focus.
 
 
 ▶ Actions in a notebook
@@ -75,7 +75,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Alt+Left, Alt+Right - select prior/next tab.
 • Ctrl+Alt+Left, Ctrl+Alt+Right - move tab left/right.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
-• Ctrl+Shift+Enter or F5 - like Ctrl+Enter, but reuse the nearest result table.
+• F5 - like Ctrl+Enter, but reuse the nearest result table.
 • Ctrl+Tab - select the next result table or editor pane.
 • Ctrl+Shift+Tab - select the previous result table or editor pane.
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
