@@ -3,13 +3,13 @@ package de.steg0.deskapps.tabletool;
 import java.io.File;
 import java.util.Map;
 
-class JdbcBufferConfigSource
+class BufferConfigSource
 {
     private final PropertyHolder propertyHolder;
     private final ConnectionListModel connectionListModel;
     final File pwd;
 
-    JdbcBufferConfigSource(PropertyHolder propertyHolder,
+    BufferConfigSource(PropertyHolder propertyHolder,
             ConnectionListModel connectionListModel,File pwd)
     {
         this.propertyHolder = propertyHolder;

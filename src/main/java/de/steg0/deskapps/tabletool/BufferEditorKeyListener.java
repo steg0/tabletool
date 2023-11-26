@@ -5,13 +5,13 @@ import java.awt.event.KeyListener;
 
 import javax.swing.text.BadLocationException;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferEditorKeyListener implements KeyListener
+class BufferEditorKeyListener implements KeyListener
 {
-    private final JdbcBufferController b;
+    private final BufferController b;
 
-    JdbcBufferEditorKeyListener(JdbcBufferController b)
+    BufferEditorKeyListener(BufferController b)
     {
         this.b = b;
     }

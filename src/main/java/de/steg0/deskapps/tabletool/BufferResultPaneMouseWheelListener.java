@@ -5,14 +5,14 @@ import java.awt.event.MouseWheelListener;
 
 import javax.swing.JViewport;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferResultPaneMouseWheelListener
+class BufferResultPaneMouseWheelListener
 implements MouseWheelListener
 {
-    private final JdbcBufferController b;
+    private final BufferController b;
 
-    JdbcBufferResultPaneMouseWheelListener(JdbcBufferController b)
+    BufferResultPaneMouseWheelListener(BufferController b)
     {
         this.b = b;
     }

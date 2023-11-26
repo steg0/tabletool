@@ -49,9 +49,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferController
+class BufferController
 {
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
@@ -65,7 +65,7 @@ class JdbcBufferController
     
     interface Listener extends EventListener
     {
-        void bufferActionPerformed(JdbcBufferEvent e);
+        void bufferActionPerformed(BufferEvent e);
     }
     
     Logger logger = Logger.getLogger("tabletool.editor");
@@ -76,10 +76,10 @@ class JdbcBufferController
     
     JTextArea editor = new JTextArea(new GroupableUndoDocument());
     private KeyListener editorKeyListener =
-            new JdbcBufferEditorKeyListener(this);
+            new BufferEditorKeyListener(this);
     WordSelectAdapter selectListener = new WordSelectAdapter(editor);
-    private JdbcBufferDocumentListener documentListener = 
-            new JdbcBufferDocumentListener(this);
+    private BufferDocumentListener documentListener = 
+            new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
     private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
     void setSaved()
@@ -113,12 +113,12 @@ class JdbcBufferController
     
     JTable resultview;
     JLabel resultMessageLabel;
-    JdbcBufferConfigSource configSource;
+    BufferConfigSource configSource;
     
     Consumer<String> log;
     
-    JdbcBufferController(JFrame cellDisplay,JFrame infoDisplay,
-            Consumer<String> updateLog,JdbcBufferConfigSource configSource,
+    BufferController(JFrame cellDisplay,JFrame infoDisplay,
+            Consumer<String> updateLog,BufferConfigSource configSource,
             Listener listener)
     {
         this.cellDisplay = cellDisplay;
@@ -142,7 +142,7 @@ class JdbcBufferController
         }
         editor.setTabSize(configSource.getEditorTabsize());
         
-        var actions = new JdbcBufferActions(this);
+        var actions = new BufferActions(this);
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
@@ -297,14 +297,14 @@ class JdbcBufferController
 
     private final Listener listener;
     
-    void fireBufferEvent(JdbcBufferEvent e)
+    void fireBufferEvent(BufferEvent e)
     {
         listener.bufferActionPerformed(e);
     }
 
     void fireBufferEvent(Type type)
     {
-        fireBufferEvent(new JdbcBufferEvent(this,type));
+        fireBufferEvent(new BufferEvent(this,type));
     }
 
     /**
@@ -604,7 +604,7 @@ class JdbcBufferController
             int end = savedSelectionEnd;
             logger.log(Level.FINE,"Cutting to new buffer at {0}",end);
             Document d = editor.getDocument();
-            var e = new JdbcBufferEvent(this,Type.SPLIT_REQUESTED);
+            var e = new BufferEvent(this,Type.SPLIT_REQUESTED);
             int len = d.getLength()-end;
             logger.log(Level.FINE,"Total length {0}",len);
             e.removedRsm = getResultSetTableModel();
@@ -736,7 +736,7 @@ class JdbcBufferController
     };
 
     private KeyListener resultsetKeyListener = 
-        new JdbcBufferResultSetKeyListener(this);
+        new BufferResultSetKeyListener(this);
 
     void addResultSetTable(ResultSetTableModel rsm)
     {
@@ -760,7 +760,7 @@ class JdbcBufferController
         resultviewConstraints.gridy = 1;
         
         /* https://bugs.openjdk.java.net/browse/JDK-4890196 */
-        var newMl = new JdbcBufferResultPaneMouseWheelListener(this);
+        var newMl = new BufferResultPaneMouseWheelListener(this);
         newMl.originalListener = resultscrollpane.getMouseWheelListeners()[0];
         resultscrollpane.removeMouseWheelListener(newMl.originalListener);
         resultscrollpane.addMouseWheelListener(newMl);

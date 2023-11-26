@@ -3,14 +3,14 @@ package de.steg0.deskapps.tabletool;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferDocumentListener implements DocumentListener
+class BufferDocumentListener implements DocumentListener
 {
     boolean unsaved;
-    private JdbcBufferController buffer;
+    private BufferController buffer;
     
-    JdbcBufferDocumentListener(JdbcBufferController buffer)
+    BufferDocumentListener(BufferController buffer)
     {
         this.buffer = buffer;
         buffer.editor.getDocument().addDocumentListener(this);

@@ -7,10 +7,10 @@ import javax.swing.JPopupMenu;
 
 class SnippetPopup
 {
-    private JdbcBufferController buffer;
+    private BufferController buffer;
     private int x,y;
 
-    SnippetPopup(JdbcBufferController buffer,int x,int y)
+    SnippetPopup(BufferController buffer,int x,int y)
     {
         this.buffer = buffer;
         this.x=x;

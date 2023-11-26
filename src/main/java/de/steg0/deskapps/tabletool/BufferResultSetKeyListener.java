@@ -7,13 +7,13 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JViewport;
 
-import de.steg0.deskapps.tabletool.JdbcBufferEvent.Type;
+import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
-class JdbcBufferResultSetKeyListener implements KeyListener
+class BufferResultSetKeyListener implements KeyListener
 {
-    private final JdbcBufferController b;
+    private final BufferController b;
 
-    JdbcBufferResultSetKeyListener(JdbcBufferController b)
+    BufferResultSetKeyListener(BufferController b)
     {
         this.b = b;
     }
@@ -30,7 +30,7 @@ class JdbcBufferResultSetKeyListener implements KeyListener
                 b.resultview.getTableHeader().getBounds();
         Point position = ((JViewport)b.resultview.getParent())
             .getViewPosition();
-        var e = new JdbcBufferEvent(b,Type.SELECTED_RECT_CHANGED);
+        var e = new BufferEvent(b,Type.SELECTED_RECT_CHANGED);
         e.selectedRect = new Rectangle(
                 (int)cellRect.getX(),
                 (int)(rect.getHeight() + 

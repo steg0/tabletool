@@ -44,7 +44,7 @@ extends WindowAdapter
                 .toArray(File[]::new);
     }
     
-    private void showJdbcBuffer()
+    private void showBuffer()
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
             "(.)\\.[^.]+$","$1")+" - " : "");
@@ -216,7 +216,7 @@ extends WindowAdapter
         {
             m = new Tabtype(propertiesfile,(String)null);
         }
-        m.showJdbcBuffer();
+        m.showBuffer();
     }
     
 }
