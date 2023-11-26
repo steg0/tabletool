@@ -112,7 +112,7 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             tabbedPane.setSelectedIndex(computeMultiDigitIndex(e.getWhen()));
-            JdbcNotebookController c = notebooks.get(
+            NotebookController c = notebooks.get(
                     tabbedPane.getSelectedIndex());
             if(c.hasSavedFocusPosition) c.restoreFocus();
         }
@@ -128,12 +128,12 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             int selected = tabbedPane.getSelectedIndex();
-            JdbcNotebookController notebook = notebooks.get(selected);
+            NotebookController notebook = notebooks.get(selected);
             notebook.zoom(factor);
         }
     }
 
-    private JdbcNotebookSearchState searchState=new JdbcNotebookSearchState();
+    private NotebookSearchState searchState=new NotebookSearchState();
 
     Action
         addAction = new AbstractAction("New")
@@ -156,7 +156,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent event)
             {
                 int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook=notebooks.get(index);
+                NotebookController notebook=notebooks.get(index);
                 if(notebook.file==null||notebook.file.getParentFile()==null)
                 {
                     JOptionPane.showMessageDialog(
@@ -186,7 +186,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook=notebooks.get(index);
+                NotebookController notebook=notebooks.get(index);
                 boolean newBuffer=notebook.file==null;
                 if(notebook.store(false))
                 {
@@ -201,7 +201,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook=notebooks.get(index);
+                NotebookController notebook=notebooks.get(index);
                 if(notebook.store(true))
                 {
                     retitle();
@@ -215,7 +215,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 int index=tabbedPane.getSelectedIndex();
-                JdbcNotebookController notebook=notebooks.get(index);
+                NotebookController notebook=notebooks.get(index);
                 if(notebook.rename())
                 {
                     retitle();
@@ -289,7 +289,7 @@ implements KeyListener
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==0) selected=tabbedPane.getTabCount();
                 tabbedPane.setSelectedIndex(selected-1);
-                JdbcNotebookController c = notebooks.get(
+                NotebookController c = notebooks.get(
                         tabbedPane.getSelectedIndex());
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
@@ -301,7 +301,7 @@ implements KeyListener
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==tabbedPane.getTabCount()-1) selected=-1;
                 tabbedPane.setSelectedIndex(selected+1);
-                JdbcNotebookController c = notebooks.get(
+                NotebookController c = notebooks.get(
                         tabbedPane.getSelectedIndex());
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
@@ -316,7 +316,7 @@ implements KeyListener
                     Component c = tabbedPane.getSelectedComponent();
                     tabbedPane.remove(index);
                     tabbedPane.add(c,index-1);
-                    JdbcNotebookController notebook = notebooks.remove(index);
+                    NotebookController notebook = notebooks.remove(index);
                     notebooks.add(index-1,notebook);
                     retitle();
                     tabbedPane.setSelectedComponent(c);
@@ -334,7 +334,7 @@ implements KeyListener
                     Component c = tabbedPane.getSelectedComponent();
                     tabbedPane.remove(index);
                     tabbedPane.add(c,index+1);
-                    JdbcNotebookController notebook = notebooks.remove(index);
+                    NotebookController notebook = notebooks.remove(index);
                     notebooks.add(index+1,notebook);
                     retitle();
                     tabbedPane.setSelectedComponent(c);
@@ -412,7 +412,7 @@ implements KeyListener
 
     private void find()
     {
-        JdbcNotebookController notebook = notebooks.get(searchState.tab);
+        NotebookController notebook = notebooks.get(searchState.tab);
         boolean hasMatch = false;
         while(!(hasMatch=notebook.findAndAdvance(searchState)) && 
                 searchState.tab < notebooks.size() - 1)
@@ -506,16 +506,16 @@ implements KeyListener
         });
     }
     
-    private final List<JdbcNotebookController> notebooks = new ArrayList<>();
+    private final List<NotebookController> notebooks = new ArrayList<>();
 
     /**
      * Adds a tab and selects it.
      * 
      * @return the controller responsible for the new tab.
      */
-    JdbcNotebookController add(int index)
+    NotebookController add(int index)
     {
-        var notebook = new JdbcNotebookController(
+        var notebook = new NotebookController(
                 cellDisplay,
                 infoDisplay,
                 propertyHolder,
@@ -533,7 +533,7 @@ implements KeyListener
     
     void removeSelected()
     {
-        JdbcNotebookController notebook=
+        NotebookController notebook=
                 notebooks.get(tabbedPane.getSelectedIndex());
         if(notebook.isUnsaved())
         {
@@ -554,7 +554,7 @@ implements KeyListener
         if(notebooks.size()==0) add(-1);
         SwingUtilities.invokeLater(() -> {
             int selectedIndex = tabbedPane.getSelectedIndex();
-            JdbcNotebookController c = notebooks.get(selectedIndex);
+            NotebookController c = notebooks.get(selectedIndex);
             if(c.hasSavedFocusPosition) c.restoreFocus();
         });
     }
@@ -613,7 +613,7 @@ implements KeyListener
         int oldSelectedIndex = tabbedPane.getSelectedIndex();
         try
         {
-            JdbcNotebookController notebook = add(-1);
+            NotebookController notebook = add(-1);
             notebook.load(file);
             int index = tabbedPane.getSelectedIndex();
             retitle();
@@ -635,7 +635,7 @@ implements KeyListener
     void revert()
     {
         int index=tabbedPane.getSelectedIndex();
-        JdbcNotebookController notebook=notebooks.get(index);
+        NotebookController notebook=notebooks.get(index);
         if(notebook.file == null)
         {
             JOptionPane.showMessageDialog(
@@ -658,7 +658,7 @@ implements KeyListener
         notebooks.remove(index);
         tabbedPane.remove(index);
         add(index);
-        JdbcNotebookController newNotebook = notebooks.get(index);
+        NotebookController newNotebook = notebooks.get(index);
         try
         {
             newNotebook.load(notebook.file);
@@ -801,7 +801,7 @@ implements KeyListener
             File sqlFile = new File(fn);
             try
             {
-                JdbcNotebookController notebook = add(-1);
+                NotebookController notebook = add(-1);
                 notebook.load(sqlFile);
                 int index = tabbedPane.getSelectedIndex();
                 if(fn.equals(w.getActiveFile())) selectedIndex = index;
@@ -839,8 +839,8 @@ implements KeyListener
         Workspaces.store(w,workspaceFile);
     }
         
-    JdbcNotebookController.Listener notebookListener = 
-            new JdbcNotebookController.Listener()
+    NotebookController.Listener notebookListener = 
+            new NotebookController.Listener()
     {
         @Override
         public void disconnected(ConnectionWorker connection)
@@ -897,7 +897,7 @@ implements KeyListener
         lastClicked = tabbedPane.getSelectedIndex();
         if(!tabbedPane.hasFocus())
         {
-            JdbcNotebookController notebook = notebooks.get(lastClicked);
+            NotebookController notebook = notebooks.get(lastClicked);
             if(notebook.hasSavedFocusPosition) notebook.restoreFocus();
         }
     }

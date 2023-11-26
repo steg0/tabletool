@@ -60,7 +60,7 @@ import javax.swing.text.NumberFormatter;
  * Represents a "notebook", i. e. a series of text field/result table pairs that
  * operate on a selectable {@link ConnectionWorker}.
  */
-class JdbcNotebookController
+class NotebookController
 {
     static final int DEFAULT_FETCH_SIZE = 10;
     
@@ -136,7 +136,7 @@ class JdbcNotebookController
     private final JPanel bufferPanel = new JPanel(new GridBagLayout());
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
     
-    JdbcNotebookController(
+    NotebookController(
             JFrame cellDisplay,
             JFrame infoDisplay,
             PropertyHolder propertyHolder,
@@ -186,7 +186,7 @@ class JdbcNotebookController
         disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
-        logConsumer = new JdbcNotebookLogConsumer(log);
+        logConsumer = new NotebookLogConsumer(log);
         
         autocommitCb.addActionListener((e) -> 
         {
@@ -768,7 +768,7 @@ class JdbcNotebookController
         fetchsizeField.setValue(fetchsize);
     }
 
-    boolean findAndAdvance(JdbcNotebookSearchState state)
+    boolean findAndAdvance(NotebookSearchState state)
     {
         if(state.buf>=buffers.size()) return false;
         assert state.text != null;

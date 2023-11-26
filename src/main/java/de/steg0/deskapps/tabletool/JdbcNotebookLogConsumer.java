@@ -12,7 +12,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
 
-class JdbcNotebookLogConsumer implements Consumer<String>,ActionListener
+class NotebookLogConsumer implements Consumer<String>,ActionListener
 {
     Logger resultlog = Logger.getLogger("tabletool.result");
 
@@ -23,7 +23,7 @@ class JdbcNotebookLogConsumer implements Consumer<String>,ActionListener
     private final JTextArea log;
     private Timer unhilighter;
 
-    JdbcNotebookLogConsumer(JTextArea log)
+    NotebookLogConsumer(JTextArea log)
     {
         this.log = log;
         log.setBorder(regularBorder);

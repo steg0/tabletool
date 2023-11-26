@@ -10,7 +10,7 @@ import javax.swing.event.ListDataListener;
 
 /**
  * The model to make connections, and a specific selected index in the list,
- * available to {@link JdbcNotebookController}. 
+ * available to {@link NotebookController}. 
  */
 class ConnectionListModel
 implements ComboBoxModel<Connections.ConnectionState>
