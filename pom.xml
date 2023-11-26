@@ -52,12 +52,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.oracle.database.security</groupId>
-      <artifactId>oraclepki</artifactId>
-      <version>21.7.0.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.ibm.db2</groupId>
       <artifactId>jcc</artifactId>
       <version>11.5.7.0</version>
