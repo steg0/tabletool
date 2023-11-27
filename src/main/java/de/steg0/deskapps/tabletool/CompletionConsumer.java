@@ -70,7 +70,7 @@ class CompletionConsumer implements BiConsumer<ResultSetTableModel,Long>
                         completion.substring(0,80):completion;
                 if(i==maxresults-2 && m.getRowCount()>=maxresults)
                 {
-                    label += " [+more...]";
+                    log.accept("List of completions truncated at "+new Date());
                 }
                 item = new JMenuItem(label);
                 item.addActionListener((e) -> buffer.editor.replaceSelection(
