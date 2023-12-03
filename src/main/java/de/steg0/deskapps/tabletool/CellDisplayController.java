@@ -27,6 +27,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -43,6 +45,8 @@ import javax.swing.undo.UndoManager;
 
 class CellDisplayController
 {
+    Logger logger = Logger.getLogger("tabletool.result");
+
     private final JFrame cellDisplay;
     private final File pwd;
 
@@ -114,6 +118,8 @@ class CellDisplayController
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
         String dialogtitle;
+
+        logger.log(Level.INFO,"value is {0}",value.getClass());
         
         if(value instanceof Clob) try(var l = new LineNumberReader(
                 ((Clob)value).getCharacterStream()))
