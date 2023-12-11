@@ -447,7 +447,7 @@ class NotebookController
                     remove(i+1);
                 }
                 source.focusEditor(null,null);
-                bufferPanel.revalidate();
+                bufferPanel.repaint();
                 break;
 
             case RESULT_VIEW_UPDATED:
