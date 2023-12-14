@@ -63,7 +63,8 @@ class BufferActions
                 if(text == null) return;
                 logger.fine("Fetching info for text: "+text);
                 int maxresults = 10000;
-                String sql = infoTemplate.replaceAll("@@selection@@",text);
+                String sql = infoTemplate.replaceAll("@@selection@@",
+                        text.replaceAll("'","''"));
                 logger.fine("Info using SQL: "+sql);
                 b.connection.submit(sql,maxresults,
                         b.infoResultConsumer,b.updateCountConsumer,b.log);
@@ -146,7 +147,7 @@ class BufferActions
                                 (int)xy.getCenterX(),(int)xy.getCenterY(),
                                 b.log,maxresults);
                     String sql = completionTemplate.replaceAll(
-                            "@@selection@@",text);
+                            "@@selection@@",text.replaceAll("'","''"));
                     logger.fine("Completion using SQL: "+sql);
                     b.connection.submit(sql,maxresults,resultConsumer,
                             b.updateCountConsumer,b.log);
