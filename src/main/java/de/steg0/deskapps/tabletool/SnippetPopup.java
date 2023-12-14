@@ -27,7 +27,7 @@ class SnippetPopup
             String name = snippet.getKey();
             String selectedText = buffer.editor.getSelectedText();
             if(selectedText == null) selectedText = "";
-            String completion = snippet.getValue().replaceAll("@@selection@@",
+            String completion = snippet.getValue().replace("@@selection@@",
                     selectedText);
             item = new JMenuItem(name);
             item.addActionListener((e) -> buffer.editor.replaceSelection(
