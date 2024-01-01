@@ -840,7 +840,6 @@ class BufferController
         while(panel.getComponentCount()>1)
         {
             panel.remove(1);
-            panel.revalidate();
         }
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);
     }
