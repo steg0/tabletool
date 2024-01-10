@@ -29,7 +29,7 @@ import javax.swing.JTextArea;
 class WordSelectAdapter
 extends MouseAdapter
 {
-    Logger logger = Logger.getLogger("tabletool.editor");
+    Logger logger = Logger.getLogger("tabtype");
     
     private final JTextArea textarea;
 

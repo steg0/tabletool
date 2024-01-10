@@ -71,7 +71,7 @@ class NotebookController
         void bufferChanged();
     }
     
-    Logger logger = Logger.getLogger("tabletool.editor");
+    Logger logger = Logger.getLogger("tabtype");
     
     private final JFrame cellDisplay,infoDisplay;
     private final PropertyHolder propertyHolder;

@@ -13,7 +13,7 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
 class BufferActions
 {
-    Logger logger = Logger.getLogger("tabletool.editor");
+    Logger logger = Logger.getLogger("tabtype");
 
     private final BufferController b;
 

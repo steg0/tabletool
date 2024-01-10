@@ -49,7 +49,7 @@ implements KeyListener
 {
     static final int MAX_RECENTS_SIZE=500;
     
-    private Logger logger = Logger.getLogger("tabletool.editor");
+    private Logger logger = Logger.getLogger("tabtype");
 
     private final JFrame
         parent,

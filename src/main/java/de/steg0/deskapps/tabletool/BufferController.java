@@ -71,7 +71,7 @@ class BufferController
         void bufferActionPerformed(BufferEvent e);
     }
     
-    Logger logger = Logger.getLogger("tabletool.editor");
+    Logger logger = Logger.getLogger("tabtype");
 
     private final JFrame cellDisplay,infoDisplay;
 

@@ -20,7 +20,7 @@ import javax.swing.JTabbedPane;
 
 class PropertyHolder
 {
-    Logger logger = Logger.getLogger("tabletool.properties");
+    Logger logger = Logger.getLogger("tabtype");
 
     File propertiesfile;
     private Properties properties;
