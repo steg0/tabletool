@@ -588,13 +588,14 @@ class NotebookController
     
     public boolean store(boolean saveAs)
     {
+        final File newFile;
         if(file==null || saveAs)
         {
             var filechooser = new JFileChooser(bufferConfigSource.pwd);
             int returnVal = filechooser.showSaveDialog(bufferPanel);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
-            File file=filechooser.getSelectedFile();
-            if(file.exists())
+            newFile=filechooser.getSelectedFile();
+            if(newFile.exists())
             {
                 int option = JOptionPane.showConfirmDialog(
                         bufferPane,
@@ -603,26 +604,30 @@ class NotebookController
                         JOptionPane.YES_NO_OPTION);
                 if(option != JOptionPane.YES_OPTION) return false;
             }
-            this.file=file;
         }
-        else if(wasModified())
+        else
         {
-            int option = JOptionPane.showConfirmDialog(
-                    bufferPane,
-                    "File seems modified on disk. Continue?",
-                    "File modified",
-                    JOptionPane.YES_NO_OPTION);
-            if(option != JOptionPane.YES_OPTION) return false;
+            if(wasModified())
+            {
+                int option = JOptionPane.showConfirmDialog(
+                        bufferPane,
+                        "File seems modified on disk. Continue?",
+                        "File modified",
+                        JOptionPane.YES_NO_OPTION);
+                if(option != JOptionPane.YES_OPTION) return false;
+            }
+            newFile = file;
         }
-        if(isUnsaved()&&file.exists())
+        if(isUnsaved()&&newFile.exists())
         {
-            var bakfile=new File(file.getPath()+'~');
+            var bakfile=new File(newFile.getPath()+'~');
             bakfile.delete();
-            file.renameTo(bakfile);
+            newFile.renameTo(bakfile);
         }
-        try(Writer w = new BufferedWriter(new FileWriter(file)))
+        try(Writer w = new BufferedWriter(new FileWriter(newFile)))
         {
             store(w);
+            file = newFile;
             setSaved();
             updateTimestamp();
             return true;
