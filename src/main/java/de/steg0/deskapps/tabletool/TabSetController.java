@@ -244,14 +244,16 @@ implements KeyListener
             {
                 try
                 {
-                    Desktop.getDesktop().open(propertyHolder.propertiesfile);
+                    for(var f : propertyHolder.propertiesfiles)
+                    {
+                        Desktop.getDesktop().open(f);
+                    }
                 }
                 catch(IOException e)
                 {
                     JOptionPane.showMessageDialog(
                             tabbedPane,
-                            "Error opening "+propertyHolder.propertiesfile+
-                            ": "+e.getMessage(),
+                            "Error opening properties files:\n"+e.getMessage(),
                             "Error opening properties",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -275,8 +277,7 @@ implements KeyListener
                 {
                     JOptionPane.showMessageDialog(
                             tabbedPane,
-                            "Error refreshing "+propertyHolder.propertiesfile+
-                            ": "+e.getMessage(),
+                            "Error refreshing files:\n"+e.getMessage(),
                             "Error refreshing properties",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -739,13 +740,13 @@ implements KeyListener
         item = new JMenuItem(openPropertiesAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_COMMA,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_P);
-        item.setEnabled(propertyHolder.propertiesfile != null &&
+        item.setEnabled(propertyHolder.propertiesfiles.length > 0 &&
                 Desktop.isDesktopSupported());
         menu.add(item);
 
         item = new JMenuItem(refreshPropertiesAction);
         item.setMnemonic(KeyEvent.VK_R);
-        item.setEnabled(propertyHolder.propertiesfile != null);
+        item.setEnabled(propertyHolder.propertiesfiles.length > 0);
         menu.add(item);
 
         menubar.add(menu);

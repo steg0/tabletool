@@ -22,22 +22,36 @@ class PropertyHolder
 {
     Logger logger = Logger.getLogger("tabtype");
 
-    File propertiesfile;
+    File[] propertiesfiles;
     private Properties properties;
     
-    PropertyHolder(File propertiesfile)
+    PropertyHolder(File[] propertiesfiles)
     {
-        this.propertiesfile = propertiesfile;
+        assert propertiesfiles != null;
+        this.propertiesfiles = propertiesfiles;
     }
     
     void load()
     throws IOException
     {
-        if(propertiesfile!=null) try(var propertyStream = 
-                new BufferedInputStream(new FileInputStream(propertiesfile)))
+        properties = new Properties();
+        if(propertiesfiles!=null)
         {
-            properties = new Properties();
-            properties.load(propertyStream);
+            for(File propertiesfile : propertiesfiles)
+            {
+                try(var propertyStream = new BufferedInputStream(
+                    new FileInputStream(propertiesfile)))
+                {
+                    if(propertiesfile.getName().endsWith(".xml"))
+                    {
+                        properties.loadFromXML(propertyStream);
+                    }
+                    else
+                    {
+                        properties.load(propertyStream);
+                    }
+                }
+            }
         }
     }
     

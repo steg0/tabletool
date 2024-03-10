@@ -17,4 +17,5 @@
 target\classes ^
     -m de.steg0.deskapps.tabletool/de.steg0.deskapps.tabletool.Tabtype ^
     -config test.tabtype.properties ^
+    -config test.tabtype.xml ^
     test.tt.xml

@@ -9,7 +9,9 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -27,18 +29,20 @@ extends WindowAdapter
 {
 
     private JFrame frame;
-    private File properties,workspace,sqlFiles[];
+    private File properties[],workspace,sqlFiles[];
     private TabSetController controller;
     
-    private Tabtype(String propertiesFile,String workspaceFile)
+    private Tabtype(Collection<String> propertiesFiles,String workspaceFile)
     {
-        if(propertiesFile!=null) properties = new File(propertiesFile);
+        properties = propertiesFiles.stream().map(f -> new File(f))
+                .toArray(File[]::new);
         if(workspaceFile!=null) workspace = new File(workspaceFile);
     }
     
-    private Tabtype(String propertiesfile,String[] sqlFiles)
+    private Tabtype(Collection<String> propertiesFiles,String[] sqlFiles)
     {
-        if(propertiesfile!=null) properties = new File(propertiesfile);
+        properties = propertiesFiles.stream().map(f -> new File(f))
+                .toArray(File[]::new);
         this.sqlFiles=Arrays.stream(sqlFiles)
                 .map((p) -> new File(p))
                 .toArray(File[]::new);
@@ -181,7 +185,7 @@ extends WindowAdapter
 
     public static void main(String[] args)
     {
-        String propertiesfile=null;
+        Collection<String> propertiesfiles=new ArrayList<>();
         
         int optind=0;
         ARGS: for(;optind<args.length&&args[optind].startsWith("-");optind++)
@@ -189,7 +193,7 @@ extends WindowAdapter
             switch(args[optind])
             {
             case "-config":
-                propertiesfile = args[++optind];
+                propertiesfiles.add(args[++optind]);
                 break;
             case "--":
                 optind++;
@@ -204,17 +208,17 @@ extends WindowAdapter
             if(firstdoc.toLowerCase().endsWith(".xml") || 
                firstdoc.toLowerCase().endsWith(".tabtype"))
             {
-                m = new Tabtype(propertiesfile,firstdoc);
+                m = new Tabtype(propertiesfiles,firstdoc);
             }
             else
             {
-                m = new Tabtype(propertiesfile,
+                m = new Tabtype(propertiesfiles,
                         Arrays.copyOfRange(args,optind,args.length));
             }
         }
         else
         {
-            m = new Tabtype(propertiesfile,(String)null);
+            m = new Tabtype(propertiesfiles,(String)null);
         }
         m.showBuffer();
     }
