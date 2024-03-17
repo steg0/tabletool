@@ -808,7 +808,11 @@ class BufferController
 
     BiConsumer<ResultSetTableModel,Long> infoResultConsumer = (rsm,t) ->
     {
-        if(rsm==null||rsm.getRowCount()==0) return;
+        if(rsm==null||rsm.getRowCount()==0)
+        {
+            log.accept("No result available at "+new Date());
+            return;
+        }
 
         showInfoTable(rsm);
         
@@ -832,7 +836,8 @@ class BufferController
     private void showInfoTable(ResultSetTableModel rsm)
     {
         JTable inforesultview = new JTable(rsm);
-        TableSizer.sizeColumns(inforesultview);
+        setResultViewFontSize(inforesultview,sizes.isEmpty()?
+                editor.getFont().getSize() : sizes.get(0));
         inforesultview.setCellSelectionEnabled(true);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
