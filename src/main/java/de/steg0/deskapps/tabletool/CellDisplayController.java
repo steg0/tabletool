@@ -45,7 +45,7 @@ import javax.swing.undo.UndoManager;
 
 class CellDisplayController
 {
-    Logger logger = Logger.getLogger("tabletool.result");
+    Logger logger = Logger.getLogger("tabtype");
 
     private final JFrame cellDisplay;
     private final File pwd;

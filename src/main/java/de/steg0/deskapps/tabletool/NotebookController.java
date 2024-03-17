@@ -71,9 +71,9 @@ class NotebookController
         void bufferChanged();
     }
     
-    Logger logger = Logger.getLogger("tabletool.editor");
+    Logger logger = Logger.getLogger("tabtype");
     
-    private final JFrame cellDisplay,infoDisplay;
+    private final JFrame parent,cellDisplay,infoDisplay;
     private final PropertyHolder propertyHolder;
     private final BufferConfigSource bufferConfigSource;
     
@@ -138,6 +138,7 @@ class NotebookController
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
     
     NotebookController(
+            JFrame parent,
             JFrame cellDisplay,
             JFrame infoDisplay,
             PropertyHolder propertyHolder,
@@ -145,6 +146,7 @@ class NotebookController
             File pwd,
             Listener listener)
     {
+        this.parent = parent;
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
@@ -236,7 +238,7 @@ class NotebookController
 
     private BufferController newBufferController()
     {
-        return new BufferController(cellDisplay,infoDisplay,logConsumer,
+        return new BufferController(parent,cellDisplay,infoDisplay,logConsumer,
                 bufferConfigSource,bufferListener);
     }
 
@@ -588,13 +590,14 @@ class NotebookController
     
     public boolean store(boolean saveAs)
     {
+        final File newFile;
         if(file==null || saveAs)
         {
             var filechooser = new JFileChooser(bufferConfigSource.pwd);
             int returnVal = filechooser.showSaveDialog(bufferPanel);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
-            File file=filechooser.getSelectedFile();
-            if(file.exists())
+            newFile=filechooser.getSelectedFile();
+            if(newFile.exists())
             {
                 int option = JOptionPane.showConfirmDialog(
                         bufferPane,
@@ -603,26 +606,30 @@ class NotebookController
                         JOptionPane.YES_NO_OPTION);
                 if(option != JOptionPane.YES_OPTION) return false;
             }
-            this.file=file;
         }
-        else if(wasModified())
+        else
         {
-            int option = JOptionPane.showConfirmDialog(
-                    bufferPane,
-                    "File seems modified on disk. Continue?",
-                    "File modified",
-                    JOptionPane.YES_NO_OPTION);
-            if(option != JOptionPane.YES_OPTION) return false;
+            if(wasModified())
+            {
+                int option = JOptionPane.showConfirmDialog(
+                        bufferPane,
+                        "File seems modified on disk. Continue?",
+                        "File modified",
+                        JOptionPane.YES_NO_OPTION);
+                if(option != JOptionPane.YES_OPTION) return false;
+            }
+            newFile = file;
         }
-        if(isUnsaved()&&file.exists())
+        if(isUnsaved()&&newFile.exists())
         {
-            var bakfile=new File(file.getPath()+'~');
+            var bakfile=new File(newFile.getPath()+'~');
             bakfile.delete();
-            file.renameTo(bakfile);
+            newFile.renameTo(bakfile);
         }
-        try(Writer w = new BufferedWriter(new FileWriter(file)))
+        try(Writer w = new BufferedWriter(new FileWriter(newFile)))
         {
             store(w);
+            file = newFile;
             setSaved();
             updateTimestamp();
             return true;
@@ -717,8 +724,7 @@ class NotebookController
 
     void openConnection()
     {
-        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine()) &&
-           !openConnection(firstBuffer().editor.getText()))
+        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine()))
         {
             logger.fine("No suitable connection definition found");
             connectionsSelector.requestFocusInWindow();

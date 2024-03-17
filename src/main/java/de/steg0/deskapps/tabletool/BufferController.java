@@ -71,7 +71,7 @@ class BufferController
         void bufferActionPerformed(BufferEvent e);
     }
     
-    Logger logger = Logger.getLogger("tabletool.editor");
+    Logger logger = Logger.getLogger("tabtype");
 
     private final JFrame cellDisplay,infoDisplay;
 
@@ -117,10 +117,11 @@ class BufferController
     JTable resultview;
     JLabel resultMessageLabel;
     BufferConfigSource configSource;
+    private PlaceholderInputController placeholderInputController;
     
     Consumer<String> log;
     
-    BufferController(JFrame cellDisplay,JFrame infoDisplay,
+    BufferController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             Consumer<String> updateLog,BufferConfigSource configSource,
             Listener listener)
     {
@@ -128,6 +129,8 @@ class BufferController
         this.infoDisplay = infoDisplay;
         this.configSource = configSource;
         this.listener = listener;
+        placeholderInputController = new PlaceholderInputController(
+                configSource,parent);
         this.log = updateLog;
         
         var editorConstraints = new GridBagConstraints();
@@ -615,6 +618,8 @@ class BufferController
             fireBufferEvent(Type.DRY_FETCH);
             return;
         }
+
+        text=placeholderInputController.fill(text);
         
         if(split) try
         {

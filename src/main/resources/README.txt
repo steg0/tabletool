@@ -35,9 +35,10 @@ The configuration file supports the following keys:
   frame.bg=#dddddd
   scroll.increment=16
   resultview.height=150
+  placeholder.regex=\\@\\@selection\\@\\@
   drivers.<JDBC URL part after the schema>.completionTemplate=\
       select table_name from user_tables \
-      where table_name like upper('@@selection@@%')
+      where table_name like upper(@@selection@@||'%')
   drivers.<JDBC URL part after the schema>.infoTemplate=<…>
   drivers.<JDBC URL part after the schema>.initSql=<…>
   drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<…>
@@ -47,7 +48,7 @@ The configuration file supports the following keys:
   connections.<Name 1>.bg=#eeeedd
   connections.<Name 1>.completionTemplate=\
       select table_name from all_tables \
-      where table_name like upper('@@selection@@%')
+      where table_name like upper(@@selection@@||'%')
   connections.<Name 1>.infoTemplate=<…>
   connections.<Name 1>.initSql=<…>
   connections.<Name Regex 1>.snippets.<Snippet Name 1>=<…>
@@ -64,7 +65,7 @@ initSql is a statement which will be executed whenever a matching connection is 
 
 The tool loads and saves text files, which can contain CSV result sections marked up with a special comment syntax. These are shown as table widgets when opening such a file, to provide a way to carry over results in a pretty way from one session to the next. LOB information will not be part of this format, however.
 
-The files can start with the string "-- connect ", followed by one of the connection names from the property file, enabling the menu item Connection > Open to directly select that connection for the notebook. Such lines can also occur anywhere within the notebook; they are taken into account if they currently hold the input focus.
+Focused lines that start with the string "-- connect ", followed by one of the connection names from the property file, enable the menu item Connection > Open, or a submit command, to directly select that connection for the notebook.
 
 
 ▶ Actions in a notebook

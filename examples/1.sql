@@ -1,9 +1,9 @@
-select * from sysibm.sysdummy1;
+select &param1,&param2,&param1 from sysibm.sysdummy1;
 
---CSV Result "The only row fetched from derby in 58 ms and ResultSet open at Sun Apr 30 11:33:09 CEST 2023
+--CSV Result "The only row fetched from derby at Sun Mar 17 12:54:26 CET 2024
 --"
---IBMREQD
---Y
+--1,2,3
+--a,b,a
 
 select 1
 from
