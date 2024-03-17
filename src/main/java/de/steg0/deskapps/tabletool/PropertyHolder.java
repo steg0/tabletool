@@ -67,8 +67,8 @@ class PropertyHolder
 
     Point getDefaultFrameLocation()
     {
-        String xstr = properties.getOrDefault("frame.x","100").toString();
-        String ystr = properties.getOrDefault("frame.y","100").toString();
+        String xstr = properties.getOrDefault("frame.x","150").toString();
+        String ystr = properties.getOrDefault("frame.y","25").toString();
         return new Point(
                 Integer.parseInt(xstr),
                 Integer.parseInt(ystr)
