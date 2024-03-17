@@ -832,7 +832,7 @@ class BufferController
     private void showInfoTable(ResultSetTableModel rsm)
     {
         JTable inforesultview = new JTable(rsm);
-        setResultViewFontSize(inforesultview,editor.getFont().getSize());
+        TableSizer.sizeColumns(inforesultview);
         inforesultview.setCellSelectionEnabled(true);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
