@@ -3,13 +3,13 @@
 <properties>
     <entry key="drivers.derby.initSql">set schema=sys</entry>
     <entry key="drivers.derby.completionTemplate">
-        select tablename from sys.systables where lower(tablename) like lower('%@@selection@@%')
+        select tablename from sys.systables where lower(tablename) like lower(@@selection@@||'%')
     </entry>
     <entry key="drivers.derby.snippets.systables">
-        select * from sys.systables where tablename like '%@@selection@@%';
+        select * from sys.systables where tablename like @@selection@@||'%';
     </entry>
     <entry key="drivers.derby.infoTemplate">
-        select * from sys.systables where tablename like upper('@@selection@@%')
+        select * from sys.systables where tablename like upper(@@selection@@||'%')
     </entry>
     <entry key="drivers.oracle.infoTemplate">
         select
@@ -28,15 +28,15 @@
                 where c.table_name=t.table_name and c.column_name=t.column_name
             ) used_by_constraints
         from user_tab_cols t
-        where instr(table_name,upper('@@selection@@')) = 1
+        where instr(table_name,upper(@@selection@@)) = 1
         order by table_name,column_id
     </entry>
     <entry key="drivers.oracle.completionTemplate">
         select to_clob(table_name) completion from user_tables
-        where instr(table_name,upper('@@selection@@')) = 1
+        where instr(table_name,upper(@@selection@')) = 1
         union all
         select to_clob(column_name) from user_tab_cols
-        where instr(column_name,upper('@@selection@@')) = 1
+        where instr(column_name,upper(@@selection@@)) = 1
         union all
         select
             'insert into '||table_name||'('||
@@ -52,7 +52,7 @@
             ,',').extract('//text()') ) as clob),',')
             ||chr(10)||');'
         from user_tab_cols
-        where instr('INSERT INTO '||table_name,upper('@@selection@@')) = 1
+        where instr('INSERT INTO '||table_name,upper(@@selection@@)) = 1
         group by table_name
         union all
         select
@@ -65,7 +65,7 @@
             ,',').extract('//text()') ) as clob),',')
             ||chr(10)||';'
         from user_tab_cols
-        where instr('UPDATE '||table_name,upper('@@selection@@')) = 1
+        where instr('UPDATE '||table_name,upper(@@selection@@)) = 1
         group by table_name
         union all
         select
@@ -73,7 +73,7 @@
             rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||column_name,',').extract('//text()') ) as clob),',')
             ||chr(10)||'from '||table_name||';'
         from user_tab_cols
-        where instr('SELECT * FROM '||table_name,upper('@@selection@@')) = 1
+        where instr('SELECT * FROM '||table_name,upper(@@selection@@)) = 1
         group by table_name
         union all
         select
@@ -89,7 +89,7 @@
             rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||'s.'||column_name,',').extract('//text()') ) as clob),',')
             ||chr(10)||');'
         from user_tab_cols
-        where instr('MERGE INTO '||table_name,upper('@@selection@@')) = 1
+        where instr('MERGE INTO '||table_name,upper(@@selection@@)) = 1
         group by table_name
         fetch first 16 rows only
     </entry>
@@ -105,6 +105,6 @@
     <entry key="drivers.oracle.snippets.sqlarea">
         select s.sid,s.serial#,s.state,s.event,a.last_load_time,a.parsing_schema_name,u.blocks,a.elapsed_time,a.executions,a.disk_reads,substr(a.sql_text,1,50)
         from v$sqlarea a join v$session s using(sql_id) join v$sort_usage u on u.session_addr=s.saddr
-        where s.username='@@selection@@' order by a.last_load_time desc
+        where s.username=@@selection@@ order by a.last_load_time desc
     </entry>
 </properties>

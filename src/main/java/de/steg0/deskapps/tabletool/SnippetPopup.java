@@ -21,14 +21,15 @@ class SnippetPopup
     {
         var popup = new JPopupMenu();
         JMenuItem item;
+        var placeholderSupport = new PlaceholderSupport(buffer.configSource);
 
         for(Map.Entry<String,String> snippet : snippets.entrySet())
         {
             String name = snippet.getKey();
             String selectedText = buffer.editor.getSelectedText();
             if(selectedText == null) selectedText = "";
-            String completion = snippet.getValue().replace("@@selection@@",
-                    selectedText);
+            String completion = placeholderSupport.quotedReplaceInString(
+                    snippet.getValue(),selectedText);
             item = new JMenuItem(name);
             item.addActionListener((e) -> buffer.editor.replaceSelection(
                     completion));

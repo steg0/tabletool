@@ -47,4 +47,8 @@ class BufferConfigSource
             (Connections.ConnectionState)connectionListModel.getSelectedItem();
         return connectionState.info().snippetTemplates;
     }
+    String getPlaceholderRegex()
+    {
+        return propertyHolder.getPlaceholderRegex();
+    }
 }

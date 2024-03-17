@@ -116,6 +116,11 @@ class PropertyHolder
         return Color.decode(properties.getProperty("frame.bg").toString());
     }
 
+    String getPlaceholderRegex()
+    {
+        return properties.getProperty("placeholder.regex");
+    }
+
     class ConnectionInfo
     {
         static final String CONNECTIONS_PREFIX = "connections.";

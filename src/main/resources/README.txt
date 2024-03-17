@@ -35,9 +35,10 @@ The configuration file supports the following keys:
   frame.bg=#dddddd
   scroll.increment=16
   resultview.height=150
+  placeholder.regex=\\@\\@selection\\@\\@
   drivers.<JDBC URL part after the schema>.completionTemplate=\
       select table_name from user_tables \
-      where table_name like upper('@@selection@@%')
+      where table_name like upper(@@selection@@||'%')
   drivers.<JDBC URL part after the schema>.infoTemplate=<…>
   drivers.<JDBC URL part after the schema>.initSql=<…>
   drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<…>
@@ -47,7 +48,7 @@ The configuration file supports the following keys:
   connections.<Name 1>.bg=#eeeedd
   connections.<Name 1>.completionTemplate=\
       select table_name from all_tables \
-      where table_name like upper('@@selection@@%')
+      where table_name like upper(@@selection@@||'%')
   connections.<Name 1>.infoTemplate=<…>
   connections.<Name 1>.initSql=<…>
   connections.<Name Regex 1>.snippets.<Snippet Name 1>=<…>
