@@ -510,7 +510,7 @@ implements KeyListener
     private final List<NotebookController> notebooks = new ArrayList<>();
 
     /**
-     * Adds a tab and selects it.
+     * Adds a tab and selects it. Use an index &lt; 0 to add to the end.
      * 
      * @return the controller responsible for the new tab.
      */
