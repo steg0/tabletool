@@ -73,7 +73,7 @@ class NotebookController
     
     Logger logger = Logger.getLogger("tabtype");
     
-    private final JFrame cellDisplay,infoDisplay;
+    private final JFrame parent,cellDisplay,infoDisplay;
     private final PropertyHolder propertyHolder;
     private final BufferConfigSource bufferConfigSource;
     
@@ -138,6 +138,7 @@ class NotebookController
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
     
     NotebookController(
+            JFrame parent,
             JFrame cellDisplay,
             JFrame infoDisplay,
             PropertyHolder propertyHolder,
@@ -145,6 +146,7 @@ class NotebookController
             File pwd,
             Listener listener)
     {
+        this.parent = parent;
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
@@ -236,7 +238,7 @@ class NotebookController
 
     private BufferController newBufferController()
     {
-        return new BufferController(cellDisplay,infoDisplay,logConsumer,
+        return new BufferController(parent,cellDisplay,infoDisplay,logConsumer,
                 bufferConfigSource,bufferListener);
     }
 

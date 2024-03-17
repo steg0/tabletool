@@ -517,6 +517,7 @@ implements KeyListener
     NotebookController add(int index)
     {
         var notebook = new NotebookController(
+                parent,
                 cellDisplay,
                 infoDisplay,
                 propertyHolder,
