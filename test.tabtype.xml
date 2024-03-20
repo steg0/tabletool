@@ -34,7 +34,7 @@
     </entry>
     <entry key="drivers.oracle.completionTemplate">
         select to_clob(table_name) completion from user_tables
-        where instr(table_name,upper(@@selection@')) = 1
+        where instr(table_name,upper(&amp;param)) = 1
         union all
         select to_clob(column_name) from user_tab_cols
         where instr(column_name,upper(&amp;param)) = 1
