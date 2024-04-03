@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -79,6 +80,9 @@ extends WindowAdapter
         controller.recreateMenuBar();
         
         frame.pack();
+        Point location = propertyHolder.getDefaultFrameLocation();
+        if(location==null) frame.setLocationRelativeTo(null);
+        else frame.setLocation(location);
         frame.setVisible(true);
     }
     
@@ -98,7 +102,6 @@ extends WindowAdapter
             propertyHolder.load();
             frame.getContentPane().setPreferredSize(
                     propertyHolder.getDefaultFrameSize());
-            frame.setLocation(propertyHolder.getDefaultFrameLocation());
             Color frameBackground = propertyHolder.getFrameBackground();
             if(frameBackground!=null) frame.getContentPane().setBackground(
                     frameBackground);

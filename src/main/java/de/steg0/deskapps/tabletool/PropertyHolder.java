@@ -66,11 +66,12 @@ class PropertyHolder
 
     Point getDefaultFrameLocation()
     {
-        String xstr = properties.getOrDefault("frame.x","150").toString();
-        String ystr = properties.getOrDefault("frame.y","25").toString();
+        var xstr = properties.get("frame.x");
+        var ystr = properties.get("frame.y");
+        if(xstr==null||ystr==null) return null;
         return new Point(
-                Integer.parseInt(xstr),
-                Integer.parseInt(ystr)
+                Integer.parseInt(String.valueOf(xstr)),
+                Integer.parseInt(String.valueOf(ystr))
         );
     }
     
