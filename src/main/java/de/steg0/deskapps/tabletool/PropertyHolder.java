@@ -1,6 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 import java.awt.Color;
@@ -213,9 +212,7 @@ class PropertyHolder
             .filter((k) -> String.valueOf(k).startsWith(
                     ConnectionInfo.CONNECTIONS_PREFIX) && 
                     String.valueOf(k).endsWith(".url"))
-            .collect(groupingBy(PropertyHolder::getConnectionNameKey))
-            .keySet().stream()
-            .sorted()
+            .map(PropertyHolder::getConnectionNameKey)
             .map(ConnectionInfo::new)
             .toArray(ConnectionInfo[]::new);
     }
