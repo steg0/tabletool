@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 /**
@@ -18,6 +19,8 @@ import java.util.regex.Matcher;
  */
 class ConnectionWorker
 {
+    Logger logger = Logger.getLogger("tabtype");
+
     final String description;
 
     private final Connection connection;
@@ -55,6 +58,7 @@ class ConnectionWorker
             Consumer<String> log
     )
     {
+        logger.info(sql);
         var sqlRunnable = new SqlRunnable();
         sqlRunnable.resultConsumer = resultConsumer;
         sqlRunnable.updateCountConsumer = updateCountConsumer;
