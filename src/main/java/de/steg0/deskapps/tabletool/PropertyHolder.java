@@ -214,6 +214,7 @@ class PropertyHolder
                     ConnectionInfo.CONNECTIONS_PREFIX) && 
                     String.valueOf(k).endsWith(".url"))
             .map(PropertyHolder::getConnectionNameKey)
+            .sorted()
             .map(ConnectionInfo::new)
             .toArray(ConnectionInfo[]::new);
     }
