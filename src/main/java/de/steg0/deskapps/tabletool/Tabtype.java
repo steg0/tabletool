@@ -140,9 +140,9 @@ extends WindowAdapter
         }
         catch(Exception e)
         {
-            var choices=Desktop.isDesktopSupported()?
-                    new Object[]{"Close","Edit workspace file"} :
-                    new Object[]{"Close"};
+            Object[]
+                    desktopChoices={"Close","Retry","Edit workspace file"},
+                    choices={"Close","Retry"};
             int choice=JOptionPane.showOptionDialog(
                     frame,
                     "Error loading workspace: "+e.getMessage(),
@@ -150,12 +150,32 @@ extends WindowAdapter
                     JOptionPane.DEFAULT_OPTION,
                     JOptionPane.ERROR_MESSAGE,
                     null,
-                    choices,
-                    choices[0]
+                    Desktop.isDesktopSupported()? desktopChoices : choices,
+                    "Close"
             );
-            if(choice==1) try
+            if(choice==1)
+            {
+                ensureWorkspace();
+                return;
+            }
+            else if(choice==2) try
             {
                 Desktop.getDesktop().edit(workspace);
+                choice=JOptionPane.showOptionDialog(
+                        frame,
+                        "The workspace file has been opened for editing.",
+                        "Workspace file opened",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        choices,
+                        "Close"
+                );
+                if(choice==1)
+                {
+                    ensureWorkspace();
+                    return;
+                }
             }
             catch(IOException e0)
             {
