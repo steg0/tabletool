@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -139,11 +140,31 @@ extends WindowAdapter
         }
         catch(Exception e)
         {
-            JOptionPane.showMessageDialog(
+            var choices=Desktop.isDesktopSupported()?
+                    new Object[]{"Close","Edit workspace file"} :
+                    new Object[]{"Close"};
+            int choice=JOptionPane.showOptionDialog(
                     frame,
                     "Error loading workspace: "+e.getMessage(),
                     "Error loading workspace",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.ERROR_MESSAGE,
+                    null,
+                    choices,
+                    choices[0]
+            );
+            if(choice==1) try
+            {
+                Desktop.getDesktop().edit(workspace);
+            }
+            catch(IOException e0)
+            {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Error editing workspace file: "+e.getMessage(),
+                        "Error editing workspace file",
+                        JOptionPane.ERROR_MESSAGE);
+            }
             System.exit(2);
         }
     }
