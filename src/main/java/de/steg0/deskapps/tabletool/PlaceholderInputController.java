@@ -12,7 +12,7 @@ class PlaceholderInputController
 {
     private BufferConfigSource configSource;
     private JFrame parent;
-    String[][] lastValues;
+    private String[][] lastValues;
 
     PlaceholderInputController(BufferConfigSource configSource,
             JFrame parent)

@@ -1,9 +1,11 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -79,6 +81,9 @@ extends WindowAdapter
         controller.recreateMenuBar();
         
         frame.pack();
+        Point location = propertyHolder.getDefaultFrameLocation();
+        if(location==null) frame.setLocationRelativeTo(null);
+        else frame.setLocation(location);
         frame.setVisible(true);
     }
     
@@ -98,7 +103,6 @@ extends WindowAdapter
             propertyHolder.load();
             frame.getContentPane().setPreferredSize(
                     propertyHolder.getDefaultFrameSize());
-            frame.setLocation(propertyHolder.getDefaultFrameLocation());
             Color frameBackground = propertyHolder.getFrameBackground();
             if(frameBackground!=null) frame.getContentPane().setBackground(
                     frameBackground);
@@ -136,11 +140,51 @@ extends WindowAdapter
         }
         catch(Exception e)
         {
-            JOptionPane.showMessageDialog(
+            Object[]
+                    desktopChoices={"Close","Retry","Edit workspace file"},
+                    choices={"Close","Retry"};
+            int choice=JOptionPane.showOptionDialog(
                     frame,
                     "Error loading workspace: "+e.getMessage(),
                     "Error loading workspace",
-                    JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.ERROR_MESSAGE,
+                    null,
+                    Desktop.isDesktopSupported()? desktopChoices : choices,
+                    "Close"
+            );
+            if(choice==1)
+            {
+                ensureWorkspace();
+                return;
+            }
+            else if(choice==2) try
+            {
+                Desktop.getDesktop().edit(workspace);
+                choice=JOptionPane.showOptionDialog(
+                        frame,
+                        "The workspace file has been opened for editing.",
+                        "Workspace file opened",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        choices,
+                        "Close"
+                );
+                if(choice==1)
+                {
+                    ensureWorkspace();
+                    return;
+                }
+            }
+            catch(IOException e0)
+            {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Error editing workspace file: "+e.getMessage(),
+                        "Error editing workspace file",
+                        JOptionPane.ERROR_MESSAGE);
+            }
             System.exit(2);
         }
     }

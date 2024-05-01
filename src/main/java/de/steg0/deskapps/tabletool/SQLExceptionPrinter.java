@@ -31,7 +31,7 @@ class SQLExceptionPrinter
         b.append("1> ");
         for(int i=0,l=1,j=1;i<sql.length();i++,j++)
         {
-            if(j%10==1) b.append(" <").append(j).append("|").append(i+1)
+            if(j%10==0) b.append(" <").append(j).append("|").append(i+1)
                     .append("> ");
             b.append(sql.charAt(i));
             if(sql.charAt(i)=='\n')

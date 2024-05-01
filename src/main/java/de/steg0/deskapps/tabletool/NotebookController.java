@@ -233,7 +233,7 @@ class NotebookController
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
         
-        setBackground(null);
+        setBranding(null,"");
     }
 
     private BufferController newBufferController()
@@ -242,13 +242,13 @@ class NotebookController
                 bufferConfigSource,bufferListener);
     }
 
-    private void setBackground(Color bg)
+    private void setBranding(Color bg,String label)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
         if(bg==null) bg=firstBuffer().defaultBackground;
         bufferPanel.setBackground(bg);
         log.setBackground(bg);
-        for(BufferController buffer : buffers) buffer.setBackground(bg);
+        for(BufferController buffer : buffers) buffer.setBranding(bg,label);
     }
     
     void zoom(double factor)
@@ -403,7 +403,8 @@ class NotebookController
                 logger.log(Level.FINE,"Split requested by #{0}",i);
                 var newBufferController = newBufferController();
                 newBufferController.connection = source.connection;
-                newBufferController.setBackground(source.getBackground());
+                newBufferController.setBranding(source.getBrandingBackground(),
+                        source.getBrandingText());
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
                 newBufferController.append(e.removedText);
@@ -533,7 +534,8 @@ class NotebookController
         {
             var newBufferController = newBufferController();
             newBufferController.connection = source.connection;
-            newBufferController.setBackground(source.getBackground());
+            newBufferController.setBranding(
+                    source.getBrandingBackground(),source.getBrandingText());
             add(i+1,newBufferController);
             bufferPanel.revalidate();
         }
@@ -701,7 +703,9 @@ class NotebookController
             while(linesRead>0)
             {
                 var newBufferController = newBufferController();
-                newBufferController.setBackground(firstBuffer().getBackground());
+                var fb = firstBuffer();
+                newBufferController.setBranding(fb.getBrandingBackground(),
+                        fb.getBrandingText());
                 linesRead = newBufferController.load(r);
                 if(linesRead > 0) add(buffers.size(),newBufferController);
             }
@@ -844,7 +848,7 @@ class NotebookController
             {
                 buffer.connection = connection;
             }
-            setBackground(item.info().background);
+            setBranding(item.info().background,item.info().name);
             restoreFocus();
         }
         catch(SQLException e)
@@ -872,7 +876,7 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBackground(null);
+        setBranding(null,"");
     }
     
     void reportAutocommitChanged(ConnectionWorker connection,boolean enabled)

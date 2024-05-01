@@ -1,6 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 import java.awt.Color;
@@ -67,11 +66,12 @@ class PropertyHolder
 
     Point getDefaultFrameLocation()
     {
-        String xstr = properties.getOrDefault("frame.x","100").toString();
-        String ystr = properties.getOrDefault("frame.y","100").toString();
+        var xstr = properties.get("frame.x");
+        var ystr = properties.get("frame.y");
+        if(xstr==null||ystr==null) return null;
         return new Point(
-                Integer.parseInt(xstr),
-                Integer.parseInt(ystr)
+                Integer.parseInt(String.valueOf(xstr)),
+                Integer.parseInt(String.valueOf(ystr))
         );
     }
     
@@ -90,6 +90,13 @@ class PropertyHolder
     String getEditorFontName()
     {
         return properties.getProperty("editor.font");
+    }
+
+    Integer getEditorFontSize()
+    {
+        String s = properties.getProperty("editor.fontsize");
+        if(s==null) return null;
+        return Integer.valueOf(s);
     }
 
     int getEditorTabsize()
@@ -213,8 +220,7 @@ class PropertyHolder
             .filter((k) -> String.valueOf(k).startsWith(
                     ConnectionInfo.CONNECTIONS_PREFIX) && 
                     String.valueOf(k).endsWith(".url"))
-            .collect(groupingBy(PropertyHolder::getConnectionNameKey))
-            .keySet().stream()
+            .map(PropertyHolder::getConnectionNameKey)
             .sorted()
             .map(ConnectionInfo::new)
             .toArray(ConnectionInfo[]::new);

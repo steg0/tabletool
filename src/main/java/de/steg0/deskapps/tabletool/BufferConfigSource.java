@@ -25,6 +25,10 @@ class BufferConfigSource
     {
         return propertyHolder.getEditorFontName();
     }
+    Integer getEditorFontSize()
+    {
+        return propertyHolder.getEditorFontSize();        
+    }
     int getEditorTabsize()
     {
         return propertyHolder.getEditorTabsize();
