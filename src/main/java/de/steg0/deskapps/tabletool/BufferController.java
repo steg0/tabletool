@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -25,6 +26,7 @@ import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -55,6 +57,8 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
+    
+    private static final String CONNECTION_LABEL_PREFIX = "<-- ";
 
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
@@ -85,10 +89,15 @@ class BufferController
             new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
     private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+    private JLabel connectionLabel = new JLabel();
+
     void setSaved()
     {
         documentListener.unsaved = false;
-        if(!editor.hasFocus()) editor.setBorder(unfocusedBorder);
+        if(!editor.hasFocus()) {
+            editor.setBorder(unfocusedBorder);
+            connectionLabel.setForeground(Color.WHITE);
+        }
     }
     
     /**The system-default editor background */
@@ -101,15 +110,26 @@ class BufferController
         Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
         Border unsavedBorder = BorderFactory.createDashedBorder(Color.GRAY);
         editor.setBorder(unfocusedBorder);
+        connectionLabel.setForeground(Color.WHITE);
         editor.addFocusListener(new FocusListener()
         {
             @Override public void focusGained(FocusEvent e)
             {
                 editor.setBorder(focusedBorder);
+                connectionLabel.setForeground(Color.BLUE);
             }
             @Override public void focusLost(FocusEvent e)
             {
-                editor.setBorder(isUnsaved()?unsavedBorder:unfocusedBorder);
+                if(isUnsaved())
+                {
+                    editor.setBorder(isUnsaved()?unsavedBorder:unfocusedBorder);
+                    connectionLabel.setForeground(Color.GRAY);
+                }
+                else
+                {
+                    editor.setBorder(unfocusedBorder);
+                    connectionLabel.setForeground(Color.WHITE);
+                }
             }
         });
     }
@@ -136,6 +156,11 @@ class BufferController
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
         panel.add(editor,editorConstraints);
+        var connectionLabelConstraints = new GridBagConstraints();
+        connectionLabelConstraints.anchor = GridBagConstraints.NORTHWEST;
+        connectionLabelConstraints.insets = new Insets(0,7,0,5);
+        setConnectionLabelFontSize();
+        panel.add(connectionLabel,connectionLabelConstraints);
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
@@ -176,15 +201,25 @@ class BufferController
         am.put("Redo",actions.redoAction);
     }
     
-    void setBackground(Color background)
+    void setBranding(Color background,String text)
     {
+        Objects.requireNonNull(text);
         editor.setBackground(background);
         panel.setBackground(background);
+        if(text.isBlank()) connectionLabel.setText(text);
+        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text);
     }
     
-    Color getBackground()
+    Color getBrandingBackground()
     {
         return editor.getBackground();
+    }
+
+    String getBrandingText()
+    {
+        String label = connectionLabel.getText();
+        if(label.isBlank()) return label;
+        return label.substring(CONNECTION_LABEL_PREFIX.length());
     }
 
     Stack<Integer> sizes=new Stack<>();
@@ -209,6 +244,7 @@ class BufferController
         editor.setFont(f2);
         setResultViewFontSize(resultview,newSize);
         setResultSetMessageLabelFontSize();
+        setConnectionLabelFontSize();
     }
 
     int searchNext(int loc,String text)
@@ -258,6 +294,16 @@ class BufferController
                 (int)(resultview.getFont().getSize() * .9)
         );
         resultMessageLabel.setFont(resultMessageFont);
+    }
+
+    private void setConnectionLabelFontSize()
+    {
+        Font connectionLabelFont = new Font(
+                connectionLabel.getFont().getName(),
+                Font.ITALIC,
+                (int)(connectionLabel.getFont().getSize() * .9)
+        );
+        connectionLabel.setFont(connectionLabelFont);
     }
     
     private static JViewport findViewportParent(Component c)
@@ -641,8 +687,8 @@ class BufferController
             fireBufferEvent(e);
 
             resultview=null;  /* this acts as a flag that we're in a split */
-            while(panel.getComponentCount()>1) panel.remove(1);
-            
+            removeResultView();
+
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
              * the editor does not request a viewport change. */
@@ -769,7 +815,7 @@ class BufferController
 
     void addResultSetTable(ResultSetTableModel rsm)
     {
-        while(panel.getComponentCount()>1) panel.remove(1);
+        removeResultView();
 
         resultview = new JTable(rsm);
         
@@ -786,6 +832,7 @@ class BufferController
         
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
+        resultviewConstraints.gridwidth = 2;
         resultviewConstraints.gridy = 1;
         
         /* https://bugs.openjdk.java.net/browse/JDK-4890196 */
@@ -803,6 +850,7 @@ class BufferController
             resultMessageLabel.setForeground(Color.GRAY);
             var resultSetMessageConstraints = new GridBagConstraints();
             resultSetMessageConstraints.anchor = GridBagConstraints.WEST;
+            resultSetMessageConstraints.gridwidth = 2;
             resultSetMessageConstraints.gridy = 2;
             panel.add(resultMessageLabel,resultSetMessageConstraints);
         }
@@ -849,15 +897,17 @@ class BufferController
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
+    private void removeResultView()
+    {
+        while(panel.getComponentCount()>2) panel.remove(2);
+    }
+
     void closeBuffer()
     {
         closeCurrentResultSet();
         resultview=null;
         resultMessageLabel=null;
-        while(panel.getComponentCount()>1)
-        {
-            panel.remove(1);
-        }
+        removeResultView();
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);
     }
     
