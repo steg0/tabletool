@@ -139,11 +139,18 @@ class BufferController
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
-        if(configSource.getEditorFontName() != null)
+        String fontName = configSource.getEditorFontName();
+        if(fontName != null)
         {
-            Font f = editor.getFont(),f2=new Font(
-                    configSource.getEditorFontName(),f.getStyle(),
-                    f.getSize());
+            Font f = editor.getFont();
+            Font f2=new Font(fontName,f.getStyle(),f.getSize());
+            editor.setFont(f2);
+        }
+        Integer fontSize = configSource.getEditorFontSize();
+        if(configSource.getEditorFontSize() != null)
+        {
+            Font f = editor.getFont();
+            Font f2=new Font(f.getFontName(),f.getStyle(),fontSize);
             editor.setFont(f2);
         }
         editor.setTabSize(configSource.getEditorTabsize());

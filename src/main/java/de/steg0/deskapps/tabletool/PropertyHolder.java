@@ -92,6 +92,13 @@ class PropertyHolder
         return properties.getProperty("editor.font");
     }
 
+    Integer getEditorFontSize()
+    {
+        String s = properties.getProperty("editor.fontsize");
+        if(s==null) return null;
+        return Integer.valueOf(s);
+    }
+
     int getEditorTabsize()
     {
         return Integer.parseInt(
