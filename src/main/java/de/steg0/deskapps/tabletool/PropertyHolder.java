@@ -123,6 +123,27 @@ class PropertyHolder
         return Color.decode(properties.getProperty("frame.bg").toString());
     }
 
+    Color getNonFocusedEditorBorderColor()
+    {
+        return getColorProperty("editor.nonFocusedBorder",Color.WHITE);
+    }
+
+    Color getFocusedEditorBorderColor()
+    {
+        return getColorProperty("editor.focusedBorder",Color.BLUE);
+    }
+
+    Color getUnsavedEditorBorderColor()
+    {
+        return getColorProperty("editor.unsavedBorder",Color.GRAY);
+    }
+
+    private Color getColorProperty(String key,Color defaultColor)
+    {
+        if(!properties.containsKey(key)) return defaultColor;
+        return Color.decode(properties.getProperty(key).toString());
+    }
+
     String getPlaceholderRegex()
     {
         return properties.getProperty("placeholder.regex");

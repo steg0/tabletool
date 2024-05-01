@@ -10,7 +10,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -58,7 +57,8 @@ class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
     
-    private static final String CONNECTION_LABEL_PREFIX = "<-- ";
+    private static final String CONNECTION_LABEL_PREFIX =
+            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 ";
 
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
@@ -88,7 +88,8 @@ class BufferController
     private BufferDocumentListener documentListener = 
             new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
-    private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+    private final Border unfocusedBorder;
+    private final Color unfocusedBorderColor;
     private JLabel connectionLabel = new JLabel();
 
     void setSaved()
@@ -96,7 +97,7 @@ class BufferController
         documentListener.unsaved = false;
         if(!editor.hasFocus()) {
             editor.setBorder(unfocusedBorder);
-            connectionLabel.setForeground(Color.WHITE);
+            connectionLabel.setForeground(unfocusedBorderColor);
         }
     }
     
@@ -107,31 +108,6 @@ class BufferController
     
     {
         editor.getDocument().addUndoableEditListener(undoManager);
-        Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
-        Border unsavedBorder = BorderFactory.createDashedBorder(Color.GRAY);
-        editor.setBorder(unfocusedBorder);
-        connectionLabel.setForeground(Color.WHITE);
-        editor.addFocusListener(new FocusListener()
-        {
-            @Override public void focusGained(FocusEvent e)
-            {
-                editor.setBorder(focusedBorder);
-                connectionLabel.setForeground(Color.BLUE);
-            }
-            @Override public void focusLost(FocusEvent e)
-            {
-                if(isUnsaved())
-                {
-                    editor.setBorder(isUnsaved()?unsavedBorder:unfocusedBorder);
-                    connectionLabel.setForeground(Color.GRAY);
-                }
-                else
-                {
-                    editor.setBorder(unfocusedBorder);
-                    connectionLabel.setForeground(Color.WHITE);
-                }
-            }
-        });
     }
     
     JTable resultview;
@@ -153,12 +129,45 @@ class BufferController
                 configSource,parent);
         this.log = updateLog;
         
+        unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
+        Color focusedBorderColor = configSource.getFocusedEditorBorderColor();
+        Color unsavedBorderColor = configSource.getUnsavedEditorBorderColor();
+        unfocusedBorder = BorderFactory.createDashedBorder(
+                unfocusedBorderColor);
+        Border focusedBorder = BorderFactory.createDashedBorder(
+                focusedBorderColor);
+        Border unsavedBorder = BorderFactory.createDashedBorder(
+                unsavedBorderColor);
+        editor.setBorder(unfocusedBorder);
+        connectionLabel.setForeground(unfocusedBorderColor);
+        editor.addFocusListener(new FocusListener()
+        {
+            @Override public void focusGained(FocusEvent e)
+            {
+                editor.setBorder(focusedBorder);
+                connectionLabel.setForeground(focusedBorderColor);
+            }
+            @Override public void focusLost(FocusEvent e)
+            {
+                if(isUnsaved())
+                {
+                    editor.setBorder(isUnsaved()?
+                            unsavedBorder:unfocusedBorder);
+                    connectionLabel.setForeground(unsavedBorderColor);
+                }
+                else
+                {
+                    editor.setBorder(unfocusedBorder);
+                    connectionLabel.setForeground(unfocusedBorderColor);
+                }
+            }
+        });
+        
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
         panel.add(editor,editorConstraints);
         var connectionLabelConstraints = new GridBagConstraints();
         connectionLabelConstraints.anchor = GridBagConstraints.NORTHWEST;
-        connectionLabelConstraints.insets = new Insets(0,7,0,5);
         setConnectionLabelFontSize();
         panel.add(connectionLabel,connectionLabelConstraints);
         panel.setBackground(defaultBackground);
