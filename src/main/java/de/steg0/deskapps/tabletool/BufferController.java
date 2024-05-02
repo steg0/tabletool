@@ -58,7 +58,7 @@ class BufferController
     static final String CONNECT_COMMENT = "-- connect ";
     
     private static final String CONNECTION_LABEL_PREFIX =
-            "\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7 ";
+            "\u00b7\u00b7\u00b7\u00b7 ";
 
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
