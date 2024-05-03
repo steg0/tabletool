@@ -310,7 +310,7 @@ class BufferController
         Font connectionLabelFont = new Font(
                 connectionLabel.getFont().getName(),
                 Font.ITALIC,
-                (int)(connectionLabel.getFont().getSize() * .9)
+                (int)(editor.getFont().getSize() * .9)
         );
         connectionLabel.setFont(connectionLabelFont);
     }
