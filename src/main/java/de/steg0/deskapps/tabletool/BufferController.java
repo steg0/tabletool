@@ -59,6 +59,7 @@ class BufferController
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
+    private static final String CONNECTION_LABEL_SUFFIX = " ";
 
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
@@ -216,7 +217,8 @@ class BufferController
         editor.setBackground(background);
         panel.setBackground(background);
         if(text.isBlank()) connectionLabel.setText(text);
-        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text);
+        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
+                CONNECTION_LABEL_SUFFIX);
     }
     
     Color getBrandingBackground()
@@ -228,7 +230,8 @@ class BufferController
     {
         String label = connectionLabel.getText();
         if(label.isBlank()) return label;
-        return label.substring(CONNECTION_LABEL_PREFIX.length());
+        return label.substring(CONNECTION_LABEL_PREFIX.length(),
+                label.length()-CONNECTION_LABEL_SUFFIX.length());
     }
 
     Stack<Integer> sizes=new Stack<>();
