@@ -242,9 +242,10 @@ extends WindowAdapter
                 propertiesfiles.add(args[++optind]);
                 break;
             case "-logconfig":
-                try(var f = new FileInputStream(args[++optind]))
+                File f = new File(args[++optind]);
+                if(f.exists()) try(var fs = new FileInputStream(f))
                 {
-                    LogManager.getLogManager().readConfiguration(f);
+                    LogManager.getLogManager().readConfiguration(fs);
                 }
                 catch(IOException e)
                 {
