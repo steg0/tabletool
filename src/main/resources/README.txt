@@ -15,7 +15,7 @@ An example command line is:
     -logconfig $APPDATA/tabtype/logging.properties \
     -config $APPDATA/tabtype/tabtype.properties.xml \
     -config $APPDATA/tabtype/tabtype.properties \
-    $HOME/Documents/workspace.tt.xml
+    $HOME/Documents/workspace.tabtype
 └─
 
 This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
