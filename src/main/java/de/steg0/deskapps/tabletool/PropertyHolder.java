@@ -38,7 +38,7 @@ class PropertyHolder
         {
             for(File propertiesfile : propertiesfiles)
             {
-                if(propertiesfile.exists()) try(
+                if(propertiesfile.exists() && propertiesfile.length() > 2) try(
                     var propertyStream = new BufferedInputStream(
                             new FileInputStream(propertiesfile)))
                 {
