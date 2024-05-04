@@ -38,8 +38,9 @@ class PropertyHolder
         {
             for(File propertiesfile : propertiesfiles)
             {
-                try(var propertyStream = new BufferedInputStream(
-                    new FileInputStream(propertiesfile)))
+                if(propertiesfile.exists()) try(
+                    var propertyStream = new BufferedInputStream(
+                            new FileInputStream(propertiesfile)))
                 {
                     if(propertiesfile.getName().endsWith(".xml"))
                     {

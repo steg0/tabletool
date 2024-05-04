@@ -25,6 +25,6 @@ $HOME/.m2/repository/com/oracle/database/security/oraclepki/21.7.0.0/oraclepki-2
 $HOME/.m2/repository/com/ibm/db2/jcc/11.5.7.0/jcc-11.5.7.0.jar:\
 target/classes \
     -m de.steg0.deskapps.tabletool/de.steg0.deskapps.tabletool.Tabtype \
+    -config test.tabtype.properties.xml \
     -config test.tabtype.properties \
-    -config test.tabtype.xml \
     test.tt.xml
