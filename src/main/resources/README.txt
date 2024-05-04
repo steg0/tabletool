@@ -6,7 +6,7 @@ Also, an optional single file name argument, ending with .xml or .tabtype, is su
 
 An example command line is:
 
-┌─────────────────────────────────────────────────────────────────────┐
+┌─
   java -XX:+UseSerialGC \
     -Dfile.encoding=Cp1252 \
     -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
@@ -15,7 +15,7 @@ An example command line is:
     -config $APPDATA/tabtype/tabtype.properties.xml \
     -config $APPDATA/tabtype/tabtype.properties \
     $HOME/Documents/workspace.tt.xml
-└─────────────────────────────────────────────────────────────────────┘
+└─
 
 This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
 
@@ -24,7 +24,7 @@ This example uses the serial GC, which is a recommendation for desktop applicati
 
 The configuration file supports the following keys:
 
-┌─────────────────────────────────────────────────────────────────────┐
+┌─
   frame.x=100
   frame.y=100
   frame.w=700
@@ -57,7 +57,7 @@ The configuration file supports the following keys:
   connections.<Name 1>.infoTemplate=<…>
   connections.<Name 1>.initSql=<…>
   connections.<Name Regex 1>.snippets.<Snippet Name 1>=<…>
-└─────────────────────────────────────────────────────────────────────┘
+└─
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
 
