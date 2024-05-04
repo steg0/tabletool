@@ -9,12 +9,14 @@ import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -238,6 +240,20 @@ extends WindowAdapter
             {
             case "-config":
                 propertiesfiles.add(args[++optind]);
+                break;
+            case "-logconfig":
+                try(var f = new FileInputStream(args[++optind]))
+                {
+                    LogManager.getLogManager().readConfiguration(f);
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Error loading logger configuration: "+e.getMessage(),
+                            "Error loading logger configuration",
+                            JOptionPane.ERROR_MESSAGE);
+                }
                 break;
             case "--":
                 optind++;

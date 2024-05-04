@@ -104,6 +104,41 @@
           </archive>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <classpathScope>test</classpathScope>
+          <mainClass>de.steg0.deskapps.tabletool/de.steg0.deskapps.tabletool.Tabtype</mainClass>
+          <arguments>
+            <argument>-config</argument>
+            <argument>test.tabtype.properties.xml</argument>
+            <argument>-config</argument>
+            <argument>test.tabtype.properties</argument>
+            <argument>-logconfig</argument>
+            <argument>test.logging.properties</argument>
+            <argument>test.tabtype</argument>
+          </arguments>
+          <systemProperties>
+            <property>
+              <key>file.encoding</key>
+              <value>UTF-8</value>
+            </property>
+            <property>
+              <key>swing.plaf.metal.controlFont</key>
+              <value>Segoe UI</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
