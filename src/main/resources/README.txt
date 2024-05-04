@@ -1,6 +1,6 @@
 ▶ Invocation
 
-The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and use a properties file where connection definitions will be read from.
+The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and use one or more properties files where connection definitions will be read from. For Properties files, the Java .properties format as well as its XML variant are supported.
 
 Also, an optional single file name argument, ending with .xml or .tabtype, is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially.
 
@@ -12,7 +12,8 @@ An example command line is:
     -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
     -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar \
     -jar tabtype.jar \
-    -config $HOME/Documents/tabtype.properties \
+    -config $APPDATA/tabtype/tabtype.properties.xml \
+    -config $APPDATA/tabtype/tabtype.properties \
     $HOME/Documents/workspace.tt.xml
 └─────────────────────────────────────────────────────────────────────┘
 
@@ -30,7 +31,11 @@ The configuration file supports the following keys:
   frame.h=450
   tab.placement=1
   editor.font=Lucida Sans Regular
+  editor.fontsize=12
   editor.tabsize=4
+  editor.nonFocusedBorder=#ffffff
+  editor.focusedBorder=#0000ff
+  editor.unsavedBorder=#aaaaaa
   default.bg=#ffffff
   frame.bg=#dddddd
   scroll.increment=16
