@@ -666,6 +666,7 @@ class NotebookController
                 null,
                 null,
                 file.getName());
+        if(newname==null) return false;
         File newFile = new File(file.getParentFile(),newname);
         if(!newname.isEmpty()&&!newFile.exists()&&file.renameTo(newFile))
         {
