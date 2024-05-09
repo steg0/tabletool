@@ -27,8 +27,8 @@ namespace Tabtype
             string procargs=Environment.ExpandEnvironmentVariables(
                     "-XX:+UseSerialGC " +
                     "-Dfile.encoding=UTF-8 " +
-                    "-Dswing.plaf.metal.controlFont=\"Segoe UI\" " +
-                    //"-Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel " +
+                    // "-Dswing.plaf.metal.controlFont=\"Segoe UI\" " +
+                    "-Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel " +
                     "-p " +
                     "\"" + String.Join(";",deps).Replace("\"","\"\"") + "\" " +
                     "-jar " + appDirectory.Replace("\"","\"\"") + "tabtype.jar " +
