@@ -131,10 +131,6 @@
               <key>file.encoding</key>
               <value>UTF-8</value>
             </property>
-            <property>
-              <key>swing.defaultlaf</key>
-              <value>com.sun.java.swing.plaf.windows.WindowsLookAndFeel</value>
-            </property>
           </systemProperties>
         </configuration>
       </plugin>

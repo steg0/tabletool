@@ -21,6 +21,7 @@ import java.util.logging.LogManager;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 /**
  * This aims to be a simple tabular grid that has DB connectivity.
@@ -108,6 +109,8 @@ extends WindowAdapter
             Color frameBackground = propertyHolder.getFrameBackground();
             if(frameBackground!=null) frame.getContentPane().setBackground(
                     frameBackground);
+            UIManager.getDefaults().putDefaults(propertyHolder
+                    .getColorUIDefaults());
             return new TabSetController(frame,propertyHolder,workspace);
         }
         catch(Exception e)

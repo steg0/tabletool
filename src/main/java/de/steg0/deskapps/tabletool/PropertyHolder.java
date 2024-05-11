@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -137,6 +138,21 @@ class PropertyHolder
     Color getUnsavedEditorBorderColor()
     {
         return getColorProperty("editor.unsavedBorder",Color.GRAY);
+    }
+
+    private static final String UIDEFAULTS_COLOR_PREFIX = "uiDefaults.color.";
+
+    Object[] getColorUIDefaults()
+    {
+        return properties
+            .stringPropertyNames().stream()
+            .filter((k) -> k.startsWith(UIDEFAULTS_COLOR_PREFIX))
+            .map((k) -> new Object[]{
+                    k.substring(UIDEFAULTS_COLOR_PREFIX.length()),
+                    Color.decode(properties.get(k).toString())
+            })
+            .flatMap(Arrays::stream)
+            .toArray(Object[]::new);
     }
 
     private Color getColorProperty(String key,Color defaultColor)
