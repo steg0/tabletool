@@ -39,6 +39,8 @@ The configuration file supports the following keys:
   editor.unsavedBorder=#aaaaaa
   default.bg=#ffffff
   frame.bg=#dddddd
+  # uiDefaults.color.* can set Color defaults for UIManager
+  uiDefaults.color.Button.background=#f9f9f9
   scroll.increment=16
   resultview.height=150
   placeholder.regex=\\@\\@selection\\@\\@
