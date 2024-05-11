@@ -218,6 +218,7 @@ class NotebookController
         
         scrollIncrement = propertyHolder.getScrollIncrement();
         bufferPane = new JScrollPane(bufferPanel);
+        bufferPane.setBorder(null);
         bufferPane.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
         bufferPane.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
         var ml = new BufferPaneMouseListener();
@@ -225,6 +226,7 @@ class NotebookController
         bufferPane.addMouseMotionListener(ml);
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
+        logPane.setBorder(null);
         logBufferPane.add(logPane);
 
         var bufferPaneConstraints = new GridBagConstraints();
