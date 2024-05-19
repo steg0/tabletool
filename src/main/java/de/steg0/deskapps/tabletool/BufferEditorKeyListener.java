@@ -58,7 +58,8 @@ class BufferEditorKeyListener implements KeyListener
                 if(event.isShiftDown() ||
                    b.editor.getSelectionEnd()!=b.editor.getSelectionStart())
                 {
-                    b.togglePrefix("\t",!event.isShiftDown());
+                    new EditorPrefixToggler(b.editor,"\t").toggle(
+                            !event.isShiftDown());
                     event.consume();
                 }
             }

@@ -206,7 +206,7 @@ class BufferController
         am.put("Show Info",actions.showInfoAction);
         am.put("Show Snippets",actions.showSnippetsPopupAction);
         am.put("Show Completions",actions.showCompletionPopupAction);
-        am.put("Toggle Comment",actions.toggleCommentAction);
+        am.put("Toggle Comment",new EditorPrefixToggler(editor,"--"));
         am.put("Undo",actions.undoAction);
         am.put("Redo",actions.redoAction);
     }
@@ -484,63 +484,6 @@ class BufferController
             }
             d.insertString(d.getLength(),text,null);
             editor.setCaretPosition(caret);
-        }
-        catch(BadLocationException e)
-        {
-            assert false : e.getMessage();
-        }
-    }
-    
-    void togglePrefix(String prefix,Boolean add)
-    {
-        int plen = prefix.length();
-        int start = editor.getSelectionStart();
-        int end = editor.getSelectionEnd();
-        try
-        {
-            if(start<0 || start==end)
-            {
-                /* no or zero-size selection -- treat like one char selection */
-                start=(end=max(1,editor.getCaretPosition()))-1;
-            }
-            else
-            {
-                /* 
-                 * if selection started on pos 0 in line, don't include
-                 * this line in selection
-                 */
-                if(editor.getText(end-1,1).equals("\n")) end-=1;
-            }
-            /* if only part of line was selected, scan through its beginning */
-            for(;start>=0;start--)
-            {
-                if(editor.getText(start,1).equals("\n")) break;
-            }
-            /* 
-             * now determine whether to uncomment or comment, and change text
-             * from bottom to top
-             */
-            ((GroupableUndoDocument)editor.getDocument()).startCompoundEdit();
-            for(int pos = end-1;pos>=start;pos--)
-            {
-                if(pos==-1 || editor.getText(pos,1).equals("\n"))
-                {
-                    boolean hasPrefix=editor.getText().length()>pos+plen &&
-                            editor.getText(pos+1,plen).equals(prefix);
-                    if(add==null) add=!hasPrefix;
-                    if(Boolean.FALSE.equals(add))
-                    {
-                        add=false;
-                        if(hasPrefix) editor.getDocument().remove(pos+1,plen);
-                    }
-                    else
-                    {
-                        add=true;
-                        editor.getDocument().insertString(pos+1,prefix,null);
-                    }
-                }
-            }
-            ((GroupableUndoDocument)editor.getDocument()).endCompoundEdit();
         }
         catch(BadLocationException e)
         {

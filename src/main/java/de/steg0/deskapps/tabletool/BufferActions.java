@@ -160,13 +160,6 @@ class BufferActions
                 }
             }
         },
-        toggleCommentAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                b.togglePrefix("--",null);
-            }
-        },
         undoAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
