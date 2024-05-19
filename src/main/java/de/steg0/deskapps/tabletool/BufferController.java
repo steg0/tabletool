@@ -6,7 +6,6 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -15,7 +14,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
@@ -249,7 +247,8 @@ class BufferController
         }
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
-        setResultViewFontSize(resultview,newSize);
+        TableFontSizer.setFontSize(resultview,newSize,
+                configSource.getResultViewHeight());
         setResultSetMessageLabelFontSize();
         setConnectionLabelFontSize();
     }
@@ -269,29 +268,6 @@ class BufferController
         return index;
     }
     
-    private void setResultViewFontSize(JTable resultview,int newSize)
-    {
-        if(resultview==null) return;
-        Font rf = resultview.getFont(),
-             rf2 = new Font(rf.getName(),rf.getStyle(),newSize);
-        resultview.setFont(rf2);
-        var header = resultview.getTableHeader();
-        Font hf = header.getFont(),
-             hf2 = new Font(hf.getName(),hf.getStyle(),newSize);
-        resultview.getTableHeader().setFont(hf2);
-        int lineHeight = (int)hf2.getMaxCharBounds(new FontRenderContext(
-                null,false,false)).getHeight();
-        TableSizer.sizeColumns(resultview);
-        resultview.setRowHeight(lineHeight);
-        Dimension preferredSize = resultview.getPreferredSize();
-        var viewportSize = new Dimension((int)preferredSize.getWidth(),
-                (int)Math.min(configSource.getResultViewHeight()*lineHeight,
-                        preferredSize.getHeight()));
-        logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
-                "lineHeight={1}",new Object[]{viewportSize,lineHeight});
-        resultview.setPreferredScrollableViewportSize(viewportSize);
-    }
-
     private void setResultSetMessageLabelFontSize()
     {
         if(resultMessageLabel==null) return;
@@ -759,7 +735,8 @@ class BufferController
             panel.add(resultMessageLabel,resultSetMessageConstraints);
         }
 
-        setResultViewFontSize(resultview,editor.getFont().getSize());
+        TableFontSizer.setFontSize(resultview,editor.getFont().getSize(),
+                configSource.getResultViewHeight());
         setResultSetMessageLabelFontSize();
 
         panel.revalidate();
@@ -795,8 +772,9 @@ class BufferController
     private void showInfoTable(ResultSetTableModel rsm)
     {
         JTable inforesultview = new JTable(rsm);
-        setResultViewFontSize(inforesultview,sizes.isEmpty()?
-                editor.getFont().getSize() : sizes.get(0));
+        TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
+                editor.getFont().getSize() : sizes.get(0),
+                configSource.getResultViewHeight());
         inforesultview.setCellSelectionEnabled(true);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
