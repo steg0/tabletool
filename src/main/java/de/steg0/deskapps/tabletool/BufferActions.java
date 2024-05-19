@@ -7,6 +7,8 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.text.BadLocationException;
 
 import de.steg0.deskapps.tabletool.BufferEvent.Type;
@@ -16,9 +18,11 @@ class BufferActions
     Logger logger = Logger.getLogger("tabtype");
 
     private final BufferController b;
+    private final JFrame parent;
 
-    BufferActions(BufferController b)
+    BufferActions(JFrame parent,BufferController b)
     {
+        this.parent = parent;
         this.b = b;
     }
 
@@ -172,6 +176,27 @@ class BufferActions
             @Override public void actionPerformed(ActionEvent e)
             {
                 if(b.undoManager.canRedo()) b.undoManager.redo();
+            }
+        },
+        goToLineAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                String text = JOptionPane.showInputDialog(parent,"Go to line:");
+                try
+                {
+                    int line = Integer.parseInt(text);
+                    int position = b.editor.getLineStartOffset(line - 1);
+                    b.editor.setCaretPosition(position);        
+                }
+                catch(Exception e)
+                {
+                    JOptionPane.showMessageDialog(
+                        parent,
+                        "Error navigating: "+e.getMessage(),
+                        "Error navigating",
+                        JOptionPane.ERROR_MESSAGE);
+                }
             }
         };
 }

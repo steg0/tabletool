@@ -183,7 +183,7 @@ class BufferController
         }
         editor.setTabSize(configSource.getEditorTabsize());
         
-        var actions = new BufferActions(this);
+        var actions = new BufferActions(parent,this);
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
@@ -193,6 +193,7 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
+        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
         var am = editor.getActionMap();
         am.put("Execute",actions.executeAction);
         am.put("Execute/Split",actions.executeSplitAction);
@@ -202,6 +203,7 @@ class BufferController
         am.put("Toggle Comment",new EditorPrefixToggler(editor,"--"));
         am.put("Undo",actions.undoAction);
         am.put("Redo",actions.redoAction);
+        am.put("Go To Line",actions.goToLineAction);
     }
     
     void setBranding(Color background,String text)

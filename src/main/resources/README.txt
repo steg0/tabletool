@@ -91,6 +91,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+/ - comment/uncomment.
 • Ctrl+F - find text (case-insensitively), starting on currently selected tab.
 • F3 - find next.
+• Ctrl+G - go to line.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
 • F1 - execute infoTemplate for word under cursor or selection.
