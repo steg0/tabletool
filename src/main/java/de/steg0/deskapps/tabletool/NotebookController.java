@@ -731,7 +731,7 @@ class NotebookController
 
     void openConnection()
     {
-        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine()))
+        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");
             connectionsSelector.requestFocusInWindow();

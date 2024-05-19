@@ -310,12 +310,12 @@ class BufferController
         return caret-1-index;
     }
 
-    String getTextFromCurrentLine()
+    String getTextFromCurrentLine(boolean endWithCaret)
     {
         String t = editor.getText();
         int caret = editor.getCaretPosition();
         int index = t.lastIndexOf('\n',caret-1)+1;
-        return t.substring(index);
+        return endWithCaret? t.substring(index,caret) : t.substring(index);
     }
 
     private void setCaretPositionInLine(int position)
@@ -530,7 +530,7 @@ class BufferController
     void fetch(boolean split)
     {
         savedCaretPosition = editor.getCaretPosition();
-        if(getTextFromCurrentLine().startsWith(CONNECT_COMMENT))
+        if(getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
             logger.log(Level.FINE,"Found connect alias");
             fireBufferEvent(Type.DRY_FETCH);
