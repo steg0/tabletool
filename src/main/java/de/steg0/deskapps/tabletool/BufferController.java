@@ -15,12 +15,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -37,10 +34,7 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -78,7 +72,7 @@ class BufferController
     
     Logger logger = Logger.getLogger("tabtype");
 
-    private final JFrame cellDisplay,infoDisplay;
+    private final JFrame parent,cellDisplay,infoDisplay;
 
     JPanel panel = new JPanel(new GridBagLayout());
     
@@ -124,6 +118,7 @@ class BufferController
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
+        this.parent = parent;
         this.configSource = configSource;
         this.listener = listener;
         placeholderInputController = new PlaceholderInputController(
@@ -491,52 +486,6 @@ class BufferController
         }
     }
     
-    private void openAsHtml(boolean transposed)
-    {
-        try(var exporter = new HtmlExporter())
-        {
-            var htmlbuf = new StringBuilder();
-            htmlbuf.append("<pre>");
-            editor.getText().chars().forEach((c) -> 
-            {
-                htmlbuf.append(HtmlEscaper.nonAscii(c));
-            });
-            htmlbuf.append("</pre>");
-            exporter.getWriter().write(htmlbuf.toString());                
-            if(transposed)
-            {
-                getResultSetTableModel().toHtmlTransposed(exporter.getWriter());
-            }
-            else
-            {
-                exporter.getWriter().write(getResultSetTableModel().toHtml());
-            }
-            exporter.openWithDesktop();
-        }
-        catch(Exception e)
-        {
-            JOptionPane.showMessageDialog(
-                    cellDisplay,
-                    "Error exporting to file: "+e.getMessage(),
-                    "Error exporting",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void openAsCsv()
-    {
-        var sw = new StringWriter();
-        try
-        {
-            getResultSetTableModel().store(sw,false);
-        }
-        catch(IOException e)
-        {
-            assert false: e.getMessage();
-        }
-        CsvExporter.openTemp(cellDisplay,sw.toString());
-    }
-    
     void store(Writer w)
     throws IOException
     {
@@ -775,7 +724,7 @@ class BufferController
         resultview = new JTable(rsm);
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
-        addResultSetPopup();
+        new BufferResultSetPopup(parent,this).attach();
         
         resultview.setCellSelectionEnabled(true);
         
@@ -864,37 +813,5 @@ class BufferController
         resultMessageLabel=null;
         removeResultView();
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);
-    }
-    
-    private void addResultSetPopup()
-    {
-        var popup = new JPopupMenu();
-        JMenuItem item;
-        item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> openAsHtml(false));
-        popup.add(item);
-        item = new JMenuItem("Open as HTML (transposed)",KeyEvent.VK_T);
-        item.addActionListener((e) -> openAsHtml(true));
-        popup.add(item);
-        item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
-        item.addActionListener((e) -> openAsCsv());
-        popup.add(item);
-        item = new JMenuItem("Close",KeyEvent.VK_C);
-        item.addActionListener((e) -> closeBuffer());
-        popup.add(item);
-        var popuplistener = new MouseAdapter()
-        {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.isPopupTrigger()) popup.show(e.getComponent(),
-                        e.getX(),e.getY());
-            }
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                mousePressed(e);
-            }
-        };
-        resultview.addMouseListener(popuplistener);
-        resultview.getTableHeader().addMouseListener(popuplistener);
     }
 }
