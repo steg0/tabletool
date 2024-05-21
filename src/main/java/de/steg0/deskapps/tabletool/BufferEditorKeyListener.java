@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
 
@@ -9,6 +10,9 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 
 class BufferEditorKeyListener implements KeyListener
 {
+    private static final Pattern WSPREFIX = Pattern.compile("^([ \t]+).*$",
+            Pattern.DOTALL);
+
     private final BufferController b;
 
     BufferEditorKeyListener(BufferController b)
@@ -58,7 +62,22 @@ class BufferEditorKeyListener implements KeyListener
                 if(event.isShiftDown() ||
                    b.editor.getSelectionEnd()!=b.editor.getSelectionStart())
                 {
-                    b.togglePrefix("\t",!event.isShiftDown());
+                    new EditorPrefixToggler(b.editor,"\t").toggle(
+                            !event.isShiftDown());
+                    event.consume();
+                }
+                break;
+            case KeyEvent.VK_ENTER:
+                if(event.getModifiersEx()!=0) break;
+                String lastLine = b.getTextFromCurrentLine(true);
+                var m = WSPREFIX.matcher(lastLine);
+                if(m.matches())
+                {
+                    var doc = (GroupableUndoDocument)b.editor.getDocument();
+                    doc.startCompoundEdit();
+                    doc.insertString(b.editor.getCaretPosition(),
+                            "\n"+m.group(1),null);
+                    doc.endCompoundEdit();
                     event.consume();
                 }
             }

@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -38,8 +39,9 @@ class PropertyHolder
         {
             for(File propertiesfile : propertiesfiles)
             {
-                try(var propertyStream = new BufferedInputStream(
-                    new FileInputStream(propertiesfile)))
+                if(propertiesfile.exists() && propertiesfile.length() > 2) try(
+                    var propertyStream = new BufferedInputStream(
+                            new FileInputStream(propertiesfile)))
                 {
                     if(propertiesfile.getName().endsWith(".xml"))
                     {
@@ -121,6 +123,42 @@ class PropertyHolder
     {
         if(!properties.containsKey("frame.bg")) return null;
         return Color.decode(properties.getProperty("frame.bg").toString());
+    }
+
+    Color getNonFocusedEditorBorderColor()
+    {
+        return getColorProperty("editor.nonFocusedBorder",Color.WHITE);
+    }
+
+    Color getFocusedEditorBorderColor()
+    {
+        return getColorProperty("editor.focusedBorder",Color.BLUE);
+    }
+
+    Color getUnsavedEditorBorderColor()
+    {
+        return getColorProperty("editor.unsavedBorder",Color.GRAY);
+    }
+
+    private static final String UIDEFAULTS_COLOR_PREFIX = "uiDefaults.color.";
+
+    Object[] getColorUIDefaults()
+    {
+        return properties
+            .stringPropertyNames().stream()
+            .filter((k) -> k.startsWith(UIDEFAULTS_COLOR_PREFIX))
+            .map((k) -> new Object[]{
+                    k.substring(UIDEFAULTS_COLOR_PREFIX.length()),
+                    Color.decode(properties.get(k).toString())
+            })
+            .flatMap(Arrays::stream)
+            .toArray(Object[]::new);
+    }
+
+    private Color getColorProperty(String key,Color defaultColor)
+    {
+        if(!properties.containsKey(key)) return defaultColor;
+        return Color.decode(properties.getProperty(key).toString());
     }
 
     String getPlaceholderRegex()

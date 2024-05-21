@@ -6,22 +6,16 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.font.FontRenderContext;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -38,10 +32,7 @@ import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
@@ -58,7 +49,9 @@ class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
     
-    private static final String CONNECTION_LABEL_PREFIX = "<-- ";
+    private static final String CONNECTION_LABEL_PREFIX =
+            "\u00b7\u00b7\u00b7\u00b7 ";
+    private static final String CONNECTION_LABEL_SUFFIX = " ";
 
     private static final MessageFormat FETCH_LOG_FORMAT = 
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
@@ -77,7 +70,7 @@ class BufferController
     
     Logger logger = Logger.getLogger("tabtype");
 
-    private final JFrame cellDisplay,infoDisplay;
+    private final JFrame parent,cellDisplay,infoDisplay;
 
     JPanel panel = new JPanel(new GridBagLayout());
     
@@ -88,7 +81,8 @@ class BufferController
     private BufferDocumentListener documentListener = 
             new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
-    private Border unfocusedBorder = BorderFactory.createDashedBorder(Color.WHITE);
+    private final Border unfocusedBorder;
+    private final Color unfocusedBorderColor;
     private JLabel connectionLabel = new JLabel();
 
     void setSaved()
@@ -96,7 +90,7 @@ class BufferController
         documentListener.unsaved = false;
         if(!editor.hasFocus()) {
             editor.setBorder(unfocusedBorder);
-            connectionLabel.setForeground(Color.WHITE);
+            connectionLabel.setForeground(unfocusedBorderColor);
         }
     }
     
@@ -107,31 +101,6 @@ class BufferController
     
     {
         editor.getDocument().addUndoableEditListener(undoManager);
-        Border focusedBorder = BorderFactory.createDashedBorder(Color.BLUE);
-        Border unsavedBorder = BorderFactory.createDashedBorder(Color.GRAY);
-        editor.setBorder(unfocusedBorder);
-        connectionLabel.setForeground(Color.WHITE);
-        editor.addFocusListener(new FocusListener()
-        {
-            @Override public void focusGained(FocusEvent e)
-            {
-                editor.setBorder(focusedBorder);
-                connectionLabel.setForeground(Color.BLUE);
-            }
-            @Override public void focusLost(FocusEvent e)
-            {
-                if(isUnsaved())
-                {
-                    editor.setBorder(isUnsaved()?unsavedBorder:unfocusedBorder);
-                    connectionLabel.setForeground(Color.GRAY);
-                }
-                else
-                {
-                    editor.setBorder(unfocusedBorder);
-                    connectionLabel.setForeground(Color.WHITE);
-                }
-            }
-        });
     }
     
     JTable resultview;
@@ -147,18 +116,52 @@ class BufferController
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
+        this.parent = parent;
         this.configSource = configSource;
         this.listener = listener;
         placeholderInputController = new PlaceholderInputController(
                 configSource,parent);
         this.log = updateLog;
         
+        unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
+        Color focusedBorderColor = configSource.getFocusedEditorBorderColor();
+        Color unsavedBorderColor = configSource.getUnsavedEditorBorderColor();
+        unfocusedBorder = BorderFactory.createDashedBorder(
+                unfocusedBorderColor);
+        Border focusedBorder = BorderFactory.createDashedBorder(
+                focusedBorderColor);
+        Border unsavedBorder = BorderFactory.createDashedBorder(
+                unsavedBorderColor);
+        editor.setBorder(unfocusedBorder);
+        connectionLabel.setForeground(unfocusedBorderColor);
+        editor.addFocusListener(new FocusListener()
+        {
+            @Override public void focusGained(FocusEvent e)
+            {
+                editor.setBorder(focusedBorder);
+                connectionLabel.setForeground(focusedBorderColor);
+            }
+            @Override public void focusLost(FocusEvent e)
+            {
+                if(isUnsaved())
+                {
+                    editor.setBorder(isUnsaved()?
+                            unsavedBorder:unfocusedBorder);
+                    connectionLabel.setForeground(unsavedBorderColor);
+                }
+                else
+                {
+                    editor.setBorder(unfocusedBorder);
+                    connectionLabel.setForeground(unfocusedBorderColor);
+                }
+            }
+        });
+        
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
         panel.add(editor,editorConstraints);
         var connectionLabelConstraints = new GridBagConstraints();
         connectionLabelConstraints.anchor = GridBagConstraints.NORTHWEST;
-        connectionLabelConstraints.insets = new Insets(0,7,0,5);
         setConnectionLabelFontSize();
         panel.add(connectionLabel,connectionLabelConstraints);
         panel.setBackground(defaultBackground);
@@ -180,7 +183,7 @@ class BufferController
         }
         editor.setTabSize(configSource.getEditorTabsize());
         
-        var actions = new BufferActions(this);
+        var actions = new BufferActions(parent,this);
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
@@ -190,15 +193,17 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
+        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
         var am = editor.getActionMap();
         am.put("Execute",actions.executeAction);
         am.put("Execute/Split",actions.executeSplitAction);
         am.put("Show Info",actions.showInfoAction);
         am.put("Show Snippets",actions.showSnippetsPopupAction);
         am.put("Show Completions",actions.showCompletionPopupAction);
-        am.put("Toggle Comment",actions.toggleCommentAction);
+        am.put("Toggle Comment",new EditorPrefixToggler(editor,"--"));
         am.put("Undo",actions.undoAction);
         am.put("Redo",actions.redoAction);
+        am.put("Go To Line",actions.goToLineAction);
     }
     
     void setBranding(Color background,String text)
@@ -207,7 +212,8 @@ class BufferController
         editor.setBackground(background);
         panel.setBackground(background);
         if(text.isBlank()) connectionLabel.setText(text);
-        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text);
+        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
+                CONNECTION_LABEL_SUFFIX);
     }
     
     Color getBrandingBackground()
@@ -219,7 +225,8 @@ class BufferController
     {
         String label = connectionLabel.getText();
         if(label.isBlank()) return label;
-        return label.substring(CONNECTION_LABEL_PREFIX.length());
+        return label.substring(CONNECTION_LABEL_PREFIX.length(),
+                label.length()-CONNECTION_LABEL_SUFFIX.length());
     }
 
     Stack<Integer> sizes=new Stack<>();
@@ -242,7 +249,8 @@ class BufferController
         }
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
-        setResultViewFontSize(resultview,newSize);
+        TableFontSizer.setFontSize(resultview,newSize,
+                configSource.getResultViewHeight());
         setResultSetMessageLabelFontSize();
         setConnectionLabelFontSize();
     }
@@ -262,29 +270,6 @@ class BufferController
         return index;
     }
     
-    private void setResultViewFontSize(JTable resultview,int newSize)
-    {
-        if(resultview==null) return;
-        Font rf = resultview.getFont(),
-             rf2 = new Font(rf.getName(),rf.getStyle(),newSize);
-        resultview.setFont(rf2);
-        var header = resultview.getTableHeader();
-        Font hf = header.getFont(),
-             hf2 = new Font(hf.getName(),hf.getStyle(),newSize);
-        resultview.getTableHeader().setFont(hf2);
-        int lineHeight = (int)hf2.getMaxCharBounds(new FontRenderContext(
-                null,false,false)).getHeight();
-        TableSizer.sizeColumns(resultview);
-        resultview.setRowHeight(lineHeight);
-        Dimension preferredSize = resultview.getPreferredSize();
-        var viewportSize = new Dimension((int)preferredSize.getWidth(),
-                (int)Math.min(configSource.getResultViewHeight()*lineHeight,
-                        preferredSize.getHeight()));
-        logger.log(Level.FINE,"Sizing table, viewportSize={0}, "+
-                "lineHeight={1}",new Object[]{viewportSize,lineHeight});
-        resultview.setPreferredScrollableViewportSize(viewportSize);
-    }
-
     private void setResultSetMessageLabelFontSize()
     {
         if(resultMessageLabel==null) return;
@@ -301,7 +286,7 @@ class BufferController
         Font connectionLabelFont = new Font(
                 connectionLabel.getFont().getName(),
                 Font.ITALIC,
-                (int)(connectionLabel.getFont().getSize() * .9)
+                (int)(editor.getFont().getSize() * .9)
         );
         connectionLabel.setFont(connectionLabelFont);
     }
@@ -327,12 +312,12 @@ class BufferController
         return caret-1-index;
     }
 
-    String getTextFromCurrentLine()
+    String getTextFromCurrentLine(boolean endWithCaret)
     {
         String t = editor.getText();
         int caret = editor.getCaretPosition();
         int index = t.lastIndexOf('\n',caret-1)+1;
-        return t.substring(index);
+        return endWithCaret? t.substring(index,caret) : t.substring(index);
     }
 
     private void setCaretPositionInLine(int position)
@@ -479,109 +464,6 @@ class BufferController
         }
     }
     
-    void togglePrefix(String prefix,Boolean add)
-    {
-        int plen = prefix.length();
-        int start = editor.getSelectionStart();
-        int end = editor.getSelectionEnd();
-        try
-        {
-            if(start<0 || start==end)
-            {
-                /* no or zero-size selection -- treat like one char selection */
-                start=(end=max(1,editor.getCaretPosition()))-1;
-            }
-            else
-            {
-                /* 
-                 * if selection started on pos 0 in line, don't include
-                 * this line in selection
-                 */
-                if(editor.getText(end-1,1).equals("\n")) end-=1;
-            }
-            /* if only part of line was selected, scan through its beginning */
-            for(;start>=0;start--)
-            {
-                if(editor.getText(start,1).equals("\n")) break;
-            }
-            /* 
-             * now determine whether to uncomment or comment, and change text
-             * from bottom to top
-             */
-            ((GroupableUndoDocument)editor.getDocument()).startCompoundEdit();
-            for(int pos = end-1;pos>=start;pos--)
-            {
-                if(pos==-1 || editor.getText(pos,1).equals("\n"))
-                {
-                    boolean hasPrefix=editor.getText().length()>pos+plen &&
-                            editor.getText(pos+1,plen).equals(prefix);
-                    if(add==null) add=!hasPrefix;
-                    if(Boolean.FALSE.equals(add))
-                    {
-                        add=false;
-                        if(hasPrefix) editor.getDocument().remove(pos+1,plen);
-                    }
-                    else
-                    {
-                        add=true;
-                        editor.getDocument().insertString(pos+1,prefix,null);
-                    }
-                }
-            }
-            ((GroupableUndoDocument)editor.getDocument()).endCompoundEdit();
-        }
-        catch(BadLocationException e)
-        {
-            assert false : e.getMessage();
-        }
-    }
-    
-    private void openAsHtml(boolean transposed)
-    {
-        try(var exporter = new HtmlExporter())
-        {
-            var htmlbuf = new StringBuilder();
-            htmlbuf.append("<pre>");
-            editor.getText().chars().forEach((c) -> 
-            {
-                htmlbuf.append(HtmlEscaper.nonAscii(c));
-            });
-            htmlbuf.append("</pre>");
-            exporter.getWriter().write(htmlbuf.toString());                
-            if(transposed)
-            {
-                getResultSetTableModel().toHtmlTransposed(exporter.getWriter());
-            }
-            else
-            {
-                exporter.getWriter().write(getResultSetTableModel().toHtml());
-            }
-            exporter.openWithDesktop();
-        }
-        catch(Exception e)
-        {
-            JOptionPane.showMessageDialog(
-                    cellDisplay,
-                    "Error exporting to file: "+e.getMessage(),
-                    "Error exporting",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void openAsCsv()
-    {
-        var sw = new StringWriter();
-        try
-        {
-            getResultSetTableModel().store(sw,false);
-        }
-        catch(IOException e)
-        {
-            assert false: e.getMessage();
-        }
-        CsvExporter.openTemp(cellDisplay,sw.toString());
-    }
-    
     void store(Writer w)
     throws IOException
     {
@@ -650,7 +532,7 @@ class BufferController
     void fetch(boolean split)
     {
         savedCaretPosition = editor.getCaretPosition();
-        if(getTextFromCurrentLine().startsWith(CONNECT_COMMENT))
+        if(getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
             logger.log(Level.FINE,"Found connect alias");
             fireBufferEvent(Type.DRY_FETCH);
@@ -820,7 +702,7 @@ class BufferController
         resultview = new JTable(rsm);
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
-        addResultSetPopup();
+        new BufferResultSetPopup(parent,this).attach();
         
         resultview.setCellSelectionEnabled(true);
         
@@ -855,7 +737,8 @@ class BufferController
             panel.add(resultMessageLabel,resultSetMessageConstraints);
         }
 
-        setResultViewFontSize(resultview,editor.getFont().getSize());
+        TableFontSizer.setFontSize(resultview,editor.getFont().getSize(),
+                configSource.getResultViewHeight());
         setResultSetMessageLabelFontSize();
 
         panel.revalidate();
@@ -891,8 +774,9 @@ class BufferController
     private void showInfoTable(ResultSetTableModel rsm)
     {
         JTable inforesultview = new JTable(rsm);
-        setResultViewFontSize(inforesultview,sizes.isEmpty()?
-                editor.getFont().getSize() : sizes.get(0));
+        TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
+                editor.getFont().getSize() : sizes.get(0),
+                configSource.getResultViewHeight());
         inforesultview.setCellSelectionEnabled(true);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
@@ -909,37 +793,5 @@ class BufferController
         resultMessageLabel=null;
         removeResultView();
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);
-    }
-    
-    private void addResultSetPopup()
-    {
-        var popup = new JPopupMenu();
-        JMenuItem item;
-        item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> openAsHtml(false));
-        popup.add(item);
-        item = new JMenuItem("Open as HTML (transposed)",KeyEvent.VK_T);
-        item.addActionListener((e) -> openAsHtml(true));
-        popup.add(item);
-        item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
-        item.addActionListener((e) -> openAsCsv());
-        popup.add(item);
-        item = new JMenuItem("Close",KeyEvent.VK_C);
-        item.addActionListener((e) -> closeBuffer());
-        popup.add(item);
-        var popuplistener = new MouseAdapter()
-        {
-            @Override
-            public void mousePressed(MouseEvent e) {
-                if (e.isPopupTrigger()) popup.show(e.getComponent(),
-                        e.getX(),e.getY());
-            }
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                mousePressed(e);
-            }
-        };
-        resultview.addMouseListener(popuplistener);
-        resultview.getTableHeader().addMouseListener(popuplistener);
     }
 }

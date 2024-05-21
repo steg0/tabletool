@@ -1,20 +1,22 @@
 ▶ Invocation
 
-The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and use a properties file where connection definitions will be read from.
+The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and use one or more properties files where connection definitions will be read from. For such files, the Java .properties format as well as its XML variant are supported.
 
 Also, an optional single file name argument, ending with .xml or .tabtype, is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially.
 
 An example command line is:
 
-┌─────────────────────────────────────────────────────────────────────┐
+┌─
   java -XX:+UseSerialGC \
     -Dfile.encoding=Cp1252 \
     -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
     -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar \
     -jar tabtype.jar \
-    -config $HOME/Documents/tabtype.properties \
-    $HOME/Documents/workspace.tt.xml
-└─────────────────────────────────────────────────────────────────────┘
+    -logconfig $APPDATA/tabtype/logging.properties \
+    -config $APPDATA/tabtype/tabtype.properties.xml \
+    -config $APPDATA/tabtype/tabtype.properties \
+    $HOME/Documents/workspace.tabtype
+└─
 
 This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
 
@@ -23,16 +25,22 @@ This example uses the serial GC, which is a recommendation for desktop applicati
 
 The configuration file supports the following keys:
 
-┌─────────────────────────────────────────────────────────────────────┐
+┌─
   frame.x=100
   frame.y=100
   frame.w=700
   frame.h=450
   tab.placement=1
   editor.font=Lucida Sans Regular
+  editor.fontsize=12
   editor.tabsize=4
+  editor.nonFocusedBorder=#ffffff
+  editor.focusedBorder=#0000ff
+  editor.unsavedBorder=#aaaaaa
   default.bg=#ffffff
   frame.bg=#dddddd
+  # uiDefaults.color.* can set Color defaults for UIManager
+  uiDefaults.color.Button.background=#f9f9f9
   scroll.increment=16
   resultview.height=150
   placeholder.regex=\\@\\@selection\\@\\@
@@ -52,7 +60,7 @@ The configuration file supports the following keys:
   connections.<Name 1>.infoTemplate=<…>
   connections.<Name 1>.initSql=<…>
   connections.<Name Regex 1>.snippets.<Snippet Name 1>=<…>
-└─────────────────────────────────────────────────────────────────────┘
+└─
 
 More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
 
@@ -83,6 +91,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+/ - comment/uncomment.
 • Ctrl+F - find text (case-insensitively), starting on currently selected tab.
 • F3 - find next.
+• Ctrl+G - go to line.
 • Ctrl+Z, Ctrl+Y - undo, redo.
 • Ctrl+Up - focus tab title.
 • F1 - execute infoTemplate for word under cursor or selection.

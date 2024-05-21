@@ -34,6 +34,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -89,6 +90,10 @@ class CellDisplayController
     void showForSource(JTable source,int row,int col,
             Consumer<String> log)
     {
+        if(row<0 || col<0)
+        {
+            return;
+        }
         var rsm = (ResultSetTableModel)source.getModel();
         Object cellcontent = source.getValueAt(row,col);
         try
@@ -342,11 +347,7 @@ class CellDisplayController
             }
             catch(SQLException e)
             {
-                JOptionPane.showMessageDialog(
-                        cellDisplay,
-                        "Error opening: "+SQLExceptionPrinter.toString(e),
-                        "Error opening",
-                        JOptionPane.ERROR_MESSAGE);
+                showExceptionDialog("Error opening",e);
             }
             catch(Exception e)
             {
@@ -379,11 +380,7 @@ class CellDisplayController
             }
             catch(SQLException e)
             {
-                JOptionPane.showMessageDialog(
-                        cellDisplay,
-                        "Error exporting: "+SQLExceptionPrinter.toString(e),
-                        "Error exporting",
-                        JOptionPane.ERROR_MESSAGE);
+                showExceptionDialog("Error exporting",e);
             }
             catch(IOException e)
             {
@@ -427,11 +424,7 @@ class CellDisplayController
             }
             catch(SQLException e)
             {
-                JOptionPane.showMessageDialog(
-                        cellDisplay,
-                        "Error importing: "+SQLExceptionPrinter.toString(e),
-                        "Error importing",
-                        JOptionPane.ERROR_MESSAGE);
+                showExceptionDialog("Error importing",e);
             }
             catch(Exception e)
             {
@@ -461,11 +454,7 @@ class CellDisplayController
             }
             catch(SQLException e)
             {
-                JOptionPane.showMessageDialog(
-                        cellDisplay,
-                        "Error updating: "+SQLExceptionPrinter.toString(e),
-                        "Error updating",
-                        JOptionPane.ERROR_MESSAGE);
+                showExceptionDialog("Error updating",e);
             }
             cellDisplay.setVisible(false);
         }
@@ -488,13 +477,33 @@ class CellDisplayController
             }
             catch(SQLException e)
             {
-                JOptionPane.showMessageDialog(
-                        cellDisplay,
-                        "Error updating: "+SQLExceptionPrinter.toString(e),
-                        "Error updating",
-                        JOptionPane.ERROR_MESSAGE);
+                showExceptionDialog("Error updating",e);
             }
             cellDisplay.setVisible(false);
         }
+    }
+
+    private void showExceptionDialog(String title,SQLException exc)
+    {
+        String errorText = SQLExceptionPrinter.toString(exc);
+        var dialog = new JDialog(cellDisplay,title,true);
+        var label = new JLabel(title + ":");
+        dialog.getContentPane().setLayout(new BorderLayout());
+        dialog.getContentPane().add(label,BorderLayout.NORTH);
+        var errorPane = new JTextArea(errorText);
+        errorPane.setEditable(false);
+        var scrollPane = new JScrollPane(errorPane);
+        dialog.getContentPane().add(scrollPane,BorderLayout.CENTER);
+        var button = new JButton("OK");
+        button.addActionListener(e -> dialog.dispose());
+        var buttonPanel = new JPanel();
+        buttonPanel.add(button);        
+        dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setLocationRelativeTo(cellDisplay);
+        button.requestFocusInWindow();
+        dialog.getRootPane().setDefaultButton(button);
+        dialog.setVisible(true);
     }
 }

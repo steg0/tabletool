@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.Color;
 import java.io.File;
 import java.util.Map;
 
@@ -32,6 +33,18 @@ class BufferConfigSource
     int getEditorTabsize()
     {
         return propertyHolder.getEditorTabsize();
+    }
+    Color getNonFocusedEditorBorderColor()
+    {
+        return propertyHolder.getNonFocusedEditorBorderColor();
+    }
+    Color getFocusedEditorBorderColor()
+    {
+        return propertyHolder.getFocusedEditorBorderColor();
+    }
+    Color getUnsavedEditorBorderColor()
+    {
+        return propertyHolder.getUnsavedEditorBorderColor();
     }
     String getCompletionTemplate()
     {

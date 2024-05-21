@@ -218,6 +218,7 @@ class NotebookController
         
         scrollIncrement = propertyHolder.getScrollIncrement();
         bufferPane = new JScrollPane(bufferPanel);
+        bufferPane.setBorder(null);
         bufferPane.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
         bufferPane.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
         var ml = new BufferPaneMouseListener();
@@ -225,6 +226,7 @@ class NotebookController
         bufferPane.addMouseMotionListener(ml);
         logBufferPane.add(bufferPane);
         var logPane = new JScrollPane(log);
+        logPane.setBorder(null);
         logBufferPane.add(logPane);
 
         var bufferPaneConstraints = new GridBagConstraints();
@@ -666,6 +668,7 @@ class NotebookController
                 null,
                 null,
                 file.getName());
+        if(newname==null) return false;
         File newFile = new File(file.getParentFile(),newname);
         if(!newname.isEmpty()&&!newFile.exists()&&file.renameTo(newFile))
         {
@@ -728,7 +731,7 @@ class NotebookController
 
     void openConnection()
     {
-        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine()))
+        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");
             connectionsSelector.requestFocusInWindow();

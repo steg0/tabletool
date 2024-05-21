@@ -19,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -244,8 +245,9 @@ implements KeyListener
             {
                 try
                 {
-                    for(var f : propertyHolder.propertiesfiles)
+                    for(File f : propertyHolder.propertiesfiles)
                     {
+                        if(!f.exists()) Files.createFile(f.toPath());
                         Desktop.getDesktop().open(f);
                     }
                 }

@@ -9,16 +9,19 @@ import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.LogManager;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 /**
  * This aims to be a simple tabular grid that has DB connectivity.
@@ -106,6 +109,8 @@ extends WindowAdapter
             Color frameBackground = propertyHolder.getFrameBackground();
             if(frameBackground!=null) frame.getContentPane().setBackground(
                     frameBackground);
+            UIManager.getDefaults().putDefaults(propertyHolder
+                    .getColorUIDefaults());
             return new TabSetController(frame,propertyHolder,workspace);
         }
         catch(Exception e)
@@ -238,6 +243,21 @@ extends WindowAdapter
             {
             case "-config":
                 propertiesfiles.add(args[++optind]);
+                break;
+            case "-logconfig":
+                File f = new File(args[++optind]);
+                if(f.exists()) try(var fs = new FileInputStream(f))
+                {
+                    LogManager.getLogManager().readConfiguration(fs);
+                }
+                catch(IOException e)
+                {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Error loading logger configuration: "+e.getMessage(),
+                            "Error loading logger configuration",
+                            JOptionPane.ERROR_MESSAGE);
+                }
                 break;
             case "--":
                 optind++;

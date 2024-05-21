@@ -19,49 +19,49 @@
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
       <version>10.15.2.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>42.3.1</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.oracle.database.jdbc</groupId>
       <artifactId>ojdbc11</artifactId>
       <version>21.7.0.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.oracle.database.xml</groupId>
       <artifactId>xdb</artifactId>
       <version>21.7.0.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.oracle.database.security</groupId>
       <artifactId>oraclepki</artifactId>
       <version>21.7.0.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.oracle.database.security</groupId>
       <artifactId>osdt_core</artifactId>
       <version>21.7.0.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.oracle.database.security</groupId>
       <artifactId>osdt_cert</artifactId>
       <version>21.7.0.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>com.ibm.db2</groupId>
       <artifactId>jcc</artifactId>
       <version>11.5.7.0</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -103,6 +103,58 @@
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <!--
+            To debug this, use
+            MAVEN_OPTS=-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9001
+          -->
+          <mainClass>de.steg0.deskapps.tabletool/de.steg0.deskapps.tabletool.Tabtype</mainClass>
+          <arguments>
+            <argument>-config</argument>
+            <argument>test.tabtype.properties.xml</argument>
+            <argument>-config</argument>
+            <argument>test.tabtype.properties</argument>
+            <argument>-logconfig</argument>
+            <argument>test.logging.properties</argument>
+            <argument>test.tabtype</argument>
+          </arguments>
+          <systemProperties>
+            <property>
+              <key>file.encoding</key>
+              <value>UTF-8</value>
+            </property>
+            <property>
+              <key>swing.plaf.metal.controlFont</key>
+              <value>Segoe UI</value>
+            </property>
+          </systemProperties>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
