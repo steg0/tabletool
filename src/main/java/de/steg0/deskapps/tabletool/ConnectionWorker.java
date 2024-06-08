@@ -54,7 +54,7 @@ class ConnectionWorker
             String sql,
             int fetchsize,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
-            BiConsumer<Integer,Long> updateCountConsumer,
+            Consumer<UpdateCountEvent> updateCountConsumer,
             Consumer<String> log
     )
     {
@@ -72,7 +72,7 @@ class ConnectionWorker
     private class SqlRunnable implements Runnable
     {
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
-        private BiConsumer<Integer,Long> updateCountConsumer;
+        private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
         private String sql;
         private int fetchsize;
@@ -164,9 +164,10 @@ class ConnectionWorker
         private void displayUpdateCount(Statement statement)
         throws SQLException
         {
-            Integer count = statement.getUpdateCount();
             long now = System.currentTimeMillis();
-            invokeLater(() -> updateCountConsumer.accept(count,now-ts));
+            var countEvent = new UpdateCountEvent(ConnectionWorker.this,
+                    statement.getUpdateCount(), now-ts);
+            invokeLater(() -> updateCountConsumer.accept(countEvent));
             statement.close();
         }
         

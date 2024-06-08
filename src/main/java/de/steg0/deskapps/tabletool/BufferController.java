@@ -58,7 +58,7 @@ class BufferController
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
     private static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
+            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} on {3} affected in {1} ms at {2}\n");
 
     private static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -650,9 +650,10 @@ class BufferController
         editor.setCaretPosition(savedCaretPosition);
     }
 
-    BiConsumer<Integer,Long> updateCountConsumer = (i,t) ->
+    Consumer<UpdateCountEvent> updateCountConsumer = (e) ->
     {
-        Object[] logargs = {i,t,new Date().toString()};
+        Object[] logargs = {e.count,e.ms,new Date().toString(),
+                e.getSource().description};
         log.accept(UPDATE_LOG_FORMAT.format(logargs));
         restoreCaretPosition(false);
     };

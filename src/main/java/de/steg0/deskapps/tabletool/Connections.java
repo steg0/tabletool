@@ -112,7 +112,7 @@ class Connections
             if(connectionInfo[i].initSql != null)
             {
                 workers[i].submit(connectionInfo[i].initSql,0,
-                        (r,c) -> {},(r,c) -> {},log);
+                        (r,c) -> {},e -> {},log);
             }
         }
         return workers[i];
