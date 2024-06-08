@@ -105,7 +105,7 @@ class Connections
             );
             jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
             workers[i] = new ConnectionWorker(
-                    connectionInfo[i].name,
+                    connectionInfo[i],
                     jdbcConnection,
                     executor
             );

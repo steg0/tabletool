@@ -57,8 +57,6 @@ class BufferController
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
-    private static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} on {3} affected in {1} ms at {2}\n");
 
     private static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -109,7 +107,8 @@ class BufferController
     private PlaceholderInputController placeholderInputController;
     
     Consumer<String> log;
-    
+    final BufferUpdateCountConsumer updateCountConsumer;
+        
     BufferController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             Consumer<String> updateLog,BufferConfigSource configSource,
             Listener listener)
@@ -122,6 +121,7 @@ class BufferController
         placeholderInputController = new PlaceholderInputController(
                 configSource,parent);
         this.log = updateLog;
+        this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
         unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
         Color focusedBorderColor = configSource.getFocusedEditorBorderColor();
@@ -650,14 +650,6 @@ class BufferController
         editor.setCaretPosition(savedCaretPosition);
     }
 
-    Consumer<UpdateCountEvent> updateCountConsumer = (e) ->
-    {
-        Object[] logargs = {e.count,e.ms,new Date().toString(),
-                e.getSource().description};
-        log.accept(UPDATE_LOG_FORMAT.format(logargs));
-        restoreCaretPosition(false);
-    };
-    
     /**
      * The first argument is the result data; <code>null</code> means there is
      * nothing to display, which can lead to the buffer being closed.

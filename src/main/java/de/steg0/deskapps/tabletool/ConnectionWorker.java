@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
+import de.steg0.deskapps.tabletool.PropertyHolder.ConnectionInfo;
+
 /**
  * A wrapper to run operations on top of a JDBC <code>Connection</code>.
  */
@@ -21,14 +23,14 @@ class ConnectionWorker
 {
     Logger logger = Logger.getLogger("tabtype");
 
-    final String description;
+    final ConnectionInfo info;
 
     private final Connection connection;
     private final Executor executor;
     
-    ConnectionWorker(String description,Connection connection,Executor executor)
+    ConnectionWorker(ConnectionInfo info,Connection connection,Executor executor)
     {
-        this.description=description;
+        this.info=info;
         this.connection=connection;
         this.executor=executor;
     }
@@ -180,9 +182,10 @@ class ConnectionWorker
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(description,statement,fetchsize);
+            lastReportedResult.update(info.name,statement,fetchsize);
             long now = System.currentTimeMillis();
-            invokeLater(() -> resultConsumer.accept(lastReportedResult,now-ts));
+            invokeLater(() -> resultConsumer.accept(lastReportedResult,
+                    now-ts));
         }
     }
 
