@@ -771,6 +771,7 @@ class BufferController
                 editor.getFont().getSize() : sizes.get(0),
                 configSource.getResultViewHeight());
         inforesultview.setCellSelectionEnabled(true);
+        inforesultview.setAutoCreateRowSorter(true);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
