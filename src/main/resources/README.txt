@@ -54,6 +54,8 @@ The configuration file supports the following keys:
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
   connections.<Name 1>.bg=#eeeedd
+  # this provides feedback for potential writes:
+  connections.<Name 1>.confirmations=true
   connections.<Name 1>.completionTemplate=\
       select table_name from all_tables \
       where table_name like upper(@@selection@@||'%')
