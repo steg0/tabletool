@@ -8,7 +8,7 @@
   <url>http://www.steg0.eu</url>
 
   <scm>
-    <developerConnection>scm:svn:https://hq.steg0.eu/svn/tags/tabtype/tabtype-0.52</developerConnection>
+    <developerConnection>scm:svn:https://hq.steg0.eu/svn/tags/tabletool/tabtype-0.52</developerConnection>
   </scm>
 
   <properties>
@@ -112,7 +112,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <tagBase>https://hq.steg0.eu/svn/tags/tabtype</tagBase>
+          <tagBase>https://hq.steg0.eu/svn/tags/tabletool</tagBase>
         </configuration>
       </plugin>
       <plugin>
