@@ -3,12 +3,12 @@
   <groupId>de.steg0.deskapps.tabletool</groupId>
   <artifactId>tabtype</artifactId>
   <packaging>jar</packaging>
-  <version>0.53</version>
+  <version>0.54-SNAPSHOT</version>
   <name>tabtype</name>
   <url>http://www.steg0.eu</url>
 
   <scm>
-    <developerConnection>scm:svn:https://hq.steg0.eu/svn/tags/tabletool/tabtype-0.53</developerConnection>
+    <developerConnection>scm:svn:https://hq.steg0.eu/svn/trunk/tabletool</developerConnection>
   </scm>
 
   <properties>
