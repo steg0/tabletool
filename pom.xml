@@ -8,7 +8,7 @@
   <url>http://www.steg0.eu</url>
 
   <scm>
-    <developerConnection>scm:svn:https://hq.steg0.eu/svn/tags/tabletool/tabtype-0.52</developerConnection>
+    <developerConnection>scm:svn:https://hq.steg0.eu/svn/trunk/tabletool</developerConnection>
   </scm>
 
   <properties>
