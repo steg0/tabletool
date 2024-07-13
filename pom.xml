@@ -8,6 +8,10 @@
   <name>tabtype</name>
   <url>http://www.steg0.eu</url>
 
+  <scm>
+    <developerConnection>scm:svn:https://hq.steg0.eu/svn/trunk/tabtype</developerConnection>
+  </scm>
+
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
@@ -102,6 +106,14 @@
               </addDefaultImplementationEntries>
             </manifest>
           </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <tagBase>https://hq.steg0.eu/svn/tags/tabtype</tagBase>
         </configuration>
       </plugin>
       <plugin>
