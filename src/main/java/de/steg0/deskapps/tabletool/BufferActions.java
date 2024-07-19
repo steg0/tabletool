@@ -183,7 +183,7 @@ class BufferActions
             @Override public void actionPerformed(ActionEvent event)
             {
                 String text = JOptionPane.showInputDialog(parent,"Go to line:");
-                try
+                if(text!=null) try
                 {
                     int line = Integer.parseInt(text);
                     int position = b.editor.getLineStartOffset(line - 1);
