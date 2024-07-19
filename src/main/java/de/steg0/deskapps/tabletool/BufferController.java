@@ -294,7 +294,7 @@ class BufferController
     private static JViewport findViewportParent(Component c)
     {
         if(c==null) return null;
-        if(c instanceof JViewport) return (JViewport)c;
+        if(c instanceof JViewport v) return v;
         return findViewportParent(c.getParent());
     }
     
