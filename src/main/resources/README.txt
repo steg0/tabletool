@@ -98,7 +98,10 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+Up - focus tab title.
 • F1 - execute infoTemplate for word under cursor or selection.
 • F2 - insert snippets into word under cursor or selection.
+• F6 - toggle log panel focus.
+• F7 - rollback.
 • F8 - execute completionTemplate for word under cursor or selection.
+• F9 - commit.
 
 To navigate across a result table, use Up/Down arrow keys.
 
