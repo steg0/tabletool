@@ -169,27 +169,13 @@ class NotebookController
         am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(connectionsSelector);
         
-        connectionPanel.add(new JLabel("Fetch:"));
-        
-        NumberFormat format = NumberFormat.getIntegerInstance();
-        NumberFormatter numberFormatter = new NumberFormatter(format);
-        numberFormatter.setMinimum(1);
-        fetchsizeField = new JFormattedTextField(numberFormatter);
-        fetchsizeField.setColumns(5);
-        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
-        fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
-        connectionPanel.add(fetchsizeField);
-        
-        commitButton.addActionListener((e) -> commit());
-        connectionPanel.add(commitButton);
-        
-        rollbackButton.addActionListener((e) -> rollback());
-        connectionPanel.add(rollbackButton);
-        
         disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
         logConsumer = new NotebookLogConsumer(log);
+        
+        commitButton.addActionListener((e) -> commit());
+        connectionPanel.add(commitButton);
         
         autocommitCb.addActionListener((e) -> 
         {
@@ -202,6 +188,20 @@ class NotebookController
             });
         });
         connectionPanel.add(autocommitCb);
+        
+        connectionPanel.add(new JLabel("Fetch:"));
+        
+        NumberFormat format = NumberFormat.getIntegerInstance();
+        NumberFormatter numberFormatter = new NumberFormatter(format);
+        numberFormatter.setMinimum(1);
+        fetchsizeField = new JFormattedTextField(numberFormatter);
+        fetchsizeField.setColumns(5);
+        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
+        fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
+        connectionPanel.add(fetchsizeField);
+        
+        rollbackButton.addActionListener((e) -> rollback());
+        connectionPanel.add(rollbackButton);
         
         var connectionPanelConstraints = new GridBagConstraints();
         connectionPanelConstraints.anchor = GridBagConstraints.EAST;
