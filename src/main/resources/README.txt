@@ -41,6 +41,8 @@ The configuration file supports the following keys:
   frame.bg=#dddddd
   # uiDefaults.color.* can set Color defaults for UIManager
   uiDefaults.color.Button.background=#f9f9f9
+  # uiDefaults.gradient.* sets gradient defaults
+  uiDefaults.gradient.ScrollBar.gradient=0.3,0.0,#cfd9e6,#cfd9e6,#cfd9e6
   scroll.increment=16
   resultview.height=150
   placeholder.regex=\\@\\@selection\\@\\@

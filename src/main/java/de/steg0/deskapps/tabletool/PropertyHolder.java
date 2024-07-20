@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.JTabbedPane;
 
@@ -151,6 +152,26 @@ class PropertyHolder
             .map((k) -> new Object[]{
                     k.substring(UIDEFAULTS_COLOR_PREFIX.length()),
                     Color.decode(properties.get(k).toString())
+            })
+            .flatMap(Arrays::stream)
+            .toArray(Object[]::new);
+    }
+
+    private static final String UIDEFAULTS_GRADIENT_PREFIX =
+            "uiDefaults.gradient.";
+
+    Object[] getGradientUIDefaults()
+    {
+        return properties
+            .stringPropertyNames().stream()
+            .filter((k) -> k.startsWith(UIDEFAULTS_GRADIENT_PREFIX))
+            .map((k) -> new Object[]{
+                    k.substring(UIDEFAULTS_GRADIENT_PREFIX.length()),
+                    Arrays.stream(properties.get(k).toString()
+                            .split("\\s*,\\s*"))
+                            .map(x -> x.startsWith("#")?
+                                    Color.decode(x) : Double.valueOf(x))
+                            .collect(Collectors.toList())
             })
             .flatMap(Arrays::stream)
             .toArray(Object[]::new);

@@ -111,6 +111,8 @@ extends WindowAdapter
                     frameBackground);
             UIManager.getDefaults().putDefaults(propertyHolder
                     .getColorUIDefaults());
+            UIManager.getDefaults().putDefaults(propertyHolder
+                    .getGradientUIDefaults());
             return new TabSetController(frame,propertyHolder,workspace);
         }
         catch(Exception e)
