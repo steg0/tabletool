@@ -172,10 +172,10 @@ class NotebookController
         disconnectButton.addActionListener((e) -> disconnect());
         connectionPanel.add(disconnectButton);
         
-        logConsumer = new NotebookLogConsumer(log);
-        
         commitButton.addActionListener((e) -> commit());
         connectionPanel.add(commitButton);
+        
+        logConsumer = new NotebookLogConsumer(log);
         
         autocommitCb.addActionListener((e) -> 
         {
