@@ -214,39 +214,9 @@ class BufferController
         if(text.isBlank()) connectionLabel.setText(text);
         else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
                 CONNECTION_LABEL_SUFFIX);
-        setResultviewBranding();
+        TableColorizer.colorize(resultview,getBrandingBackground());
     }
 
-    private void setResultviewBranding()
-    {
-        if(resultview!=null)
-        {
-            Color bg = getBrandingBackground();
-            int r = bg.getRed(),
-                g = bg.getGreen(),
-                b = bg.getBlue(),
-                rb = r + (0xff-r)/4,
-                gb = g + (0xff-g)/4,
-                bb = b + (0xff-b)/4,
-                rd = r - r/4,
-                gd = g - g/4,
-                bd = b - b/4;
-            Color
-                brighter = new Color(rb, gb, bb),
-                darker = new Color(rd, gd, bd);
-            if(g >= 0x80)
-            {
-                resultview.setBackground(brighter);
-                resultview.getTableHeader().setBackground(darker);
-            }
-            else
-            {
-                resultview.setBackground(darker);
-                resultview.getTableHeader().setBackground(brighter);
-            }
-        }
-    }
-    
     Color getBrandingBackground()
     {
         return editor.getBackground();
@@ -724,7 +694,7 @@ class BufferController
         removeResultView();
 
         resultview = new JTable(rsm);
-        setResultviewBranding();
+        TableColorizer.colorize(resultview,getBrandingBackground());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
         new BufferResultSetPopup(parent,this).attach();
