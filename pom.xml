@@ -131,10 +131,6 @@
           </arguments>
           <systemProperties>
             <property>
-              <key>file.encoding</key>
-              <value>UTF-8</value>
-            </property>
-            <property>
               <key>swing.plaf.metal.controlFont</key>
               <value>Segoe UI</value>
             </property>
