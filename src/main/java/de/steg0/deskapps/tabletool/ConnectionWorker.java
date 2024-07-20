@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
+import de.steg0.deskapps.tabletool.PropertyHolder.ConnectionInfo;
+
 /**
  * A wrapper to run operations on top of a JDBC <code>Connection</code>.
  */
@@ -21,14 +23,14 @@ class ConnectionWorker
 {
     Logger logger = Logger.getLogger("tabtype");
 
-    final String description;
+    final ConnectionInfo info;
 
     private final Connection connection;
     private final Executor executor;
     
-    ConnectionWorker(String description,Connection connection,Executor executor)
+    ConnectionWorker(ConnectionInfo info,Connection connection,Executor executor)
     {
-        this.description=description;
+        this.info=info;
         this.connection=connection;
         this.executor=executor;
     }
@@ -54,7 +56,7 @@ class ConnectionWorker
             String sql,
             int fetchsize,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
-            BiConsumer<Integer,Long> updateCountConsumer,
+            Consumer<UpdateCountEvent> updateCountConsumer,
             Consumer<String> log
     )
     {
@@ -72,7 +74,7 @@ class ConnectionWorker
     private class SqlRunnable implements Runnable
     {
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
-        private BiConsumer<Integer,Long> updateCountConsumer;
+        private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
         private String sql;
         private int fetchsize;
@@ -164,9 +166,10 @@ class ConnectionWorker
         private void displayUpdateCount(Statement statement)
         throws SQLException
         {
-            Integer count = statement.getUpdateCount();
             long now = System.currentTimeMillis();
-            invokeLater(() -> updateCountConsumer.accept(count,now-ts));
+            var countEvent = new UpdateCountEvent(ConnectionWorker.this,
+                    statement.getUpdateCount(), now-ts);
+            invokeLater(() -> updateCountConsumer.accept(countEvent));
             statement.close();
         }
         
@@ -179,9 +182,10 @@ class ConnectionWorker
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(description,statement,fetchsize);
+            lastReportedResult.update(info.name,statement,fetchsize);
             long now = System.currentTimeMillis();
-            invokeLater(() -> resultConsumer.accept(lastReportedResult,now-ts));
+            invokeLater(() -> resultConsumer.accept(lastReportedResult,
+                    now-ts));
         }
     }
 

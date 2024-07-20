@@ -14,40 +14,38 @@ class TableSizer
      * their renderer preferences. This is taken from mergetool; comments
      * see there.
      */
-    /* 
-     * RS 2020-11-02: I think this could result in excessively wide columns
-     * for some results. If so, a maximum width setting might be a good idea.
-     * But let's first see whether JTable copes with it in some usable way
-     * or not.
-     */
-    static void sizeColumns(JTable t)
+    static void sizeColumns(JTable t,int limit)
     {
         int c=0;
         for(final Enumeration<TableColumn> e=
             t.getColumnModel().getColumns();e.hasMoreElements();c++)
         {
             TableColumn col=e.nextElement();
-            int mWidth=col.getMinWidth();
-            int maxWidth=col.getMaxWidth();
+            int colMinWidth=col.getMinWidth();
+            int colMaxWidth=col.getMaxWidth();
             TableCellRenderer hRenderer = col.getHeaderRenderer();
             if(hRenderer==null) hRenderer=t.getTableHeader()
                     .getDefaultRenderer();
             Component hComp = hRenderer.getTableCellRendererComponent(
                     t,col.getHeaderValue(),false,false,-1,c);
-            mWidth=Math.max(mWidth,hComp.getPreferredSize().width);
+            colMinWidth=Math.max(colMinWidth,hComp.getPreferredSize().width);
             for(int i=0;i<t.getRowCount();i++)
             {
                 TableCellRenderer renderer=t.getCellRenderer(i,c);
                 Component comp=t.prepareRenderer(renderer,i,c);
                 int compPreferredSize=comp.getPreferredSize().width +
                         t.getIntercellSpacing().width;
-                mWidth=Math.max(mWidth,compPreferredSize);
+                colMinWidth=Math.max(colMinWidth,compPreferredSize);
             }
-            if(mWidth >= maxWidth)
+            if(colMinWidth >= colMaxWidth)
             {
-                mWidth = maxWidth;
+                colMinWidth = colMaxWidth;
             }
-            col.setPreferredWidth(mWidth);
+            if(limit > 0 && colMinWidth >= limit)
+            {
+                colMinWidth = limit;
+            }
+            col.setPreferredWidth(colMinWidth);
         }
     }
 }

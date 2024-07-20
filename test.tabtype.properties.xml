@@ -10,12 +10,12 @@
         select * from sys.systables where tablename like &amp;param||'%';
     </entry>
     <entry key="drivers.derby.infoTemplate">
-        select * from sys.systables where tablename like upper(&amp;param||'%')
+        select * from sys.systables where tablename = upper(&amp;param)
     </entry>
     <entry key="drivers.oracle.infoTemplate">
         select
-            table_name,
-            column_name,
+            t.table_name,
+            t.column_name,
             data_type,
             data_length,
             data_precision,
@@ -27,10 +27,14 @@
                 select listagg(to_char(constraint_name),',')
                 from user_cons_columns c
                 where c.table_name=t.table_name and c.column_name=t.column_name
-            ) used_by_constraints
+            ) used_by_constraints,
+            co.comments
         from user_tab_cols t
-        where instr(table_name,upper(&amp;param)) = 1
-        order by table_name,column_id
+        left join user_col_comments co
+            on co.table_name=t.table_name
+            and co.column_name=t.column_name
+        where t.table_name=upper(&amp;param)
+        order by t.table_name,column_id
     </entry>
     <entry key="drivers.oracle.completionTemplate">
         select to_clob(table_name) completion from user_tables

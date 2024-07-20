@@ -105,14 +105,14 @@ class Connections
             );
             jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
             workers[i] = new ConnectionWorker(
-                    connectionInfo[i].name,
+                    connectionInfo[i],
                     jdbcConnection,
                     executor
             );
             if(connectionInfo[i].initSql != null)
             {
                 workers[i].submit(connectionInfo[i].initSql,0,
-                        (r,c) -> {},(r,c) -> {},log);
+                        (r,c) -> {},e -> {},log);
             }
         }
         return workers[i];

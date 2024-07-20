@@ -41,6 +41,8 @@ The configuration file supports the following keys:
   frame.bg=#dddddd
   # uiDefaults.color.* can set Color defaults for UIManager
   uiDefaults.color.Button.background=#f9f9f9
+  # uiDefaults.gradient.* sets gradient defaults
+  uiDefaults.gradient.ScrollBar.gradient=0.3,0.0,#cfd9e6,#cfd9e6,#cfd9e6
   scroll.increment=16
   resultview.height=150
   placeholder.regex=\\@\\@selection\\@\\@
@@ -54,6 +56,8 @@ The configuration file supports the following keys:
   connections.<Name 1>.username=<User>
   connections.<Name 1>.password=<Password>
   connections.<Name 1>.bg=#eeeedd
+  # this provides feedback for potential writes:
+  connections.<Name 1>.confirmations=true
   connections.<Name 1>.completionTemplate=\
       select table_name from all_tables \
       where table_name like upper(@@selection@@||'%')
@@ -96,7 +100,10 @@ While editing SQL in a notebook, the following keys are supported:
 • Ctrl+Up - focus tab title.
 • F1 - execute infoTemplate for word under cursor or selection.
 • F2 - insert snippets into word under cursor or selection.
+• F6 - toggle log panel focus.
+• F7 - rollback.
 • F8 - execute completionTemplate for word under cursor or selection.
+• F9 - commit.
 
 To navigate across a result table, use Up/Down arrow keys.
 

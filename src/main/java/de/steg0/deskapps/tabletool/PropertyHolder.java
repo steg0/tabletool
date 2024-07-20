@@ -10,11 +10,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.JTabbedPane;
 
@@ -155,6 +157,26 @@ class PropertyHolder
             .toArray(Object[]::new);
     }
 
+    private static final String UIDEFAULTS_GRADIENT_PREFIX =
+            "uiDefaults.gradient.";
+
+    Object[] getGradientUIDefaults()
+    {
+        return properties
+            .stringPropertyNames().stream()
+            .filter((k) -> k.startsWith(UIDEFAULTS_GRADIENT_PREFIX))
+            .map((k) -> new Object[]{
+                    k.substring(UIDEFAULTS_GRADIENT_PREFIX.length()),
+                    Arrays.stream(properties.get(k).toString()
+                            .split("\\s*,\\s*"))
+                            .map(x -> x.startsWith("#")?
+                                    Color.decode(x) : Double.valueOf(x))
+                            .collect(Collectors.toList())
+            })
+            .flatMap(Arrays::stream)
+            .toArray(Object[]::new);
+    }
+
     private Color getColorProperty(String key,Color defaultColor)
     {
         if(!properties.containsKey(key)) return defaultColor;
@@ -171,10 +193,11 @@ class PropertyHolder
         static final String CONNECTIONS_PREFIX = "connections.";
         static final String DRIVERS_PREFIX = "drivers.";
         
-        String name,url,username,password,completionTemplate,infoTemplate,
+        final String name,url,username,password,completionTemplate,infoTemplate,
             initSql;
-        final Map<String,String> snippetTemplates = new TreeMap<>();
-        Color background;
+        final Map<String,String> snippetTemplates;
+        final Color background;
+        final boolean confirmations;
         
         ConnectionInfo(String nameKey)
         {
@@ -188,54 +211,40 @@ class PropertyHolder
             String driverSpec = url.replaceFirst("^jdbc\\:([a-z]+)\\:.*$","$1");
             logger.fine("Looking up templates for driver "+driverSpec);
 
-            if(properties.containsKey(prefix+".completionTemplate"))
-            {
-                completionTemplate=String.valueOf(properties.get(prefix+
-                        ".completionTemplate"));
-            }
-            else
-            {
-                if(properties.containsKey(
-                    DRIVERS_PREFIX+driverSpec+".completionTemplate"))
-                {
-                    completionTemplate=String.valueOf(properties.get(
-                        DRIVERS_PREFIX+driverSpec+".completionTemplate"));
-                }
-            }
-            if(properties.containsKey(prefix+".infoTemplate"))
-            {
-                infoTemplate=String.valueOf(properties.get(prefix+
-                        ".infoTemplate"));
-            }
-            else
-            {
-                if(properties.containsKey(
-                    DRIVERS_PREFIX+driverSpec+".infoTemplate"))
-                {
-                    infoTemplate=String.valueOf(properties.get(
-                        DRIVERS_PREFIX+driverSpec+".infoTemplate"));
-                }
-            }
-            if(properties.containsKey(prefix+".initSql"))
-            {
-                initSql=String.valueOf(properties.get(prefix+".initSql"));
-            }
-            else
-            {
-                if(properties.containsKey(DRIVERS_PREFIX+driverSpec+".initSql"))
-                {
-                    initSql=String.valueOf(properties.get(
-                        DRIVERS_PREFIX+driverSpec+".initSql"));
-                }
-            }
-            snippetTemplates.putAll(getSnippetsForDriver(driverSpec));
-            snippetTemplates.putAll(getSnippetsForConnection(nameKey));
+            completionTemplate = properties.containsKey(
+                    prefix+".completionTemplate")? String.valueOf(
+                            properties.get(prefix+".completionTemplate")) :
+                    properties.containsKey(
+                            DRIVERS_PREFIX+driverSpec+".completionTemplate")?
+                            String.valueOf(properties.get(DRIVERS_PREFIX+
+                                    driverSpec+".completionTemplate")) : null;
+            
+            infoTemplate = properties.containsKey(prefix+".infoTemplate")?
+                    String.valueOf(properties.get(prefix+".infoTemplate")) :
+                    properties.containsKey(
+                            DRIVERS_PREFIX+driverSpec+".infoTemplate")?
+                            String.valueOf(properties.get(DRIVERS_PREFIX+
+                                    driverSpec+".infoTemplate")) : null;
 
-            if(properties.containsKey(prefix+".bg"))
-            {
-                background=Color.decode(String.valueOf(properties.get(
-                        prefix+".bg")));
-            }
+            initSql = properties.containsKey(prefix+".initSql")?
+                    String.valueOf(properties.get(prefix+".initSql")) :
+                    properties.containsKey(DRIVERS_PREFIX+
+                            driverSpec+".initSql")?
+                            String.valueOf(properties.get(DRIVERS_PREFIX+
+                                    driverSpec+".initSql")) : null;
+
+            var tmap = new TreeMap<String,String>();
+            tmap.putAll(getSnippetsForDriver(driverSpec));
+            tmap.putAll(getSnippetsForConnection(nameKey));
+            snippetTemplates = Collections.unmodifiableMap(tmap);
+
+            background = properties.containsKey(prefix+".bg")?
+                    Color.decode(String.valueOf(properties.get(
+                        prefix+".bg"))) : null;
+            
+            confirmations = properties.containsKey(prefix+".confirmations")?
+                    Boolean.valueOf(String.valueOf(properties.get(
+                            prefix+".confirmations"))) : false;
         }
     
         public boolean equals(Object o)

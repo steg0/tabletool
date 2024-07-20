@@ -48,6 +48,7 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
+    private static final int MAX_INFO_COLUMN_WIDTH = 200;
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -57,8 +58,6 @@ class BufferController
             new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
-    private static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} affected in {1} ms at {2}\n");
 
     private static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -109,7 +108,8 @@ class BufferController
     private PlaceholderInputController placeholderInputController;
     
     Consumer<String> log;
-    
+    final BufferUpdateCountConsumer updateCountConsumer;
+        
     BufferController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             Consumer<String> updateLog,BufferConfigSource configSource,
             Listener listener)
@@ -122,6 +122,7 @@ class BufferController
         placeholderInputController = new PlaceholderInputController(
                 configSource,parent);
         this.log = updateLog;
+        this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
         unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
         Color focusedBorderColor = configSource.getFocusedEditorBorderColor();
@@ -214,8 +215,9 @@ class BufferController
         if(text.isBlank()) connectionLabel.setText(text);
         else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
                 CONNECTION_LABEL_SUFFIX);
+        TableColorizer.colorize(resultview,getBrandingBackground());
     }
-    
+
     Color getBrandingBackground()
     {
         return editor.getBackground();
@@ -250,7 +252,7 @@ class BufferController
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
         TableFontSizer.setFontSize(resultview,newSize,
-                configSource.getResultViewHeight());
+                configSource.getResultViewHeight(),-1);
         setResultSetMessageLabelFontSize();
         setConnectionLabelFontSize();
     }
@@ -294,7 +296,7 @@ class BufferController
     private static JViewport findViewportParent(Component c)
     {
         if(c==null) return null;
-        if(c instanceof JViewport) return (JViewport)c;
+        if(c instanceof JViewport v) return v;
         return findViewportParent(c.getParent());
     }
     
@@ -650,13 +652,6 @@ class BufferController
         editor.setCaretPosition(savedCaretPosition);
     }
 
-    BiConsumer<Integer,Long> updateCountConsumer = (i,t) ->
-    {
-        Object[] logargs = {i,t,new Date().toString()};
-        log.accept(UPDATE_LOG_FORMAT.format(logargs));
-        restoreCaretPosition(false);
-    };
-    
     /**
      * The first argument is the result data; <code>null</code> means there is
      * nothing to display, which can lead to the buffer being closed.
@@ -700,6 +695,7 @@ class BufferController
         removeResultView();
 
         resultview = new JTable(rsm);
+        TableColorizer.colorize(resultview,getBrandingBackground());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
         new BufferResultSetPopup(parent,this).attach();
@@ -738,7 +734,7 @@ class BufferController
         }
 
         TableFontSizer.setFontSize(resultview,editor.getFont().getSize(),
-                configSource.getResultViewHeight());
+                configSource.getResultViewHeight(),-1);
         setResultSetMessageLabelFontSize();
 
         panel.revalidate();
@@ -776,8 +772,9 @@ class BufferController
         JTable inforesultview = new JTable(rsm);
         TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
                 editor.getFont().getSize() : sizes.get(0),
-                configSource.getResultViewHeight());
+                configSource.getResultViewHeight(),MAX_INFO_COLUMN_WIDTH);
         inforesultview.setCellSelectionEnabled(true);
+        inforesultview.setAutoCreateRowSorter(true);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
