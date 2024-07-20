@@ -41,7 +41,7 @@ class TableSizer
             {
                 colMinWidth = colMaxWidth;
             }
-            if(colMinWidth >= limit)
+            if(limit > 0 && colMinWidth >= limit)
             {
                 colMinWidth = limit;
             }
