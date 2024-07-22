@@ -92,8 +92,8 @@ class NotebookController
 
     private JFormattedTextField fetchsizeField;
     
-    private final JButton commitButton = new JButton("Commit");
-    private final JButton rollbackButton = new JButton("Rollback");
+    private final JButton commitButton = new JButton("Commit (F7)");
+    private final JButton rollbackButton = new JButton("Rollback (F9)");
     private final JButton disconnectButton = new JButton("Disconnect");
     private final JCheckBox autocommitCb = new JCheckBox("Autocommit",
             Connections.AUTOCOMMIT_DEFAULT);

@@ -758,12 +758,12 @@ implements KeyListener
         menu.setMnemonic(KeyEvent.VK_C);
 
         item = new JMenuItem(commitAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F9,0));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_F7,0));
         item.setMnemonic(KeyEvent.VK_C);
         menu.add(item);
         
         item = new JMenuItem(rollbackAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F7,0));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_F9,0));
         item.setMnemonic(KeyEvent.VK_R);
         menu.add(item);
         
