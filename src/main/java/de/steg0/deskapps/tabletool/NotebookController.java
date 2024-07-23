@@ -169,12 +169,6 @@ class NotebookController
         am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(connectionsSelector);
         
-        disconnectButton.addActionListener((e) -> disconnect());
-        connectionPanel.add(disconnectButton);
-        
-        commitButton.addActionListener((e) -> commit());
-        connectionPanel.add(commitButton);
-        
         logConsumer = new NotebookLogConsumer(log);
         
         autocommitCb.addActionListener((e) -> 
@@ -188,6 +182,12 @@ class NotebookController
             });
         });
         connectionPanel.add(autocommitCb);
+        
+        commitButton.addActionListener((e) -> commit());
+        connectionPanel.add(commitButton);
+        
+        disconnectButton.addActionListener((e) -> disconnect());
+        connectionPanel.add(disconnectButton);
         
         connectionPanel.add(new JLabel("Fetch:"));
         
