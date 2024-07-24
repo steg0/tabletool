@@ -12,8 +12,7 @@ class TableFontSizer
 {
     static Logger logger = Logger.getLogger("tabletool");
     
-    static void setFontSize(JTable resultview,int newSize,int numlines,
-            int widthlimit)
+    static void setFontSize(JTable resultview,int newSize,int numlines)
     {
         if(resultview==null) return;
         Font rf = resultview.getFont(),
@@ -25,7 +24,7 @@ class TableFontSizer
         resultview.getTableHeader().setFont(hf2);
         int lineHeight = (int)hf2.getMaxCharBounds(new FontRenderContext(
                 null,false,false)).getHeight();
-        TableSizer.sizeColumns(resultview,widthlimit);
+        TableSizer.sizeColumns(resultview);
         resultview.setRowHeight(lineHeight);
         Dimension preferredSize = resultview.getPreferredSize();
         var viewportSize = new Dimension((int)preferredSize.getWidth(),

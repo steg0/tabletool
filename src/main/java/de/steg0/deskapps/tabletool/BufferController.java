@@ -48,7 +48,6 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
-    private static final int MAX_INFO_COLUMN_WIDTH = 200;
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -252,7 +251,7 @@ class BufferController
         Font f = editor.getFont(),f2=new Font(f.getName(),f.getStyle(),newSize);
         editor.setFont(f2);
         TableFontSizer.setFontSize(resultview,newSize,
-                configSource.getResultViewHeight(),-1);
+                configSource.getResultViewHeight());
         setResultSetMessageLabelFontSize();
         setConnectionLabelFontSize();
     }
@@ -734,7 +733,7 @@ class BufferController
         }
 
         TableFontSizer.setFontSize(resultview,editor.getFont().getSize(),
-                configSource.getResultViewHeight(),-1);
+                configSource.getResultViewHeight());
         setResultSetMessageLabelFontSize();
 
         panel.revalidate();
@@ -772,9 +771,10 @@ class BufferController
         JTable inforesultview = new JTable(rsm);
         TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
                 editor.getFont().getSize() : sizes.get(0),
-                configSource.getResultViewHeight(),MAX_INFO_COLUMN_WIDTH);
+                configSource.getResultViewHeight());
         inforesultview.setCellSelectionEnabled(true);
         inforesultview.setAutoCreateRowSorter(true);
+        inforesultview.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 

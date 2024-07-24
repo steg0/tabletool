@@ -14,7 +14,7 @@ class TableSizer
      * their renderer preferences. This is taken from mergetool; comments
      * see there.
      */
-    static void sizeColumns(JTable t,int limit)
+    static void sizeColumns(JTable t)
     {
         int c=0;
         for(final Enumeration<TableColumn> e=
@@ -40,10 +40,6 @@ class TableSizer
             if(colMinWidth >= colMaxWidth)
             {
                 colMinWidth = colMaxWidth;
-            }
-            if(limit > 0 && colMinWidth >= limit)
-            {
-                colMinWidth = limit;
             }
             col.setPreferredWidth(colMinWidth);
         }
