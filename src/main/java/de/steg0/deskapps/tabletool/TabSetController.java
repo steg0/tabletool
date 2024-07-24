@@ -80,6 +80,9 @@ implements KeyListener
             dialogy = (int)parentLocation.getY()+30;
         cellDisplay.setLocation(dialogx,dialogy);
         infoDisplay.setLocation(dialogx,dialogy);
+        infoDisplay.getContentPane().setPreferredSize(
+                propertyHolder.getDefaultFrameSize());
+
             
         connections = new Connections(propertyHolder,executor);
     }
