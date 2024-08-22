@@ -6,7 +6,6 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -52,10 +51,7 @@ implements KeyListener
     
     private Logger logger = Logger.getLogger("tabtype");
 
-    private final JFrame
-        parent,
-        cellDisplay=new JFrame(),
-        infoDisplay=new JFrame();
+    private final JFrame parent,cellDisplay,infoDisplay;
     private final PropertyHolder propertyHolder;
     
     private Connections connections;
@@ -65,25 +61,18 @@ implements KeyListener
 
     private final File workspaceFile;
     
-    TabSetController(JFrame parent,PropertyHolder propertyHolder,
-            File workspaceFile)
+    TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
+            PropertyHolder propertyHolder,File workspaceFile)
     {
         this.parent = parent;
+        this.cellDisplay = cellDisplay;
+        this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
         this.workspaceFile = workspaceFile;
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         
-        Point parentLocation = parent.getLocation();
-        int dialogx = (int)parentLocation.getX()+30,
-            dialogy = (int)parentLocation.getY()+30;
-        cellDisplay.setLocation(dialogx,dialogy);
-        infoDisplay.setLocation(dialogx,dialogy);
-        infoDisplay.getContentPane().setPreferredSize(
-                propertyHolder.getDefaultFrameSize());
-
-            
         connections = new Connections(propertyHolder,executor);
     }
 
