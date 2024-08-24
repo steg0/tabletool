@@ -59,7 +59,7 @@ implements KeyListener
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
-    private final File workspaceFile;
+    private File workspaceFile;
     
     TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             PropertyHolder propertyHolder,File workspaceFile)
@@ -201,6 +201,27 @@ implements KeyListener
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                     addRecent(notebook.file);
                 }
+            }
+        },
+        setWorkspaceAction = new AbstractAction("Set Workspace File...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                var filechooser = new JFileChooser(getPwd());
+                int returnVal = filechooser.showSaveDialog(parent);
+                if(returnVal != JFileChooser.APPROVE_OPTION) return;
+                var newFile=filechooser.getSelectedFile();
+                if(newFile.exists())
+                {
+                    int option = JOptionPane.showConfirmDialog(
+                            parent,
+                            "File exists and will be overwritten on exit. " +
+                            "Continue?",
+                            "File exists",
+                            JOptionPane.YES_NO_OPTION);
+                    if(option != JOptionPane.YES_OPTION) return;
+                }
+                workspaceFile = newFile;
             }
         },
         renameAction = new AbstractAction("Rename...")
@@ -730,6 +751,10 @@ implements KeyListener
         item = new JMenuItem(closeAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_W,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
+
+        item = new JMenuItem(setWorkspaceAction);
+        item.setMnemonic(KeyEvent.VK_T);
         menu.add(item);
 
         item = new JMenuItem(openPropertiesAction);

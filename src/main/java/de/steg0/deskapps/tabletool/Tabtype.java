@@ -68,7 +68,7 @@ extends WindowAdapter
         var propertyHolder = new PropertyHolder(properties);
 
         controller = ensureFrameConfiguration(propertyHolder);
-            
+
         ensureWorkspace();
         
         var contentPaneConstraints = new GridBagConstraints();
