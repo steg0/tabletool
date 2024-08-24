@@ -5,8 +5,8 @@ import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 
 class PlaceholderInputController
 {
@@ -55,13 +55,16 @@ class PlaceholderInputController
             f.setLocationRelativeTo(parent);
             f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
-            var explanation = new JLabel("Please provide values "
-                    +" for placeholders found in the query:");
+            var explanation = new JTextArea("Please provide values " +
+                    " for placeholders found in the query.\n" +
+                    "Use Enter to accept a value in a cell, and Ctrl+Enter " +
+                    "to proceed.");
+            explanation.setEditable(false);
             f.getContentPane().add(explanation,BorderLayout.NORTH);
             JTable table = new JTable(placeholderMap,
                     new String[]{"Placeholder","Replacement"});
             f.getContentPane().add(table);
-            var closeButton = new JButton("Close");
+            var closeButton = new JButton("Close and Proceed");
             closeButton.addActionListener(e -> f.dispose());
             f.getContentPane().add(closeButton,BorderLayout.SOUTH);
             f.getRootPane().setDefaultButton(closeButton);
@@ -76,6 +79,11 @@ class PlaceholderInputController
                 {
                     s = placeholderSupport.quotedReplaceInString(s,
                             replacement[0],replacement[1]);
+                }
+                else
+                {
+                    s = placeholderSupport.quotedReplaceInString(s,
+                            replacement[0],"");
                 }
             }
             lastValues = placeholderMap;
