@@ -18,6 +18,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -236,6 +238,18 @@ implements KeyListener
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                     addRecent(notebook.file);
                 }
+            }
+        },
+        cloneAction = new AbstractAction("Clone")
+        {
+            {
+                putValue(Action.SHORT_DESCRIPTION,"""
+                        Loads contents of the selected tab, excluding \
+                        live result set data, into a new notebook.""");
+            }
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                cloneTab();
             }
         },
         revertAction = new AbstractAction("Revert")
@@ -697,6 +711,22 @@ implements KeyListener
         }
     }
 
+    private void cloneTab()
+    {
+        try(var w = new StringWriter())
+        {
+            int index=tabbedPane.getSelectedIndex();
+            notebooks.get(index).store(w);
+            var notebook = add(-1);
+            var r = new StringReader(w.getBuffer().toString());
+            notebook.load(r);
+        }
+        catch(IOException ignored)
+        {
+            assert false;
+        }
+    }
+
     boolean isUnsaved()
     {
         return !notebooks.stream().noneMatch((n) -> n.isUnsaved()); 
@@ -746,6 +776,10 @@ implements KeyListener
 
         item = new JMenuItem(revertAction);
         item.setMnemonic(KeyEvent.VK_V);
+        menu.add(item);
+
+        item = new JMenuItem(cloneAction);
+        item.setMnemonic(KeyEvent.VK_L);
         menu.add(item);
 
         item = new JMenuItem(closeAction);

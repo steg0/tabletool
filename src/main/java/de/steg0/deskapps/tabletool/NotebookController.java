@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -686,7 +687,7 @@ class NotebookController
         return false;
     }
 
-    private void store(Writer w)
+    void store(Writer w)
     throws IOException
     {
         for(BufferController buffer : buffers)
@@ -698,11 +699,19 @@ class NotebookController
     void load(File f)
     throws IOException
     {
-        try(var r = new LineNumberReader(new FileReader(f)))
+        load(new FileReader(f));
+        file = f;
+        setSaved();
+        updateTimestamp();
+    }
+
+    void load(Reader reader)
+    throws IOException
+    {
+        try(var r = new LineNumberReader(reader))
         {
             assert buffers.size()==1 : "load only supports uninitialized panels";
             int linesRead = firstBuffer().load(r);
-            file = f;
             while(linesRead>0)
             {
                 var newBufferController = newBufferController();
@@ -713,8 +722,6 @@ class NotebookController
                 if(linesRead > 0) add(buffers.size(),newBufferController);
             }
         }
-        setSaved();
-        updateTimestamp();
         bufferPanel.revalidate();
         firstBuffer().focusEditor(0,0);
     }
