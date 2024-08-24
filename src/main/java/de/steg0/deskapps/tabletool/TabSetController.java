@@ -754,7 +754,7 @@ implements KeyListener
         menu.add(item);
 
         item = new JMenuItem(setWorkspaceAction);
-        item.setMnemonic(KeyEvent.VK_T);
+        item.setMnemonic(KeyEvent.VK_W);
         menu.add(item);
 
         item = new JMenuItem(openPropertiesAction);
