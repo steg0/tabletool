@@ -1,17 +1,139 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
+    
+    <comment>
+        This is a sample configuration file for Tabtype, which
+        uses the Java XML properties syntax. Next to this,
+        the regular Java properties format is also supported;
+        which combination of these is in use depends on the
+        -config arguments with which the tool is invoked.
+    </comment>
+    
+    <!--
+        Frame defaults. If no position is set, the window is centered.
+    -->
+
+    <entry key="frame.x">50</entry>
+    <entry key="frame.y">10</entry>
+    <entry key="frame.w">700</entry>
+    <entry key="frame.h">450</entry>
+
+    <!--
+        Tab bar position (1 - top to 4 - right)
+    -->
+    <entry key="tab.placement">1</entry>
+
+    <entry key="editor.font">Luxi Mono</entry>
+    <!--
+    <entry key="editor.fontsize">12</entry>
+    -->
+    <!--
+    <entry key="editor.tabsize">4</entry>
+    -->
+    <!--
+    <entry key="scroll.increment">16</entry>
+    -->
+    <!--
+    <entry key="resultview.height">150</entry>
+    -->
+
+    <entry key="default.bg">#eeeeee</entry>
+    <entry key="editor.nonFocusedBorder">#ffffff</entry>
+    <entry key="editor.focusedBorder">#0000ff</entry>
+    <entry key="editor.unsavedBorder">#aaaaaa</entry>
+    <entry key="frame.bg">#dddddd</entry>
+
+    <!--
+        UI defaults can be specified for colors and gradients like below.
+        They can be used to modify LAF appearance.
+    -->
+
+    <entry key="uiDefaults.color.Button.background">#eeeeee</entry>
+    <entry key="uiDefaults.color.ComboBox.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.ScrollBar.highlight">#f9f9f9</entry>
+    <entry key="uiDefaults.color.ScrollBar.shadow">#f9f9f9</entry>
+    <entry key="uiDefaults.color.ScrollBar.darkShadow">#b8cfe5</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbShadow">#b8cfe5</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbDarkShadow">#b8cfe5</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#eeeeee</entry>
+    <entry key="uiDefaults.gradient.ScrollBar.gradient">0.3,0.0,#c8ddf2,#c8ddf2,#c8ddf2</entry>
+    <entry key="uiDefaults.color.Table.gridColor">#b8cfe5</entry>
+    <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.MenuBar.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.TextField.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.FormattedTextField.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.TextArea.background">#f9f9f9</entry>
+
+    <!--
+        For connections, the part after the first dot is the name
+        that is displayed inside the tool.
+    -->
+    <entry key="connections.derby.url">jdbc:derby:derbyDB;create=true</entry>
+    <entry key="connections.derby.username">tabtype</entry>
+    <entry key="connections.derby.password">x</entry>
+    <entry key="connections.derby.bg">#f0f0d7</entry>
+    <!--
+        confirmations means that the tool gives a note when an operation
+        has come back with an update count.
+    -->
+    <!--
+    <entry key="connections.derby.confirmations">true</entry>
+    -->
+
+    <!--
+        Placeholders for SQL sections (both in the config as well as
+        in the tool) are recognized using this regex:
+    -->
     <entry key="placeholder.regex">\&amp;param[_0-9a-zA-Z]*</entry>
+    
+    <!--
+        initSql is a statement which will be executed whenever a matching
+        connection is opened. There will be no output possibility for such
+        statements.
+        It is possible to assign them to drivers as well as connections
+        (with "connections.SOME_NAME_REGEX.initSql."). Multiple matches
+        are resolved by giving connection assignments higher precedence.
+    -->
+    <!--
     <entry key="drivers.derby.initSql">set schema=sys</entry>
+    -->
+    <!--
+        completionTemplate allows generating content for F8.
+        An optional placeholder is replaced with the text under the cursor.
+    -->
     <entry key="drivers.derby.completionTemplate">
         select tablename from sys.systables where lower(tablename) like lower(&amp;param||'%')
     </entry>
+
+    <!--
+        snippet allows specifying SQL shorthands for F2.
+        An optional placeholder is replaced with the selected text.
+        It is possible to assign them to drivers as well as connections
+        (with "connections.SOME_NAME_REGEX.snippets."). Multiple matches
+        are merged.
+    -->
+    <!--
     <entry key="drivers.derby.snippets.systables">
         select * from sys.systables where tablename like &amp;param||'%';
     </entry>
+    -->
+
+    <!--
+        infoTemplate is used for the F1 action. The placeholder
+        is replaced with the text under the cursor.
+        It is possible to assign them to drivers as well as connections
+        (with "connections.SOME_NAME_REGEX.infoTemplate."). Multiple matches
+        are resolved by giving connection assignments higher precedence.
+    -->
     <entry key="drivers.derby.infoTemplate">
         select * from sys.systables where tablename = upper(&amp;param)
     </entry>
+
+    <!--
+        Example SQLs for Oracle
+    -->
+
     <entry key="drivers.oracle.infoTemplate">
         select
             t.table_name,

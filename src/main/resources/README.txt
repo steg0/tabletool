@@ -23,55 +23,7 @@ This example uses the serial GC, which is a recommendation for desktop applicati
 
 ▶ Property file format
 
-The configuration file supports the following keys:
-
-┌─
-  frame.x=100
-  frame.y=100
-  frame.w=700
-  frame.h=450
-  tab.placement=1
-  editor.font=Lucida Sans Regular
-  editor.fontsize=12
-  editor.tabsize=4
-  editor.nonFocusedBorder=#ffffff
-  editor.focusedBorder=#0000ff
-  editor.unsavedBorder=#aaaaaa
-  default.bg=#ffffff
-  frame.bg=#dddddd
-  # uiDefaults.color.* can set Color defaults for UIManager
-  uiDefaults.color.Button.background=#f9f9f9
-  # uiDefaults.gradient.* sets gradient defaults
-  uiDefaults.gradient.ScrollBar.gradient=0.3,0.0,#cfd9e6,#cfd9e6,#cfd9e6
-  scroll.increment=16
-  resultview.height=150
-  placeholder.regex=\\@\\@selection\\@\\@
-  drivers.<JDBC URL part after the schema>.completionTemplate=\
-      select table_name from user_tables \
-      where table_name like upper(@@selection@@||'%')
-  drivers.<JDBC URL part after the schema>.infoTemplate=<…>
-  drivers.<JDBC URL part after the schema>.initSql=<…>
-  drivers.<JDBC URL part after the schema>.snippets.<Snippet Name 1>=<…>
-  connections.<Name 1>.url=<JDBC URL>
-  connections.<Name 1>.username=<User>
-  connections.<Name 1>.password=<Password>
-  connections.<Name 1>.bg=#eeeedd
-  # this provides feedback for potential writes:
-  connections.<Name 1>.confirmations=true
-  connections.<Name 1>.completionTemplate=\
-      select table_name from all_tables \
-      where table_name like upper(@@selection@@||'%')
-  connections.<Name 1>.infoTemplate=<…>
-  connections.<Name 1>.initSql=<…>
-  connections.<Name Regex 1>.snippets.<Snippet Name 1>=<…>
-└─
-
-More than one connection definition can occur in the file as long as the name part (after "connections.") is different.
-
-completionTemplate, infoTemplate, initSql and snippets can be specified for drivers as well as connections. Except in the case of snippets (which are merged) the latter overrides the former.
-
-initSql is a statement which will be executed whenever a matching connection is opened. There will be no output possibility for such statements.
-
+See Help > Show Example Config.
 
 ▶ Notebook file format
 
