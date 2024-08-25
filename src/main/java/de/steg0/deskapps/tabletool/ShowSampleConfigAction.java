@@ -15,13 +15,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 
-class HelpAction extends AbstractAction
+class ShowSampleConfigAction extends AbstractAction
 {
     JFrame parent;
     
-    HelpAction(JFrame parent)
+    ShowSampleConfigAction(JFrame parent)
     {
-        super("README");
+        super("Show Sample Config");
         this.parent = parent;
     }
     
@@ -29,14 +29,10 @@ class HelpAction extends AbstractAction
     public void actionPerformed(ActionEvent event)
     {
         try(var r=new BufferedReader(new InputStreamReader(
-                getClass().getResourceAsStream("/README.txt"),
+                getClass().getResourceAsStream("/sample.properties.xml"),
                 StandardCharsets.UTF_8)))
         {
-            var version = getClass().getPackage().getImplementationVersion();
-            if(version==null) version="Development";
-            else version="V"+version;
-            var dialog = new JDialog(parent,"README - Tabtype "+version,
-                    false);
+            var dialog = new JDialog(parent,"Sample Configuration - Tabtype");
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             
             var panel = new JPanel(new BorderLayout());
@@ -69,8 +65,8 @@ class HelpAction extends AbstractAction
         {
             JOptionPane.showMessageDialog(
                     parent,
-                    "Error loading help file: "+e.getMessage(),
-                    "Error loading help file",
+                    "Error loading sample configuration file: "+e.getMessage(),
+                    "Error loading sample configuration file",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

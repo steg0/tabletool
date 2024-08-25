@@ -835,6 +835,10 @@ implements KeyListener
         item.setMnemonic(KeyEvent.VK_R);
         menu.add(item);
         
+        item = new JMenuItem(new ShowSampleConfigAction(parent));
+        item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
+        
         menubar.add(menu);
         
         parent.setJMenuBar(menubar);
