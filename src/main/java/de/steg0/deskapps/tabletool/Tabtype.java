@@ -33,7 +33,7 @@ public class Tabtype
 extends WindowAdapter
 {
 
-    private JFrame frame;
+    private JFrame frame,cellDisplay=new JFrame(),infoDisplay=new JFrame();
     private File properties[],workspace,sqlFiles[];
     private TabSetController controller;
     
@@ -68,7 +68,7 @@ extends WindowAdapter
         var propertyHolder = new PropertyHolder(properties);
 
         controller = ensureFrameConfiguration(propertyHolder);
-            
+
         ensureWorkspace();
         
         var contentPaneConstraints = new GridBagConstraints();
@@ -87,6 +87,15 @@ extends WindowAdapter
         Point location = propertyHolder.getDefaultFrameLocation();
         if(location==null) frame.setLocationRelativeTo(null);
         else frame.setLocation(location);
+
+        Point parentLocation = frame.getLocation();
+        int dialogx = (int)parentLocation.getX()+30,
+            dialogy = (int)parentLocation.getY()+30;
+        cellDisplay.setLocation(dialogx,dialogy);
+        infoDisplay.setLocation(dialogx,dialogy);
+        infoDisplay.getContentPane().setPreferredSize(
+                propertyHolder.getDefaultFrameSize());
+
         frame.setVisible(true);
     }
     
@@ -113,7 +122,8 @@ extends WindowAdapter
                     .getColorUIDefaults());
             UIManager.getDefaults().putDefaults(propertyHolder
                     .getGradientUIDefaults());
-            return new TabSetController(frame,propertyHolder,workspace);
+            return new TabSetController(frame,cellDisplay,infoDisplay,
+                    propertyHolder,workspace);
         }
         catch(Exception e)
         {

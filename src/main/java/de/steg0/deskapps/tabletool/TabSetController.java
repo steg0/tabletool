@@ -6,7 +6,6 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
 import java.awt.Desktop;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
@@ -19,6 +18,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,10 +53,7 @@ implements KeyListener
     
     private Logger logger = Logger.getLogger("tabtype");
 
-    private final JFrame
-        parent,
-        cellDisplay=new JFrame(),
-        infoDisplay=new JFrame();
+    private final JFrame parent,cellDisplay,infoDisplay;
     private final PropertyHolder propertyHolder;
     
     private Connections connections;
@@ -63,27 +61,20 @@ implements KeyListener
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
-    private final File workspaceFile;
+    private File workspaceFile;
     
-    TabSetController(JFrame parent,PropertyHolder propertyHolder,
-            File workspaceFile)
+    TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
+            PropertyHolder propertyHolder,File workspaceFile)
     {
         this.parent = parent;
+        this.cellDisplay = cellDisplay;
+        this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
         this.workspaceFile = workspaceFile;
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
         
-        Point parentLocation = parent.getLocation();
-        int dialogx = (int)parentLocation.getX()+30,
-            dialogy = (int)parentLocation.getY()+30;
-        cellDisplay.setLocation(dialogx,dialogy);
-        infoDisplay.setLocation(dialogx,dialogy);
-        infoDisplay.getContentPane().setPreferredSize(
-                propertyHolder.getDefaultFrameSize());
-
-            
         connections = new Connections(propertyHolder,executor);
     }
 
@@ -214,6 +205,27 @@ implements KeyListener
                 }
             }
         },
+        setWorkspaceAction = new AbstractAction("Set Workspace File...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                var filechooser = new JFileChooser(getPwd());
+                int returnVal = filechooser.showSaveDialog(parent);
+                if(returnVal != JFileChooser.APPROVE_OPTION) return;
+                var newFile=filechooser.getSelectedFile();
+                if(newFile.exists())
+                {
+                    int option = JOptionPane.showConfirmDialog(
+                            parent,
+                            "File exists and will be overwritten on exit. " +
+                            "Continue?",
+                            "File exists",
+                            JOptionPane.YES_NO_OPTION);
+                    if(option != JOptionPane.YES_OPTION) return;
+                }
+                workspaceFile = newFile;
+            }
+        },
         renameAction = new AbstractAction("Rename...")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -226,6 +238,18 @@ implements KeyListener
                     tabbedPane.setToolTipTextAt(index,notebook.file.getPath());
                     addRecent(notebook.file);
                 }
+            }
+        },
+        cloneAction = new AbstractAction("Clone")
+        {
+            {
+                putValue(Action.SHORT_DESCRIPTION,"""
+                        Loads contents of the selected tab, excluding \
+                        live result set data, into a new notebook.""");
+            }
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                cloneTab();
             }
         },
         revertAction = new AbstractAction("Revert")
@@ -687,6 +711,22 @@ implements KeyListener
         }
     }
 
+    private void cloneTab()
+    {
+        try(var w = new StringWriter())
+        {
+            int index=tabbedPane.getSelectedIndex();
+            notebooks.get(index).store(w);
+            var notebook = add(-1);
+            var r = new StringReader(w.getBuffer().toString());
+            notebook.load(r);
+        }
+        catch(IOException ignored)
+        {
+            assert false;
+        }
+    }
+
     boolean isUnsaved()
     {
         return !notebooks.stream().noneMatch((n) -> n.isUnsaved()); 
@@ -738,9 +778,17 @@ implements KeyListener
         item.setMnemonic(KeyEvent.VK_V);
         menu.add(item);
 
+        item = new JMenuItem(cloneAction);
+        item.setMnemonic(KeyEvent.VK_L);
+        menu.add(item);
+
         item = new JMenuItem(closeAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_W,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_C);
+        menu.add(item);
+
+        item = new JMenuItem(setWorkspaceAction);
+        item.setMnemonic(KeyEvent.VK_W);
         menu.add(item);
 
         item = new JMenuItem(openPropertiesAction);

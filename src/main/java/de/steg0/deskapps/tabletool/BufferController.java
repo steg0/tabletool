@@ -186,6 +186,7 @@ class BufferController
         var actions = new BufferActions(parent,this);
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_R,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
         im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
