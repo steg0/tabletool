@@ -122,9 +122,7 @@
           <mainClass>de.steg0.deskapps.tabletool/de.steg0.deskapps.tabletool.Tabtype</mainClass>
           <arguments>
             <argument>-config</argument>
-            <argument>test.tabtype.properties.xml</argument>
-            <argument>-config</argument>
-            <argument>test.tabtype.properties</argument>
+            <argument>src/main/resources/sample.properties.xml</argument>
             <argument>-logconfig</argument>
             <argument>test.logging.properties</argument>
             <argument>test.tabtype</argument>
