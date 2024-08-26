@@ -41,7 +41,7 @@ class TableSizer
             {
                 colMinWidth = colMaxWidth;
             }
-            col.setPreferredWidth(colMinWidth);
+            col.setPreferredWidth((int)(colMinWidth * 1.05));
         }
     }
 }
