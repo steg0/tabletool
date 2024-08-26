@@ -101,6 +101,9 @@
     <!--
         completionTemplate allows generating content for F8.
         An optional placeholder is replaced with the text under the cursor.
+        It is possible to assign them to drivers as well as connections
+        (with "connections.SOME_NAME_REGEX.completionTemplate."). Multiple matches
+        are resolved by giving connection assignments higher precedence.
     -->
     <entry key="drivers.derby.completionTemplate">
         select tablename from sys.systables where lower(tablename) like lower(&amp;param||'%')
