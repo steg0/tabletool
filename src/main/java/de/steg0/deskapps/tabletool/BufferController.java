@@ -6,6 +6,7 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.ComponentOrientation;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -695,7 +696,6 @@ class BufferController
         removeResultView();
 
         resultview = new JTable(rsm);
-        TableColorizer.colorize(resultview,getBrandingBackground());
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
         new BufferResultSetPopup(parent,this).attach();
@@ -707,7 +707,10 @@ class BufferController
         var resultscrollpane = new JScrollPane(resultview,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        
+        resultscrollpane.setComponentOrientation(
+                ComponentOrientation.RIGHT_TO_LEFT);
+        TableColorizer.colorize(resultview,getBrandingBackground());
+
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
         resultviewConstraints.gridwidth = 2;

@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.Color;
 
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 
 class TableColorizer
@@ -10,6 +11,7 @@ class TableColorizer
     static void colorize(JTable table,Color bg)
     {
         if(table==null) return;
+        JScrollPane scrollpane = (JScrollPane)table.getParent().getParent();
         int r = bg.getRed(),
             g = bg.getGreen(),
             b = bg.getBlue(),
@@ -26,11 +28,15 @@ class TableColorizer
         {
             table.setBackground(brighter);
             table.getTableHeader().setBackground(darker);
+            scrollpane.setBackground(darker);
+            scrollpane.getVerticalScrollBar().setBackground(brighter);
         }
         else
         {
             table.setBackground(darker);
             table.getTableHeader().setBackground(brighter);
+            scrollpane.setBackground(brighter);
+            scrollpane.getVerticalScrollBar().setBackground(darker);
         }
     }
 }
