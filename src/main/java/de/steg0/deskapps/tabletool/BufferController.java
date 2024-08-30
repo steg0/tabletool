@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.ALT_MASK;
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.lang.Math.max;
 import static javax.swing.KeyStroke.getKeyStroke;
@@ -192,6 +193,7 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
         im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
         im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
+        im.put(getKeyStroke(KeyEvent.VK_Q,ALT_MASK),"Invoke External Tool");
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
@@ -202,6 +204,7 @@ class BufferController
         am.put("Show Info",actions.showInfoAction);
         am.put("Show Snippets",actions.showSnippetsPopupAction);
         am.put("Show Completions",actions.showCompletionPopupAction);
+        am.put("Invoke External Tool",actions.invokeToolAction);
         am.put("Toggle Comment",new EditorPrefixToggler(editor,"--"));
         am.put("Undo",actions.undoAction);
         am.put("Redo",actions.redoAction);
