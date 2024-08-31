@@ -136,9 +136,10 @@
     <!--
         externalTools allows specifying commands that will show
         up in the Tools menu. Those operate by getting the query
-        under the cursor through STDIN and write their result to
+        under the cursor through STDIN and writing their result to
         STDOUT. Tabtype will replace the selected content with that
-        output. For all this, UTF-8 encoding is used.
+        output. For all this, UTF-8 encoding is used. The operation
+        is blocking, so the execution should not take too long.
     -->
     <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
     <entry key="externalTools.SQL::Beautify.command.2">-I</entry>
