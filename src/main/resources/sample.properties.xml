@@ -134,6 +134,26 @@
     </entry>
 
     <!--
+        externalTools allows specifying commands that will show
+        up in the Tools menu. Those operate by getting the query
+        under the cursor through STDIN and write their result to
+        STDOUT. Tabtype will replace the selected content with that
+        output. For all this, UTF-8 encoding is used.
+    -->
+    <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
+    <entry key="externalTools.SQL::Beautify.command.2">-I</entry>
+    <entry key="externalTools.SQL::Beautify.command.3">~/config/contrib/perl-lib</entry>
+    <entry key="externalTools.SQL::Beautify.command.4">-e</entry>
+    <entry key="externalTools.SQL::Beautify.command.5"><![CDATA[
+        use SQL::Beautify;
+        my $b = SQL::Beautify->new(spaces => 1,space => chr(9));
+        $b->add_rule('break-pop-token',')');
+        $b->add_rule('break-token',['or','and']);
+        $b->add($_) while(<STDIN>);
+        print $b->beautify;
+    ]]></entry>
+
+    <!--
         Example SQLs for Oracle
     -->
 

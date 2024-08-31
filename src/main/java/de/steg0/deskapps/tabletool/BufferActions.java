@@ -1,13 +1,8 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
@@ -166,82 +161,6 @@ class BufferActions
                 catch(BadLocationException e)
                 {
                     assert false : e.getMessage();
-                }
-            }
-        },
-        invokeToolAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent event)
-            {
-                String text = b.editor.getSelectedText() != null?
-                        b.editor.getSelectedText() :
-                        b.selectCurrentQuery();
-                InputStream is=null,es=null;
-                OutputStream os=null;
-                try
-                {
-                    Process p = new ProcessBuilder("perl","-I",
-                            "/cygdrive/c/Users/rsteger/config/contrib/perl-lib",
-                            "-e",
-                            "use SQL::Beautify;" +
-                            "my $b=SQL::Beautify->new(spaces => 1,space => '\t');"+
-                            "$b->add_rule('break-pop-token',')');" +
-                            "$b->add_rule('break-token',['or','and']);" +
-                            "while(<STDIN>){$b->add($_);};" +
-                            "print $b->beautify;"
-                    ).start();
-                    os = p.getOutputStream();
-                    os.write(text.getBytes(StandardCharsets.UTF_8));
-                    os.close();
-                    var out=new byte[0];
-                    var err=new byte[0];
-                    int outlen,errlen;
-                    is = p.getInputStream();
-                    es = p.getErrorStream();
-                    byte[] buf = new byte[1024 * 128];
-                    do
-                    {
-                        if((outlen=is.read(buf))>=0)
-                        {
-                            var newout = new byte[out.length + outlen];
-                            System.arraycopy(out,0,newout,0,out.length);
-                            System.arraycopy(buf,0,newout,out.length,outlen);
-                            out=newout;
-                        }
-                        if((errlen=es.read(buf))>=0)
-                        {
-                            var newerr = new byte[err.length + errlen];
-                            System.arraycopy(err,0,newerr,0,err.length);
-                            System.arraycopy(buf,0,newerr,err.length,errlen);
-                            err=newerr;
-                        }
-                    }
-                    while(outlen>=0 || errlen>=0);
-                    int exitcode = p.waitFor();
-                    var outStr = new String(out,StandardCharsets.UTF_8);
-                    var errStr = new String(err,StandardCharsets.UTF_8);
-                    if(errStr.length()>0) b.log.accept("Process STDERR at " +
-                            new Date() + ":\n" + errStr);
-                    if(exitcode==0) b.editor.replaceSelection(outStr);
-                }
-                catch(IOException e)
-                {
-                    b.log.accept("Error executing external command at " +
-                            new Date() + ": " + e.getMessage());
-                    logger.log(Level.WARNING,"Error in process",e);
-                }
-                catch(InterruptedException e)
-                {
-                    logger.log(Level.INFO,"Wait interrupted",e);
-                }
-                finally
-                {
-                    try { if(is!=null) is.close(); }
-                    catch(IOException ignored) {}
-                    try { if(es!=null) es.close(); }
-                    catch(IOException ignored) {}
-                    try { if(os!=null) os.close(); }
-                    catch(IOException ignored) {}
                 }
             }
         },

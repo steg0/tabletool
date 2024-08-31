@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -186,6 +187,41 @@ class PropertyHolder
     String getPlaceholderRegex()
     {
         return properties.getProperty("placeholder.regex");
+    }
+
+    private static final String EXTERNAL_TOOL_DEFINITION_PREFIX =
+            "externalTools.";
+
+    ExternalToolDefinition[] getExternalToolDefinitions()
+    {
+        return properties
+            .stringPropertyNames().stream()
+            .filter((k) -> k.startsWith(EXTERNAL_TOOL_DEFINITION_PREFIX))
+            .map(PropertyHolder::getExternalToolNameKey)
+            .distinct()
+            .map(this::getExternalToolDefinition)
+            .toArray(ExternalToolDefinition[]::new);
+    }
+
+    private static String getExternalToolNameKey(Object propertyKey)
+    {
+        String s = String.valueOf(propertyKey).substring(
+                EXTERNAL_TOOL_DEFINITION_PREFIX.length());
+        return s.substring(0,s.indexOf("."));
+    }
+
+    private ExternalToolDefinition getExternalToolDefinition(
+            String name)
+    {
+        var command = new ArrayList<String>();
+        final String commandPrefix = EXTERNAL_TOOL_DEFINITION_PREFIX +
+                name + ".command.";
+        for(int argnum=1;properties.containsKey(commandPrefix+argnum);
+            argnum++)
+        {
+            command.add(properties.getProperty(commandPrefix+argnum));
+        }
+        return new ExternalToolDefinition(name,command);
     }
 
     class ConnectionInfo

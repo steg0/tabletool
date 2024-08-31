@@ -109,8 +109,7 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             tabbedPane.setSelectedIndex(computeMultiDigitIndex(e.getWhen()));
-            NotebookController c = notebooks.get(
-                    tabbedPane.getSelectedIndex());
+            NotebookController c = getSelected();
             if(c.hasSavedFocusPosition) c.restoreFocus();
         }
     }
@@ -124,8 +123,7 @@ implements KeyListener
         }
         @Override public void actionPerformed(ActionEvent e)
         {
-            int selected = tabbedPane.getSelectedIndex();
-            NotebookController notebook = notebooks.get(selected);
+            NotebookController notebook = getSelected();
             notebook.zoom(factor);
         }
     }
@@ -152,8 +150,7 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent event)
             {
-                int index=tabbedPane.getSelectedIndex();
-                NotebookController notebook=notebooks.get(index);
+                NotebookController notebook = getSelected();
                 if(notebook.file==null||notebook.file.getParentFile()==null)
                 {
                     JOptionPane.showMessageDialog(
@@ -183,7 +180,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 int index=tabbedPane.getSelectedIndex();
-                NotebookController notebook=notebooks.get(index);
+                NotebookController notebook = getSelected();
                 boolean newBuffer=notebook.file==null;
                 if(notebook.store(false))
                 {
@@ -303,6 +300,7 @@ implements KeyListener
                     {
                         notebook.connections.notifyIntervalAdded(oldSize);
                     }
+                    menubar.recreate();
                 }
                 catch(IOException e)
                 {
@@ -321,8 +319,7 @@ implements KeyListener
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==0) selected=tabbedPane.getTabCount();
                 tabbedPane.setSelectedIndex(selected-1);
-                NotebookController c = notebooks.get(
-                        tabbedPane.getSelectedIndex());
+                NotebookController c = getSelected();
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
         },
@@ -333,8 +330,7 @@ implements KeyListener
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==tabbedPane.getTabCount()-1) selected=-1;
                 tabbedPane.setSelectedIndex(selected+1);
-                NotebookController c = notebooks.get(
-                        tabbedPane.getSelectedIndex());
+                NotebookController c = getSelected();
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
         },
@@ -377,48 +373,42 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).increaseFetchsize();
+                getSelected().increaseFetchsize();
             }
         },
         decreaseFetchsizeAction = new AbstractAction("Fetchsize-")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).decreaseFetchsize();
+                getSelected().decreaseFetchsize();
             }
         },
         commitAction = new AbstractAction("Commit")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).commit();
+                getSelected().commit();
             }
         },
         rollbackAction = new AbstractAction("Rollback")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).rollback();
+                getSelected().rollback();
             }
         },
         openAction = new AbstractAction("Open")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).openConnection();
+                getSelected().openConnection();
             }
         },
         disconnectAction = new AbstractAction("Disconnect")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).disconnect();
+                getSelected().disconnect();
             }
         },
         findAction = new AbstractAction("Find")
@@ -563,11 +553,15 @@ implements KeyListener
         tabbedPane.setSelectedIndex(newIndex);
         return notebook;
     }
-    
+
+    NotebookController getSelected()
+    {
+        return notebooks.get(tabbedPane.getSelectedIndex());
+    }
+
     void removeSelected()
     {
-        NotebookController notebook=
-                notebooks.get(tabbedPane.getSelectedIndex());
+        NotebookController notebook = getSelected();
         if(notebook.isUnsaved())
         {
             int option = JOptionPane.showConfirmDialog(
@@ -586,8 +580,7 @@ implements KeyListener
         retitle();
         if(notebooks.size()==0) add(-1);
         SwingUtilities.invokeLater(() -> {
-            int selectedIndex = tabbedPane.getSelectedIndex();
-            NotebookController c = notebooks.get(selectedIndex);
+            NotebookController c = getSelected();
             if(c.hasSavedFocusPosition) c.restoreFocus();
         });
     }
@@ -616,7 +609,7 @@ implements KeyListener
     {
         recents.add(file.getPath());
         while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
-        menubar.recreateMenuBar();
+        menubar.recreate();
     }
 
     private File getPwd()
@@ -717,8 +710,7 @@ implements KeyListener
     {
         try(var w = new StringWriter())
         {
-            int index=tabbedPane.getSelectedIndex();
-            notebooks.get(index).store(w);
+            getSelected().store(w);
             var notebook = add(-1);
             var r = new StringReader(w.getBuffer().toString());
             notebook.load(r);
@@ -785,7 +777,7 @@ implements KeyListener
             .filter(Objects::nonNull)
             .map((f) -> f.getPath())
             .toArray(String[]::new));
-        var selectedNb = notebooks.get(tabbedPane.getSelectedIndex());
+        var selectedNb = getSelected();
         if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));
         Workspaces.store(w,workspaceFile);
@@ -836,7 +828,7 @@ implements KeyListener
         switch(e.getKeyCode())
         {
         case KeyEvent.VK_ENTER:
-            notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
+            getSelected().restoreFocus();
         }
     }
     
