@@ -39,7 +39,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
@@ -61,6 +60,8 @@ implements KeyListener
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
+    final TabSetMenuBar menubar;
+
     private File workspaceFile;
     
     TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
@@ -71,6 +72,7 @@ implements KeyListener
         this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
         this.workspaceFile = workspaceFile;
+        menubar = new TabSetMenuBar(parent,this,propertyHolder);
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -614,7 +616,7 @@ implements KeyListener
     {
         recents.add(file.getPath());
         while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
-        recreateMenuBar();
+        menubar.recreateMenuBar();
     }
 
     private File getPwd()
@@ -732,118 +734,7 @@ implements KeyListener
         return !notebooks.stream().noneMatch((n) -> n.isUnsaved()); 
     }
     
-    void recreateMenuBar()
-    {
-        var menubar = new JMenuBar();
-        
-        JMenu menu;
-        
-        menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
 
-        JMenuItem item;
-
-        item = new JMenuItem(addAction);
-        item.setMnemonic(KeyEvent.VK_N);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,CTRL_MASK));
-        menu.add(item);
-        
-        item = new JMenuItem(loadAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_O);
-        menu.add(item);
-
-        item = getRecentsMenu();
-        menu.add(item);
-        
-        item = new JMenuItem(openContainingFolderAction);
-        item.setMnemonic(KeyEvent.VK_F);
-        item.setEnabled(Desktop.isDesktopSupported());
-        menu.add(item);
-
-        item = new JMenuItem(saveAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_S);
-        menu.add(item);
-
-        item = new JMenuItem(saveAsAction);
-        item.setMnemonic(KeyEvent.VK_A);
-        menu.add(item);
-
-        item = new JMenuItem(renameAction);
-        item.setMnemonic(KeyEvent.VK_M);
-        menu.add(item);
-
-        item = new JMenuItem(revertAction);
-        item.setMnemonic(KeyEvent.VK_V);
-        menu.add(item);
-
-        item = new JMenuItem(cloneAction);
-        item.setMnemonic(KeyEvent.VK_L);
-        menu.add(item);
-
-        item = new JMenuItem(closeAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-
-        item = new JMenuItem(setWorkspaceAction);
-        item.setMnemonic(KeyEvent.VK_W);
-        menu.add(item);
-
-        item = new JMenuItem(openPropertiesAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_COMMA,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_P);
-        item.setEnabled(propertyHolder.propertiesfiles.length > 0 &&
-                Desktop.isDesktopSupported());
-        menu.add(item);
-
-        item = new JMenuItem(refreshPropertiesAction);
-        item.setMnemonic(KeyEvent.VK_R);
-        item.setEnabled(propertyHolder.propertiesfiles.length > 0);
-        menu.add(item);
-
-        menubar.add(menu);
-
-        menu = new JMenu("Connection");
-        menu.setMnemonic(KeyEvent.VK_C);
-
-        item = new JMenuItem(commitAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F7,0));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-        
-        item = new JMenuItem(rollbackAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F9,0));
-        item.setMnemonic(KeyEvent.VK_R);
-        menu.add(item);
-        
-        item = new JMenuItem(openAction);
-        item.setMnemonic(KeyEvent.VK_O);
-        menu.add(item);
-
-        item = new JMenuItem(disconnectAction);
-        item.setMnemonic(KeyEvent.VK_D);
-        menu.add(item);
-        
-        menubar.add(menu);
-
-        menu = new JMenu("Help");
-        menu.setMnemonic(KeyEvent.VK_H);
-        
-        item = new JMenuItem(new HelpAction(parent));
-        item.setMnemonic(KeyEvent.VK_R);
-        menu.add(item);
-        
-        item = new JMenuItem(new ShowSampleConfigAction(parent));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-        
-        menubar.add(menu);
-        
-        parent.setJMenuBar(menubar);
-    }
-    
     void restoreWorkspace()
     throws IOException
     {
