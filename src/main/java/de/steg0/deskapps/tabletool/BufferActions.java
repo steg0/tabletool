@@ -173,7 +173,9 @@ class BufferActions
         {
             @Override public void actionPerformed(ActionEvent event)
             {
-                String text = b.editor.getSelectedText();
+                String text = b.editor.getSelectedText() != null?
+                        b.editor.getSelectedText() :
+                        b.selectCurrentQuery();
                 InputStream is=null,es=null;
                 OutputStream os=null;
                 try

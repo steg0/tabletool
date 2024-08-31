@@ -610,7 +610,7 @@ class BufferController
         return null;
     }
     
-    private String selectCurrentQuery()
+    String selectCurrentQuery()
     {
         String text = editor.getText();
         int offset = 0,position = editor.getCaretPosition();
