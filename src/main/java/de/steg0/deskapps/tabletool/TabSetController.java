@@ -39,7 +39,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
@@ -61,6 +60,8 @@ implements KeyListener
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
+    final TabSetMenuBar menubar;
+
     private File workspaceFile;
     
     TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
@@ -71,6 +72,7 @@ implements KeyListener
         this.infoDisplay = infoDisplay;
         this.propertyHolder = propertyHolder;
         this.workspaceFile = workspaceFile;
+        menubar = new TabSetMenuBar(parent,this,propertyHolder);
 
         tabbedPane.setTabPlacement(propertyHolder.getTabPlacement());
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -107,8 +109,7 @@ implements KeyListener
         @Override public void actionPerformed(ActionEvent e)
         {
             tabbedPane.setSelectedIndex(computeMultiDigitIndex(e.getWhen()));
-            NotebookController c = notebooks.get(
-                    tabbedPane.getSelectedIndex());
+            NotebookController c = getSelected();
             if(c.hasSavedFocusPosition) c.restoreFocus();
         }
     }
@@ -122,8 +123,7 @@ implements KeyListener
         }
         @Override public void actionPerformed(ActionEvent e)
         {
-            int selected = tabbedPane.getSelectedIndex();
-            NotebookController notebook = notebooks.get(selected);
+            NotebookController notebook = getSelected();
             notebook.zoom(factor);
         }
     }
@@ -150,8 +150,7 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent event)
             {
-                int index=tabbedPane.getSelectedIndex();
-                NotebookController notebook=notebooks.get(index);
+                NotebookController notebook = getSelected();
                 if(notebook.file==null||notebook.file.getParentFile()==null)
                 {
                     JOptionPane.showMessageDialog(
@@ -181,7 +180,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 int index=tabbedPane.getSelectedIndex();
-                NotebookController notebook=notebooks.get(index);
+                NotebookController notebook = getSelected();
                 boolean newBuffer=notebook.file==null;
                 if(notebook.store(false))
                 {
@@ -301,6 +300,7 @@ implements KeyListener
                     {
                         notebook.connections.notifyIntervalAdded(oldSize);
                     }
+                    menubar.recreate();
                 }
                 catch(IOException e)
                 {
@@ -319,8 +319,7 @@ implements KeyListener
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==0) selected=tabbedPane.getTabCount();
                 tabbedPane.setSelectedIndex(selected-1);
-                NotebookController c = notebooks.get(
-                        tabbedPane.getSelectedIndex());
+                NotebookController c = getSelected();
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
         },
@@ -331,8 +330,7 @@ implements KeyListener
                 int selected = tabbedPane.getSelectedIndex();
                 if(selected==tabbedPane.getTabCount()-1) selected=-1;
                 tabbedPane.setSelectedIndex(selected+1);
-                NotebookController c = notebooks.get(
-                        tabbedPane.getSelectedIndex());
+                NotebookController c = getSelected();
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
         },
@@ -375,48 +373,42 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).increaseFetchsize();
+                getSelected().increaseFetchsize();
             }
         },
         decreaseFetchsizeAction = new AbstractAction("Fetchsize-")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).decreaseFetchsize();
+                getSelected().decreaseFetchsize();
             }
         },
         commitAction = new AbstractAction("Commit")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).commit();
+                getSelected().commit();
             }
         },
         rollbackAction = new AbstractAction("Rollback")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).rollback();
+                getSelected().rollback();
             }
         },
         openAction = new AbstractAction("Open")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).openConnection();
+                getSelected().openConnection();
             }
         },
         disconnectAction = new AbstractAction("Disconnect")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                int index=tabbedPane.getSelectedIndex();
-                notebooks.get(index).disconnect();
+                getSelected().disconnect();
             }
         },
         findAction = new AbstractAction("Find")
@@ -561,11 +553,15 @@ implements KeyListener
         tabbedPane.setSelectedIndex(newIndex);
         return notebook;
     }
-    
+
+    NotebookController getSelected()
+    {
+        return notebooks.get(tabbedPane.getSelectedIndex());
+    }
+
     void removeSelected()
     {
-        NotebookController notebook=
-                notebooks.get(tabbedPane.getSelectedIndex());
+        NotebookController notebook = getSelected();
         if(notebook.isUnsaved())
         {
             int option = JOptionPane.showConfirmDialog(
@@ -584,8 +580,7 @@ implements KeyListener
         retitle();
         if(notebooks.size()==0) add(-1);
         SwingUtilities.invokeLater(() -> {
-            int selectedIndex = tabbedPane.getSelectedIndex();
-            NotebookController c = notebooks.get(selectedIndex);
+            NotebookController c = getSelected();
             if(c.hasSavedFocusPosition) c.restoreFocus();
         });
     }
@@ -614,7 +609,7 @@ implements KeyListener
     {
         recents.add(file.getPath());
         while(recents.size() > MAX_RECENTS_SIZE) recents.removeFirst();
-        recreateMenuBar();
+        menubar.recreate();
     }
 
     private File getPwd()
@@ -715,8 +710,7 @@ implements KeyListener
     {
         try(var w = new StringWriter())
         {
-            int index=tabbedPane.getSelectedIndex();
-            notebooks.get(index).store(w);
+            getSelected().store(w);
             var notebook = add(-1);
             var r = new StringReader(w.getBuffer().toString());
             notebook.load(r);
@@ -732,118 +726,7 @@ implements KeyListener
         return !notebooks.stream().noneMatch((n) -> n.isUnsaved()); 
     }
     
-    void recreateMenuBar()
-    {
-        var menubar = new JMenuBar();
-        
-        JMenu menu;
-        
-        menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
 
-        JMenuItem item;
-
-        item = new JMenuItem(addAction);
-        item.setMnemonic(KeyEvent.VK_N);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_T,CTRL_MASK));
-        menu.add(item);
-        
-        item = new JMenuItem(loadAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_O,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_O);
-        menu.add(item);
-
-        item = getRecentsMenu();
-        menu.add(item);
-        
-        item = new JMenuItem(openContainingFolderAction);
-        item.setMnemonic(KeyEvent.VK_F);
-        item.setEnabled(Desktop.isDesktopSupported());
-        menu.add(item);
-
-        item = new JMenuItem(saveAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_S,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_S);
-        menu.add(item);
-
-        item = new JMenuItem(saveAsAction);
-        item.setMnemonic(KeyEvent.VK_A);
-        menu.add(item);
-
-        item = new JMenuItem(renameAction);
-        item.setMnemonic(KeyEvent.VK_M);
-        menu.add(item);
-
-        item = new JMenuItem(revertAction);
-        item.setMnemonic(KeyEvent.VK_V);
-        menu.add(item);
-
-        item = new JMenuItem(cloneAction);
-        item.setMnemonic(KeyEvent.VK_L);
-        menu.add(item);
-
-        item = new JMenuItem(closeAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_W,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-
-        item = new JMenuItem(setWorkspaceAction);
-        item.setMnemonic(KeyEvent.VK_W);
-        menu.add(item);
-
-        item = new JMenuItem(openPropertiesAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_COMMA,CTRL_MASK));
-        item.setMnemonic(KeyEvent.VK_P);
-        item.setEnabled(propertyHolder.propertiesfiles.length > 0 &&
-                Desktop.isDesktopSupported());
-        menu.add(item);
-
-        item = new JMenuItem(refreshPropertiesAction);
-        item.setMnemonic(KeyEvent.VK_R);
-        item.setEnabled(propertyHolder.propertiesfiles.length > 0);
-        menu.add(item);
-
-        menubar.add(menu);
-
-        menu = new JMenu("Connection");
-        menu.setMnemonic(KeyEvent.VK_C);
-
-        item = new JMenuItem(commitAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F7,0));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-        
-        item = new JMenuItem(rollbackAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F9,0));
-        item.setMnemonic(KeyEvent.VK_R);
-        menu.add(item);
-        
-        item = new JMenuItem(openAction);
-        item.setMnemonic(KeyEvent.VK_O);
-        menu.add(item);
-
-        item = new JMenuItem(disconnectAction);
-        item.setMnemonic(KeyEvent.VK_D);
-        menu.add(item);
-        
-        menubar.add(menu);
-
-        menu = new JMenu("Help");
-        menu.setMnemonic(KeyEvent.VK_H);
-        
-        item = new JMenuItem(new HelpAction(parent));
-        item.setMnemonic(KeyEvent.VK_R);
-        menu.add(item);
-        
-        item = new JMenuItem(new ShowSampleConfigAction(parent));
-        item.setMnemonic(KeyEvent.VK_C);
-        menu.add(item);
-        
-        menubar.add(menu);
-        
-        parent.setJMenuBar(menubar);
-    }
-    
     void restoreWorkspace()
     throws IOException
     {
@@ -894,7 +777,7 @@ implements KeyListener
             .filter(Objects::nonNull)
             .map((f) -> f.getPath())
             .toArray(String[]::new));
-        var selectedNb = notebooks.get(tabbedPane.getSelectedIndex());
+        var selectedNb = getSelected();
         if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));
         Workspaces.store(w,workspaceFile);
@@ -945,7 +828,7 @@ implements KeyListener
         switch(e.getKeyCode())
         {
         case KeyEvent.VK_ENTER:
-            notebooks.get(tabbedPane.getSelectedIndex()).restoreFocus();
+            getSelected().restoreFocus();
         }
     }
     

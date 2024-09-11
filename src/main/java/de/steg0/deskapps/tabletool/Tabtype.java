@@ -81,7 +81,7 @@ extends WindowAdapter
                 contentPaneConstraints
         );
         
-        controller.recreateMenuBar();
+        controller.menubar.recreate();
         
         frame.pack();
         Point location = propertyHolder.getDefaultFrameLocation();

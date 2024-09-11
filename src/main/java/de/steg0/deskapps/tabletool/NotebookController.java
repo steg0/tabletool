@@ -131,9 +131,9 @@ class NotebookController
     private final Consumer<String> logConsumer;
     
     private final List<BufferController> buffers = new ArrayList<>();
-    private BufferController firstBuffer() { return buffers.get(0); }
+    private BufferController first() { return buffers.get(0); }
     private int lastFocusedBuffer;
-    private BufferController lastFocusedBuffer() { return buffers.get(lastFocusedBuffer); }
+    BufferController lastFocused() { return buffers.get(lastFocusedBuffer); }
     boolean hasSavedFocusPosition;
     private final JPanel bufferPanel = new JPanel(new GridBagLayout());
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
@@ -248,7 +248,7 @@ class NotebookController
     private void setBranding(Color bg,String label)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
-        if(bg==null) bg=firstBuffer().defaultBackground;
+        if(bg==null) bg=first().defaultBackground;
         bufferPanel.setBackground(bg);
         log.setBackground(bg);
         for(BufferController buffer : buffers) buffer.setBranding(bg,label);
@@ -495,8 +495,8 @@ class NotebookController
         c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
         {
-            c.editor.setFont(firstBuffer().editor.getFont());
-            c.sizes = (Stack<Integer>)firstBuffer().sizes.clone();
+            c.editor.setFont(first().editor.getFont());
+            c.sizes = (Stack<Integer>)first().sizes.clone();
         }
         
         buffers.add(index,c);
@@ -711,11 +711,11 @@ class NotebookController
         try(var r = new LineNumberReader(reader))
         {
             assert buffers.size()==1 : "load only supports uninitialized panels";
-            int linesRead = firstBuffer().load(r);
+            int linesRead = first().load(r);
             while(linesRead>0)
             {
                 var newBufferController = newBufferController();
-                var fb = firstBuffer();
+                var fb = first();
                 newBufferController.setBranding(fb.getBrandingBackground(),
                         fb.getBrandingText());
                 linesRead = newBufferController.load(r);
@@ -723,7 +723,7 @@ class NotebookController
             }
         }
         bufferPanel.revalidate();
-        firstBuffer().focusEditor(0,0);
+        first().focusEditor(0,0);
     }
 
     void commit()
@@ -738,7 +738,7 @@ class NotebookController
 
     void openConnection()
     {
-        if(!openConnection(lastFocusedBuffer().getTextFromCurrentLine(false)))
+        if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");
             connectionsSelector.requestFocusInWindow();
@@ -776,7 +776,7 @@ class NotebookController
     
     void restoreFocus()
     {
-        lastFocusedBuffer().focusEditor(null,null);
+        lastFocused().focusEditor(null,null);
     }
     
     void increaseFetchsize()
@@ -828,7 +828,7 @@ class NotebookController
 
     private void onConnection(Consumer<ConnectionWorker> c)
     {
-        ConnectionWorker selectedConnection = firstBuffer().connection;
+        ConnectionWorker selectedConnection = first().connection;
         if(selectedConnection != null)
         {
             c.accept(selectedConnection);
@@ -863,7 +863,7 @@ class NotebookController
         }
         catch(SQLException e)
         {
-            reportDisconnect(firstBuffer().connection);
+            reportDisconnect(first().connection);
             logConsumer.accept(SQLExceptionPrinter.toString(e));
         }
     }
@@ -878,7 +878,7 @@ class NotebookController
     
     void reportDisconnect(ConnectionWorker connection)
     {
-        if(firstBuffer().connection != connection) return;
+        if(first().connection != connection) return;
         for(BufferController buffer : buffers)
         {
             buffer.connection = null;
@@ -891,7 +891,7 @@ class NotebookController
     
     void reportAutocommitChanged(ConnectionWorker connection,boolean enabled)
     {
-        if(firstBuffer().connection != connection) return;
+        if(first().connection != connection) return;
         autocommitCb.setSelected(enabled);
     }
 }

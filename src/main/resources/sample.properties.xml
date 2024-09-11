@@ -101,6 +101,9 @@
     <!--
         completionTemplate allows generating content for F8.
         An optional placeholder is replaced with the text under the cursor.
+        It is possible to assign them to drivers as well as connections
+        (with "connections.SOME_NAME_REGEX.completionTemplate."). Multiple matches
+        are resolved by giving connection assignments higher precedence.
     -->
     <entry key="drivers.derby.completionTemplate">
         select tablename from sys.systables where lower(tablename) like lower(&amp;param||'%')
@@ -131,6 +134,27 @@
     </entry>
 
     <!--
+        externalTools allows specifying commands that will show
+        up in the Tools menu. Those operate by getting the query
+        under the cursor through STDIN and writing their result to
+        STDOUT. Tabtype will replace the selected content with that
+        output. For all this, UTF-8 encoding is used. The operation
+        is blocking, so the execution should not take too long.
+    -->
+    <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
+    <entry key="externalTools.SQL::Beautify.command.2">-I</entry>
+    <entry key="externalTools.SQL::Beautify.command.3">~/config/contrib/perl-lib</entry>
+    <entry key="externalTools.SQL::Beautify.command.4">-e</entry>
+    <entry key="externalTools.SQL::Beautify.command.5"><![CDATA[
+        use SQL::Beautify;
+        my $b = SQL::Beautify->new(spaces => 1,space => chr(9));
+        $b->add_rule('break-pop-token',')');
+        $b->add_rule('break-token',['or','and']);
+        $b->add($_) while(<STDIN>);
+        print $b->beautify;
+    ]]></entry>
+
+    <!--
         Example SQLs for Oracle
     -->
 
@@ -140,6 +164,7 @@
             t.column_name,
             data_type,
             data_length,
+            char_length,
             data_precision,
             data_scale,
             nullable,
