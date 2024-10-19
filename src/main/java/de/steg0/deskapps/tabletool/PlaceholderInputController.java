@@ -1,18 +1,26 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.table.TableCellEditor;
 
 class PlaceholderInputController
 {
     private BufferConfigSource configSource;
     private JFrame parent;
     private String[][] lastValues;
+
+    static class SubstitutionCanceledException extends Exception
+    {
+    }
 
     PlaceholderInputController(BufferConfigSource configSource,
             JFrame parent)
@@ -28,7 +36,7 @@ class PlaceholderInputController
      * in the displayed table. This is probably not often useful, but
      * there is no reason not to allow it.
      */
-    String fill(String s)
+    String fill(String s) throws SubstitutionCanceledException
     {
         String[] placeholderOccurrences = new PlaceholderSupport(configSource)
                 .getPlaceholderOccurrences(s);
@@ -55,22 +63,45 @@ class PlaceholderInputController
             f.setLocationRelativeTo(parent);
             f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
+
             var explanation = new JTextArea("Please provide values " +
                     " for placeholders found in the query.\n" +
                     "Use Enter to accept a value in a cell, and Ctrl+Enter " +
                     "to proceed.");
             explanation.setEditable(false);
             f.getContentPane().add(explanation,BorderLayout.NORTH);
+            
             JTable table = new JTable(placeholderMap,
                     new String[]{"Placeholder","Replacement"});
             f.getContentPane().add(table);
+
             var closeButton = new JButton("Close and Proceed");
-            closeButton.addActionListener(e -> f.dispose());
+            boolean[] proceed={false};
+            closeButton.addActionListener(e ->
+            {
+                proceed[0] = true;
+                f.dispose();
+            });
             f.getContentPane().add(closeButton,BorderLayout.SOUTH);
+
             f.getRootPane().setDefaultButton(closeButton);
+            f.getRootPane().registerKeyboardAction(
+                    evt -> f.dispose(),
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                    JComponent.WHEN_IN_FOCUSED_WINDOW);
             f.pack();
 
+            table.setRowSelectionInterval(0,0);
+            table.setColumnSelectionInterval(1,1);
+            table.editCellAt(0,1);
+            table.requestFocusInWindow();
+
             f.setVisible(true);
+
+            if(!proceed[0]) throw new SubstitutionCanceledException();
+
+            TableCellEditor editor = table.getCellEditor();
+            if(editor!=null) editor.stopCellEditing();
 
             var placeholderSupport = new PlaceholderSupport(configSource);
             for(String[] replacement : placeholderMap)

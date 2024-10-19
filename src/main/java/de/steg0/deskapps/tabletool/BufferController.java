@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
 import de.steg0.deskapps.tabletool.BufferEvent.Type;
+import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCanceledException;
 
 class BufferController
 {
@@ -557,7 +558,15 @@ class BufferController
             return;
         }
 
-        text=placeholderInputController.fill(text);
+        try
+        {
+            text=placeholderInputController.fill(text);
+        }
+        catch(SubstitutionCanceledException e)
+        {
+            log.accept("Substitution canceled at "+new Date());
+            return;
+        }
         
         if(split) try
         {
