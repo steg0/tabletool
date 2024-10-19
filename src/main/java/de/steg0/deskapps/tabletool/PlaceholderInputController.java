@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.table.TableCellEditor;
 
 class PlaceholderInputController
 {
@@ -98,6 +99,9 @@ class PlaceholderInputController
             f.setVisible(true);
 
             if(!proceed[0]) throw new SubstitutionCanceledException();
+
+            TableCellEditor editor = table.getCellEditor();
+            if(editor!=null) editor.stopCellEditing();
 
             var placeholderSupport = new PlaceholderSupport(configSource);
             for(String[] replacement : placeholderMap)
