@@ -14,6 +14,10 @@ class PlaceholderInputController
     private JFrame parent;
     private String[][] lastValues;
 
+    static class SubstitutionCanceledException extends Exception
+    {
+    }
+
     PlaceholderInputController(BufferConfigSource configSource,
             JFrame parent)
     {
@@ -28,7 +32,7 @@ class PlaceholderInputController
      * in the displayed table. This is probably not often useful, but
      * there is no reason not to allow it.
      */
-    String fill(String s)
+    String fill(String s) throws SubstitutionCanceledException
     {
         String[] placeholderOccurrences = new PlaceholderSupport(configSource)
                 .getPlaceholderOccurrences(s);
@@ -65,12 +69,18 @@ class PlaceholderInputController
                     new String[]{"Placeholder","Replacement"});
             f.getContentPane().add(table);
             var closeButton = new JButton("Close and Proceed");
-            closeButton.addActionListener(e -> f.dispose());
+            boolean[] proceed={false};
+            closeButton.addActionListener(e ->
+            {
+                proceed[0] = true;
+                f.dispose();
+            });
             f.getContentPane().add(closeButton,BorderLayout.SOUTH);
             f.getRootPane().setDefaultButton(closeButton);
             f.pack();
 
             f.setVisible(true);
+            if(!proceed[0]) throw new SubstitutionCanceledException();
 
             var placeholderSupport = new PlaceholderSupport(configSource);
             for(String[] replacement : placeholderMap)
