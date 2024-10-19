@@ -1,12 +1,15 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 
 class PlaceholderInputController
 {
@@ -77,6 +80,10 @@ class PlaceholderInputController
             });
             f.getContentPane().add(closeButton,BorderLayout.SOUTH);
             f.getRootPane().setDefaultButton(closeButton);
+            f.getRootPane().registerKeyboardAction(
+                    evt -> f.dispose(),
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
+                    JComponent.WHEN_IN_FOCUSED_WINDOW);
             f.pack();
 
             f.setVisible(true);
