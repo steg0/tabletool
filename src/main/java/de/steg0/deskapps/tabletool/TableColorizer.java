@@ -15,12 +15,12 @@ class TableColorizer
         int r = bg.getRed(),
             g = bg.getGreen(),
             b = bg.getBlue(),
-            rb = r + (0xff-r)/4,
-            gb = g + (0xff-g)/4,
-            bb = b + (0xff-b)/4,
-            rd = r - r/4,
-            gd = g - g/4,
-            bd = b - b/4;
+            rb = r + (0xff-r)/5,
+            gb = g + (0xff-g)/5,
+            bb = b + (0xff-b)/5,
+            rd = r - r/5,
+            gd = g - g/5,
+            bd = b - b/5;
         Color
             brighter = new Color(rb, gb, bb),
             darker = new Color(rd, gd, bd);
