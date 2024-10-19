@@ -62,15 +62,18 @@ class PlaceholderInputController
             f.setLocationRelativeTo(parent);
             f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
+
             var explanation = new JTextArea("Please provide values " +
                     " for placeholders found in the query.\n" +
                     "Use Enter to accept a value in a cell, and Ctrl+Enter " +
                     "to proceed.");
             explanation.setEditable(false);
             f.getContentPane().add(explanation,BorderLayout.NORTH);
+            
             JTable table = new JTable(placeholderMap,
                     new String[]{"Placeholder","Replacement"});
             f.getContentPane().add(table);
+
             var closeButton = new JButton("Close and Proceed");
             boolean[] proceed={false};
             closeButton.addActionListener(e ->
@@ -79,17 +82,21 @@ class PlaceholderInputController
                 f.dispose();
             });
             f.getContentPane().add(closeButton,BorderLayout.SOUTH);
+
             f.getRootPane().setDefaultButton(closeButton);
             f.getRootPane().registerKeyboardAction(
                     evt -> f.dispose(),
                     KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                     JComponent.WHEN_IN_FOCUSED_WINDOW);
             f.pack();
+
             table.setRowSelectionInterval(0,0);
             table.setColumnSelectionInterval(1,1);
             table.editCellAt(0,1);
             table.requestFocusInWindow();
+
             f.setVisible(true);
+
             if(!proceed[0]) throw new SubstitutionCanceledException();
 
             var placeholderSupport = new PlaceholderSupport(configSource);
