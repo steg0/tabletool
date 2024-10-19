@@ -85,7 +85,10 @@ class PlaceholderInputController
                     KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                     JComponent.WHEN_IN_FOCUSED_WINDOW);
             f.pack();
-
+            table.setRowSelectionInterval(0,0);
+            table.setColumnSelectionInterval(1,1);
+            table.editCellAt(0,1);
+            table.requestFocusInWindow();
             f.setVisible(true);
             if(!proceed[0]) throw new SubstitutionCanceledException();
 
