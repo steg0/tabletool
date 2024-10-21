@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -14,12 +15,44 @@ import javax.swing.table.TableCellEditor;
 
 class PlaceholderInputController
 {
+    private static final Pattern TEXTPATTERN = Pattern.compile(
+            "^(" +
+            "\\'.*?\\'" +
+            "|" +
+            "\\-[^\\-]*" +
+            "|" +
+            "\\/[^\\*\\/\\']*" +
+            "|" +
+            "[^\\-\\/\\']*" +
+            ")");
+    private static final Pattern COMMENTPATTERN = Pattern.compile(
+            "^(" +
+            "\\-\\-.*?\\n" +
+            "|" +
+            "\\/\\*.*?\\*\\/" +
+            ")*",Pattern.DOTALL);
+   
     private BufferConfigSource configSource;
     private JFrame parent;
     private String[][] lastValues;
 
     static class SubstitutionCanceledException extends Exception
     {
+    }
+
+    private static String stripComments(String s)
+    {
+        var r=new StringBuilder();
+        var remainder = s;
+        while(!remainder.isEmpty())
+        {
+            var textMatcher = TEXTPATTERN.matcher(remainder);
+            if(textMatcher.find()) r.append(textMatcher.group(1));
+            remainder = s.substring(r.length());
+            var commentMatcher = COMMENTPATTERN.matcher(remainder);
+            r.append(commentMatcher.replaceAll(""));
+        }
+        return r.toString();
     }
 
     PlaceholderInputController(BufferConfigSource configSource,
@@ -39,7 +72,7 @@ class PlaceholderInputController
     String fill(String s) throws SubstitutionCanceledException
     {
         String[] placeholderOccurrences = new PlaceholderSupport(configSource)
-                .getPlaceholderOccurrences(s);
+                .getPlaceholderOccurrences(stripComments(s));
         if(placeholderOccurrences.length>0)
         {
             String[][] placeholderMap =
