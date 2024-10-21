@@ -65,7 +65,7 @@ class PlaceholderInputController
             ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
 
             var explanation = new JTextArea("Please provide values " +
-                    " for placeholders found in the query.\n" +
+                    "for placeholders found in the query.\n" +
                     "Use Enter to accept a value in a cell, and Ctrl+Enter " +
                     "to proceed.");
             explanation.setEditable(false);
