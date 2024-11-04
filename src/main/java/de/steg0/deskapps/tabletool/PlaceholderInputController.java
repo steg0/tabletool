@@ -17,7 +17,7 @@ class PlaceholderInputController
 {
     private static final Pattern TEXTPATTERN = Pattern.compile(
             "^(" +
-            "\\'.*?\\'" +
+            "\\'[^\\']*\\'" +
             "|" +
             "\\-[^\\-]*" +
             "|" +
@@ -40,19 +40,24 @@ class PlaceholderInputController
     {
     }
 
-    private static String stripComments(String s)
+    static String stripComments(String s)
     {
-        var r=new StringBuilder();
+        var stripped=new StringBuilder();
         var remainder = s;
         while(!remainder.isEmpty())
         {
             var textMatcher = TEXTPATTERN.matcher(remainder);
-            if(textMatcher.find()) r.append(textMatcher.group(1));
-            remainder = s.substring(r.length());
+            if(textMatcher.find()) 
+            {
+                String match = textMatcher.group(1);
+                stripped.append(match);
+                remainder = remainder.substring(match.length());
+            }
+            else assert false;
             var commentMatcher = COMMENTPATTERN.matcher(remainder);
-            r.append(commentMatcher.replaceAll(""));
+            remainder = commentMatcher.replaceAll("");
         }
-        return r.toString();
+        return stripped.toString();
     }
 
     PlaceholderInputController(BufferConfigSource configSource,
