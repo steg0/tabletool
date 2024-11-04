@@ -26,11 +26,15 @@ namespace Tabtype
             string[] deps = Directory.GetFiles(appDirectory + "dependency");
             string procargs=Environment.ExpandEnvironmentVariables(
                     "-XX:+UseSerialGC " +
+                    "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9011 " +
                     "-Dfile.encoding=UTF-8 " +
                     "-Dswing.plaf.metal.controlFont=\"Segoe UI\" " +
                     //"-Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel " +
                     "-p " +
-                    "\"" + String.Join(";",deps).Replace("\"","\"\"") + "\" " +
+                    "\"" + String.Join(";",deps).Replace("\"","\"\"") + 
+                    ";C:\\Program Files (x86)\\IBM\\SDPShared\\plugins\\com.ibm.datatools.db2_2.2.202.v20161026_1643\\driver\\db2jcc4.jar" +
+                    ";C:\\Program Files (x86)\\IBM\\SDPShared\\plugins\\com.ibm.datatools.db2_2.2.202.v20161026_1643\\driver\\db2jcc_license_cisuz.jar" +
+                    "\" " +
                     "-jar " + appDirectory.Replace("\"","\"\"") + "tabtype.jar " +
                     "-logconfig %APPDATA%\\tabtype\\logging.properties " +
                     "-config %APPDATA%\\tabtype\\tabtype.properties.xml " +
