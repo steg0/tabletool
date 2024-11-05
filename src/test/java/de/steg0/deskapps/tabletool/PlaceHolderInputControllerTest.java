@@ -71,4 +71,16 @@ public class PlaceHolderInputControllerTest
         String actual = PlaceholderInputController.stripComments(stmt);
         assertEquals(expected,actual);
     }
+
+    @Test
+    public void selectStatement_withQuotesInComments()
+    {
+        String stmt = """
+                / */
+                */* * /' -- */select * from x where y = z --'/*
+                ;""";
+        String expected = "/ */\n*select * from x where y = z ;";
+        String actual = PlaceholderInputController.stripComments(stmt);
+        assertEquals(expected,actual);
+    }
 }
