@@ -83,4 +83,22 @@ public class PlaceHolderInputControllerTest
         String actual = PlaceholderInputController.stripComments(stmt);
         assertEquals(expected,actual);
     }
+
+    @Test
+    public void nonGreedyCommentMatch1()
+    {
+        String stmt = "x/*yy*/z*/";
+        String expected = "xz*/";
+        String actual = PlaceholderInputController.stripComments(stmt);
+        assertEquals(expected,actual);
+    }
+
+    @Test
+    public void nonGreedyCommentMatch2()
+    {
+        String stmt = "z-- \nx\nt";
+        String expected = "zx\nt";
+        String actual = PlaceholderInputController.stripComments(stmt);
+        assertEquals(expected,actual);
+    }
 }
