@@ -19,7 +19,7 @@ class SQLExceptionPrinter
                 b.append("Caused by:\n"+cause+"\n");
             }
         }
-        b.append("Error executing SQL at ");
+        b.append("Database reported error at ");
         b.append(new Date());
         return b.toString();
     }
