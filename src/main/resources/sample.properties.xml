@@ -3,11 +3,11 @@
 <properties>
     
     <comment>
-        This is a sample configuration file for Tabtype, which
-        uses the Java XML properties syntax. Next to this,
-        the regular Java properties format is also supported;
-        which combination of these is in use depends on the
-        -config arguments with which the tool is invoked.
+        This is an annotated configuration file for Tabtype, which
+        uses the Java XML properties syntax. Next to this, the regular
+        Java properties format is also supported; which combination of
+        these is in use depends on the -config arguments with which
+        the tool is invoked.
     </comment>
     
     <!--
