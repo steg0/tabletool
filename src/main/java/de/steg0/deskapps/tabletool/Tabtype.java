@@ -198,7 +198,7 @@ extends WindowAdapter
             {
                 JOptionPane.showMessageDialog(
                         frame,
-                        "Error editing workspace file: "+e.getMessage(),
+                        "Error editing workspace file: "+e0.getMessage(),
                         "Error editing workspace file",
                         JOptionPane.ERROR_MESSAGE);
             }
