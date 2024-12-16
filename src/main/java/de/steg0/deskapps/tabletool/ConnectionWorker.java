@@ -127,7 +127,7 @@ class ConnectionWorker
                                 .substring(0,text.length()-1);
                     }
                     CallableStatement st = connection.prepareCall(text);
-                    if(st.execute(text))
+                    if(st.execute())
                     {
                         reportResult(st);
                     }

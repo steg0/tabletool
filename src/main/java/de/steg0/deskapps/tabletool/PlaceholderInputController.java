@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -14,12 +15,49 @@ import javax.swing.table.TableCellEditor;
 
 class PlaceholderInputController
 {
+    private static final Pattern TEXTPATTERN = Pattern.compile(
+            "^(" +
+            "\\'[^\\']*\\'" +
+            "|" +
+            "\\-[^\\-]*" +
+            "|" +
+            "\\/[^\\*\\/\\']*" +
+            "|" +
+            "[^\\-\\/\\']*" +
+            ")");
+    private static final Pattern COMMENTPATTERN = Pattern.compile(
+            "^(" +
+            "\\-\\-.*?\\n" +
+            "|" +
+            "\\/\\*.*?\\*\\/" +
+            ")*",Pattern.DOTALL);
+   
     private BufferConfigSource configSource;
     private JFrame parent;
     private String[][] lastValues;
 
     static class SubstitutionCanceledException extends Exception
     {
+    }
+
+    static String stripComments(String s)
+    {
+        var stripped=new StringBuilder();
+        var remainder = s;
+        while(!remainder.isEmpty())
+        {
+            var textMatcher = TEXTPATTERN.matcher(remainder);
+            if(textMatcher.find()) 
+            {
+                String match = textMatcher.group(1);
+                stripped.append(match);
+                remainder = remainder.substring(match.length());
+            }
+            else assert false;
+            var commentMatcher = COMMENTPATTERN.matcher(remainder);
+            remainder = commentMatcher.replaceAll("");
+        }
+        return stripped.toString();
     }
 
     PlaceholderInputController(BufferConfigSource configSource,
@@ -39,7 +77,7 @@ class PlaceholderInputController
     String fill(String s) throws SubstitutionCanceledException
     {
         String[] placeholderOccurrences = new PlaceholderSupport(configSource)
-                .getPlaceholderOccurrences(s);
+                .getPlaceholderOccurrences(stripComments(s));
         if(placeholderOccurrences.length>0)
         {
             String[][] placeholderMap =
@@ -65,7 +103,7 @@ class PlaceholderInputController
             ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
 
             var explanation = new JTextArea("Please provide values " +
-                    " for placeholders found in the query.\n" +
+                    "for placeholders found in the query.\n" +
                     "Use Enter to accept a value in a cell, and Ctrl+Enter " +
                     "to proceed.");
             explanation.setEditable(false);

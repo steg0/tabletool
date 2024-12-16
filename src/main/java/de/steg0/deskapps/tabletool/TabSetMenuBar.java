@@ -103,9 +103,12 @@ class TabSetMenuBar
         menu = new JMenu("Connection");
         menu.setMnemonic(KeyEvent.VK_C);
 
-        item = new JMenuItem(tabset.commitAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_F7,0));
-        item.setMnemonic(KeyEvent.VK_C);
+        item = new JMenuItem(tabset.openAction);
+        item.setMnemonic(KeyEvent.VK_O);
+        menu.add(item);
+
+        item = new JMenuItem(tabset.disconnectAction);
+        item.setMnemonic(KeyEvent.VK_D);
         menu.add(item);
         
         item = new JMenuItem(tabset.rollbackAction);
@@ -113,12 +116,9 @@ class TabSetMenuBar
         item.setMnemonic(KeyEvent.VK_R);
         menu.add(item);
         
-        item = new JMenuItem(tabset.openAction);
-        item.setMnemonic(KeyEvent.VK_O);
-        menu.add(item);
-
-        item = new JMenuItem(tabset.disconnectAction);
-        item.setMnemonic(KeyEvent.VK_D);
+        item = new JMenuItem(tabset.commitAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_F7,0));
+        item.setMnemonic(KeyEvent.VK_C);
         menu.add(item);
         
         menubar.add(menu);
