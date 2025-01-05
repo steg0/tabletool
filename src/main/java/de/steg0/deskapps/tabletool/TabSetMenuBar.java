@@ -86,6 +86,12 @@ class TabSetMenuBar
         item.setMnemonic(KeyEvent.VK_W);
         menu.add(item);
 
+        item = new JMenuItem(tabset.closeWorkspaceAction);
+        menu.add(item);
+
+        item = new JMenuItem(tabset.switchWorkspaceAction);
+        menu.add(item);
+
         item = new JMenuItem(tabset.openPropertiesAction);
         item.setAccelerator(getKeyStroke(KeyEvent.VK_COMMA,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_P);

@@ -1,7 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -53,13 +52,18 @@ extends WindowAdapter
                 .toArray(File[]::new);
     }
     
-    private void showBuffer()
+    static String getFrameTitle(File workspace)
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
                 "(.)\\.[^.]+$","$1")+" - " : "");
         String jvmName = ManagementFactory.getRuntimeMXBean().getName();
         String title = wsprefix + "Tabtype " + jvmName;
-        frame = new JFrame(title);
+        return title;
+    }
+
+    private void showBuffer()
+    {
+        frame = new JFrame();
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -139,102 +143,43 @@ extends WindowAdapter
     
     private void ensureWorkspace()
     {
-        try
+        if(workspace==null)
         {
-            if(workspace==null)
-            {
-                if(sqlFiles==null) controller.add(-1);
-                else for(File f : sqlFiles) controller.load(f);
-            }
-            else if(!workspace.exists() || workspace.length()==0)
-            {
-                controller.add(-1);
-            }
-            else
-            {
-                controller.restoreWorkspace();
-            }
+            if(sqlFiles==null) controller.add(-1);
+            else for(File f : sqlFiles) controller.load(f);
         }
-        catch(Exception e)
+        else if(!workspace.exists() || workspace.length()==0)
         {
-            Object[]
-                    desktopChoices={"Close","Retry","Edit workspace file"},
-                    choices={"Close","Retry"};
-            int choice=JOptionPane.showOptionDialog(
-                    frame,
-                    "Error loading workspace: "+e.getMessage(),
-                    "Error loading workspace",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.ERROR_MESSAGE,
-                    null,
-                    Desktop.isDesktopSupported()? desktopChoices : choices,
-                    "Close"
-            );
-            if(choice==1)
-            {
-                ensureWorkspace();
-                return;
-            }
-            else if(choice==2) try
-            {
-                Desktop.getDesktop().edit(workspace);
-                choice=JOptionPane.showOptionDialog(
-                        frame,
-                        "The workspace file has been opened for editing.",
-                        "Workspace file opened",
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.INFORMATION_MESSAGE,
-                        null,
-                        choices,
-                        "Close"
-                );
-                if(choice==1)
-                {
-                    ensureWorkspace();
-                    return;
-                }
-            }
-            catch(IOException e0)
-            {
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error editing workspace file: "+e0.getMessage(),
-                        "Error editing workspace file",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-            System.exit(2);
+            controller.add(-1);
         }
+        else
+        {
+            boolean proceed = controller.restoreWorkspace();
+            if(!proceed) System.exit(2);
+        }
+        frame.setTitle(Tabtype.getFrameTitle(workspace));
     }
     
     @Override
     public void windowClosing(WindowEvent event)
     {
-        if(controller.isUnsaved())
+        boolean proceed = controller.closeWorkspace(false);
+        if(proceed)
         {
-            int option = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Unsaved notebooks exist. Exit?",
-                    "Unsaved notebook warning",
-                    JOptionPane.YES_NO_OPTION);
-            if(option!=JOptionPane.YES_OPTION)
-            {
-                return;
-            }
-        }
-
-        frame.dispose();
+            frame.dispose();
         
-        try
-        {
-            controller.saveWorkspace();
-        }
-        catch(IOException e)
-        {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Error saving workspace: "+e.getMessage(),
-                    "Error saving workspace",
-                    JOptionPane.ERROR_MESSAGE);
+            try
+            {
+                controller.saveWorkspace();
+            }
+            catch(IOException e)
+            {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Error saving workspace: "+e.getMessage(),
+                        "Error saving workspace",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
     
