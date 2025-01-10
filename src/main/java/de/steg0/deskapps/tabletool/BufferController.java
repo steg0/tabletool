@@ -630,7 +630,7 @@ class BufferController
                 /* Remove block prefixes if possible, they don't make much
                  * sense for what's supported with our query detection */
                 Matcher blockMatcher = CallableStatementMatchers
-                        .prefixMatch(match);
+                        .blockPrefixMatch(match);
                 int prefixLen = match.length()-blockMatcher.group(2).length();
                 editor.select(
                         offset + m.start() + prefixLen,
