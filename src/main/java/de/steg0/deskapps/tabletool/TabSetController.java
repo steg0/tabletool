@@ -237,7 +237,7 @@ implements KeyListener
                 }
             }
         },
-        switchWorkspaceAction = new AbstractAction("Switch Workspace...")
+        switchWorkspaceAction = new AbstractAction("Open Workspace...")
         {
             @Override public void actionPerformed(ActionEvent e)
             {
