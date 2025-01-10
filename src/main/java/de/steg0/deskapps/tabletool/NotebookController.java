@@ -849,7 +849,7 @@ class NotebookController
         try
         {
             var item = (Connections.ConnectionState)event.getItem();
-            var connection = connections.getConnection(item,logConsumer);
+            var connection = connections.getConnection(item,logConsumer,parent);
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
             {
                 listener.autocommitChanged(connection,autocommitCb.isSelected());

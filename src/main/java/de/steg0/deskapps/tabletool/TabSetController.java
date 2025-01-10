@@ -223,6 +223,33 @@ implements KeyListener
                     if(option != JOptionPane.YES_OPTION) return;
                 }
                 workspaceFile = newFile;
+                parent.setTitle(Tabtype.getFrameTitle(workspaceFile));
+            }
+        },
+        closeWorkspaceAction = new AbstractAction("Close Workspace")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                boolean proceed = closeWorkspace(true);
+                if(proceed) 
+                {
+                    parent.setTitle(Tabtype.getFrameTitle(workspaceFile));
+                }
+            }
+        },
+        switchWorkspaceAction = new AbstractAction("Open Workspace...")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                var filechooser = new JFileChooser(getPwd());
+                int returnVal = filechooser.showOpenDialog(parent);
+                if(returnVal != JFileChooser.APPROVE_OPTION) return;
+                boolean proceed = closeWorkspace(false);
+                if(!proceed) return;
+                workspaceFile = filechooser.getSelectedFile();
+                if(workspaceFile.exists()) restoreWorkspace();
+                else add(-1);
+                parent.setTitle(Tabtype.getFrameTitle(workspaceFile));
             }
         },
         renameAction = new AbstractAction("Rename...")
@@ -727,44 +754,123 @@ implements KeyListener
     }
     
 
-    void restoreWorkspace()
-    throws IOException
+    boolean restoreWorkspace()
     {
         Objects.requireNonNull(workspaceFile);
-        Workspace w = Workspaces.load(workspaceFile);
-        
-        if(w.getRecentFiles() != null)
+        try
         {
-            for(var path : w.getRecentFiles()) recents.add(path);
+            Workspace w = Workspaces.load(workspaceFile);
+            
+            if(w.getRecentFiles() != null)
+            {
+                for(var path : w.getRecentFiles()) recents.add(path);
+            }
+            
+            if(w.getFiles().length==0) add(-1);
+            int selectedIndex=0;
+            for(String fn : w.getFiles())
+            {
+                File sqlFile = new File(fn);
+                try
+                {
+                    NotebookController notebook = add(-1);
+                    notebook.load(sqlFile);
+                    int index = tabbedPane.getSelectedIndex();
+                    if(fn.equals(w.getActiveFile())) selectedIndex = index;
+                    retitle();
+                    tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
+                }
+                catch(IOException e)
+                {
+                    throw new IOException(fn+":\n"+e.getMessage(),e);
+                }
+                catch(ArrayIndexOutOfBoundsException e)
+                {
+                    throw new ArrayIndexOutOfBoundsException(fn+":\n"+
+                            e.getMessage());
+                }
+            }
+            tabbedPane.setSelectedIndex(selectedIndex);
+            parent.setTitle(Tabtype.getFrameTitle(workspaceFile));
+            return true;
         }
-        
-        if(w.getFiles().length==0) add(-1);
-        int selectedIndex=0;
-        for(String fn : w.getFiles())
+        catch(Exception e)
         {
-            File sqlFile = new File(fn);
-            try
+            Object[]
+                    desktopChoices={"Close","Retry","Edit workspace file"},
+                    choices={"Close","Retry"};
+            int choice=JOptionPane.showOptionDialog(
+                    parent,
+                    "Error loading workspace: "+e.getMessage(),
+                    "Error loading workspace",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.ERROR_MESSAGE,
+                    null,
+                    Desktop.isDesktopSupported()? desktopChoices : choices,
+                    "Close"
+            );
+            if(choice==1)
             {
-                NotebookController notebook = add(-1);
-                notebook.load(sqlFile);
-                int index = tabbedPane.getSelectedIndex();
-                if(fn.equals(w.getActiveFile())) selectedIndex = index;
-                retitle();
-                tabbedPane.setToolTipTextAt(index,sqlFile.getPath());
+                return restoreWorkspace();
             }
-            catch(IOException e)
+            else if(choice==2) try
             {
-                throw new IOException(fn+":\n"+e.getMessage(),e);
+                Desktop.getDesktop().edit(workspaceFile);
+                choice=JOptionPane.showOptionDialog(
+                        parent,
+                        "The workspace file has been opened for editing.",
+                        "Workspace file opened",
+                        JOptionPane.DEFAULT_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null,
+                        choices,
+                        "Close"
+                );
+                if(choice==1)
+                {
+                    return restoreWorkspace();
+                }
             }
-            catch(ArrayIndexOutOfBoundsException e)
+            catch(IOException e0)
             {
-                throw new ArrayIndexOutOfBoundsException(fn+":\n"+
-                        e.getMessage());
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Error editing workspace file: "+e0.getMessage(),
+                        "Error editing workspace file",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
-        tabbedPane.setSelectedIndex(selectedIndex);
+        closeWorkspace(true);
+        return false;
     }
     
+    boolean closeWorkspace(boolean addUntitled)
+    {
+        if(isUnsaved())
+        {
+            int option = JOptionPane.showConfirmDialog(
+                    parent,
+                    "Unsaved notebooks exist. Proceed?",
+                    "Unsaved notebook warning",
+                    JOptionPane.YES_NO_OPTION);
+            if(option!=JOptionPane.YES_OPTION)
+            {
+                return false;
+            }
+        }
+        while(!notebooks.isEmpty())
+        {
+            NotebookController notebook = notebooks.get(0);
+            notebook.closeCurrentResultSet();
+            notebooks.remove(0);
+            tabbedPane.remove(0);
+        }
+        if(addUntitled) add(-1);
+        workspaceFile = null;
+        recents.clear();
+        return true;
+    }
+
     void saveWorkspace()
     throws IOException
     {
