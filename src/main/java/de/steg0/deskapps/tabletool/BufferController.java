@@ -440,7 +440,7 @@ class BufferController
         {
             int start = selectListener.dragPos;
             int end = y1<0? clickPos :
-                editor.viewToModel2D(new Point(0,y1 + getLineHeight()));
+                    editor.viewToModel2D(new Point(0,y1 + getLineHeight()));
             if(end>0 && end<editor.getText().length()) end--;
             editor.setSelectionStart(start);
             editor.setSelectionEnd(end);
