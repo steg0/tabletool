@@ -1,25 +1,12 @@
 ▶ Invocation
 
-The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and use one or more properties files where connection definitions will be read from. For such files, the Java .properties format as well as its XML variant are supported.
+In addition to options dealing with JVM specifics, the tool supports the following command line arguments:
 
-Also, an optional single file name argument, ending with .xml or .tabtype, is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially.
+-config <file> - to specify one or more properties files where connection definitions will be read from. For such files, the Java .properties format as well as its XML variant are supported.
 
-An example command line is:
+-logconfig <file> - to specify a Java Logger properties file. The tool's logger is called "tabtype".
 
-┌─
-  java -XX:+UseSerialGC \
-    -Dfile.encoding=Cp1252 \
-    -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
-    -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar \
-    -jar tabtype.jar \
-    -logconfig $APPDATA/tabtype/logging.properties \
-    -config $APPDATA/tabtype/tabtype.properties.xml \
-    -config $APPDATA/tabtype/tabtype.properties \
-    $HOME/Documents/workspace.tabtype
-└─
-
-This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
-
+Also, an optional single file name argument, ending with .xml or .tabtype, is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially. Other arguments will be understood as SQL files to open.
 
 ▶ Property file format
 
