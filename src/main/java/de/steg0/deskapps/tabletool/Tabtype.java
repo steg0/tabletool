@@ -163,23 +163,22 @@ extends WindowAdapter
     @Override
     public void windowClosing(WindowEvent event)
     {
+        try
+        {
+            controller.saveWorkspace();
+        }
+        catch(IOException e)
+        {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Error saving workspace: "+e.getMessage(),
+                    "Error saving workspace",
+                    JOptionPane.ERROR_MESSAGE);
+        }
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
             frame.dispose();
-        
-            try
-            {
-                controller.saveWorkspace();
-            }
-            catch(IOException e)
-            {
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error saving workspace: "+e.getMessage(),
-                        "Error saving workspace",
-                        JOptionPane.ERROR_MESSAGE);
-            }
         }
     }
     
