@@ -4,6 +4,7 @@ import static javax.swing.SwingUtilities.invokeLater;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -55,6 +56,7 @@ class ConnectionWorker
     void submit(
             String sql,
             int fetchsize,
+            JdbcParametersInputController parametersController,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
             Consumer<UpdateCountEvent> updateCountConsumer,
             Consumer<String> log
@@ -62,6 +64,7 @@ class ConnectionWorker
     {
         logger.info(sql);
         var sqlRunnable = new SqlRunnable();
+        sqlRunnable.parametersController = parametersController;
         sqlRunnable.resultConsumer = resultConsumer;
         sqlRunnable.updateCountConsumer = updateCountConsumer;
         sqlRunnable.fetchsize = fetchsize;
@@ -73,6 +76,7 @@ class ConnectionWorker
     
     private class SqlRunnable implements Runnable
     {
+        private JdbcParametersInputController parametersController;
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
         private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
@@ -127,6 +131,8 @@ class ConnectionWorker
                                 .substring(0,text.length()-1);
                     }
                     CallableStatement st = connection.prepareCall(text);
+                    if(parametersController != null)
+                        parametersController.applyToStatement(st);
                     if(st.execute())
                     {
                         reportResult(st);
@@ -136,16 +142,21 @@ class ConnectionWorker
                         reportNullResult();
                         displayUpdateCount(st);
                     }
+                    if(parametersController != null)
+                        parametersController.readFromStatement(st);
                 }
                 else
                 {
-                    Statement st = connection.createStatement(
+                    if(text.endsWith(";")) text =
+                            text.substring(0,text.length()-1);
+                    PreparedStatement st = connection.prepareStatement(
+                            text,
                             ResultSet.TYPE_FORWARD_ONLY,
                             ResultSet.CONCUR_UPDATABLE
                     );
-                    if(text.endsWith(";")) text =
-                            text.substring(0,text.length()-1);
-                    if(st.execute(text))
+                    if(parametersController != null)
+                        parametersController.applyToStatement(st);
+                    if(st.execute())
                     {
                         reportResult(st);
                     }
@@ -154,6 +165,8 @@ class ConnectionWorker
                         reportNullResult();
                         displayUpdateCount(st);
                     }
+                    if(parametersController != null)
+                        parametersController.readFromStatement(st);
                 }
             }
             catch(SQLException e)

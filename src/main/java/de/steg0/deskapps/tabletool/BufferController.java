@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.ALT_MASK;
 import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.lang.Math.max;
 import static javax.swing.KeyStroke.getKeyStroke;
@@ -106,17 +107,20 @@ class BufferController
     JTable resultview;
     JLabel resultMessageLabel;
     BufferConfigSource configSource;
+    JdbcParametersInputController parametersController;
     private PlaceholderInputController placeholderInputController;
     
     Consumer<String> log;
     final BufferUpdateCountConsumer updateCountConsumer;
         
     BufferController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
+            JdbcParametersInputController parametersController,
             Consumer<String> updateLog,BufferConfigSource configSource,
             Listener listener)
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
+        this.parametersController = parametersController;
         this.parent = parent;
         this.configSource = configSource;
         this.listener = listener;
@@ -189,6 +193,7 @@ class BufferController
         var im = editor.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_R,CTRL_MASK),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,ALT_MASK),"JDBC Parameters");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
         im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
@@ -199,6 +204,7 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
         var am = editor.getActionMap();
         am.put("Execute",actions.executeAction);
+        am.put("JDBC Parameters",actions.showJdbcParametersAction);
         am.put("Execute/Split",actions.executeSplitAction);
         am.put("Show Info",actions.showInfoAction);
         am.put("Show Snippets",actions.showSnippetsPopupAction);
@@ -592,8 +598,8 @@ class BufferController
         {
             assert false : e.getMessage();
         }
-        connection.submit(text,fetchsize,resultConsumer,updateCountConsumer,
-                log);
+        connection.submit(text,fetchsize,parametersController,resultConsumer,
+                updateCountConsumer,log);
     }
 
     void closeCurrentResultSet()

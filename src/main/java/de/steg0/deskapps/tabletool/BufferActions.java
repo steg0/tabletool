@@ -41,6 +41,13 @@ class BufferActions
                 b.fetch(true);
             }
         },
+        showJdbcParametersAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                b.parametersController.setVisible(true);
+            }
+        },
         showInfoAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent event)
@@ -71,7 +78,7 @@ class BufferActions
                 String sql = placeholderSupport.quotedReplaceInString(
                     infoTemplate,text);
                 logger.fine("Info using SQL: "+sql);
-                b.connection.submit(sql,maxresults,
+                b.connection.submit(sql,maxresults,b.parametersController,
                         b.infoResultConsumer,b.updateCountConsumer,b.log);
             }
         },
@@ -155,8 +162,8 @@ class BufferActions
                     String sql = placeholderSupport.quotedReplaceInString(
                             completionTemplate,text);
                     logger.fine("Completion using SQL: "+sql);
-                    b.connection.submit(sql,maxresults,resultConsumer,
-                            b.updateCountConsumer,b.log);
+                    b.connection.submit(sql,maxresults,b.parametersController,
+                            resultConsumer,b.updateCountConsumer,b.log);
                 }
                 catch(BadLocationException e)
                 {

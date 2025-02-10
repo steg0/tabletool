@@ -26,6 +26,7 @@ While editing SQL in a notebook, the following keys are supported:
 • Alt+Up, Alt+Down - increase/decrease fetch size.
 • Alt+Left, Alt+Right - select prior/next tab.
 • Ctrl+Alt+Left, Ctrl+Alt+Right - move tab left/right.
+• Alt+Enter - open JDBC parameters window.
 • Ctrl+Enter - submit the query under cursor or (if present) the selected text. 
 • F5, Ctrl+R - like Ctrl+Enter, but reuse the nearest result table.
 • Ctrl+Tab - select the next result table or editor pane.
