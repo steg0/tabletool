@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -85,6 +86,7 @@ implements ComboBoxModel<Connections.ConnectionState>
                             GridBagConstraints.NONE,
                             new Insets(0,5,0,0),5,5));
             var pf = new JPasswordField();
+            pf.setPreferredSize(new Dimension(120,20));
             inputPanel.add(pf,
                     new GridBagConstraints(1,2,1,1,1,0,
                             GridBagConstraints.NORTHWEST,
