@@ -172,8 +172,7 @@ class JdbcParametersInputController implements ActionListener
     void applyToStatement(PreparedStatement stmt)
     throws SQLException
     {
-        initGrid();
-        if(!dialog.isVisible()) return;
+        if(dialog==null) initGrid();
         for(int i=0;i<table.getRowCount();i++)
         {
             boolean in = Boolean.TRUE.equals(table.getModel().getValueAt(i,0));
@@ -205,8 +204,7 @@ class JdbcParametersInputController implements ActionListener
     void readFromStatement(PreparedStatement stmt)
     throws SQLException
     {
-        initGrid();
-        if(!dialog.isVisible()) return;
+        if(dialog==null) initGrid();
         for(int i=0;i<table.getRowCount();i++)
         {
             boolean out = Boolean.TRUE.equals(
