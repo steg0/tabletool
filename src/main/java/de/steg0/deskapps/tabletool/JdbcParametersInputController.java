@@ -186,7 +186,7 @@ class JdbcParametersInputController implements ActionListener
             }
             if(in)
             {
-                Object value = table.getModel().getValueAt(i,1);
+                Object value = table.getModel().getValueAt(i,2);
                 boolean setNull = value == null;
                 if(inNumeric)
                 {        
@@ -210,7 +210,7 @@ class JdbcParametersInputController implements ActionListener
             boolean out = Boolean.TRUE.equals(
                 table.getModel().getValueAt(i,3));
             boolean outNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,3));
+                    table.getModel().getValueAt(i,4));
             if(out && stmt instanceof CallableStatement cstmt)
             {
                 Object value = outNumeric?
