@@ -149,6 +149,7 @@ class JdbcParametersInputController implements ActionListener
     {
         if(dialog==null) initGrid();
         dialog.setVisible(visible);
+        if(visible) table.requestFocusInWindow();
     }
 
     @Override
