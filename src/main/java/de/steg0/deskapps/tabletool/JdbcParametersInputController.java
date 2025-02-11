@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -12,6 +13,7 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -29,7 +31,7 @@ import javax.swing.table.TableCellRenderer;
 class JdbcParametersInputController implements ActionListener
 {
     private static final String[] COLUMN_HEADERS =
-            {"In","In Numeric","In Value","Out","Out Numeric","Out Value"};
+            {"In","Numeric?","In Value","Out","Numeric?","Out Value"};
 
     private JFrame parent;
     private JDialog dialog;
@@ -49,6 +51,9 @@ class JdbcParametersInputController implements ActionListener
                 int column)
         {
             cb.setSelected(Boolean.TRUE.equals(value));
+            cb.setBorderPainted(hasFocus);
+            Color focusColor = closeButton.getForeground();
+            cb.setBorder(BorderFactory.createLineBorder(focusColor));
             return cb;
         }
     };
@@ -56,7 +61,6 @@ class JdbcParametersInputController implements ActionListener
     JdbcParametersInputController(JFrame parent)
     {
         this.parent = parent;
-        initGrid();
     }
 
     private void createTable()
@@ -143,6 +147,7 @@ class JdbcParametersInputController implements ActionListener
 
     void setVisible(boolean visible)
     {
+        if(dialog==null) initGrid();
         dialog.setVisible(visible);
     }
 
