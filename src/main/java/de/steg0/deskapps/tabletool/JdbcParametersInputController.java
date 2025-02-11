@@ -3,7 +3,6 @@ package de.steg0.deskapps.tabletool;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -81,7 +80,7 @@ class JdbcParametersInputController implements ActionListener
         tablepane = new JScrollPane(table);
         f.getContentPane().add(tablepane);
 
-        var buttonPanel = new JPanel(new GridLayout(1,3));
+        var buttonPanel = new JPanel();
 
         addButton = new JButton("Append New");
         addButton.setMnemonic(KeyEvent.VK_A);
