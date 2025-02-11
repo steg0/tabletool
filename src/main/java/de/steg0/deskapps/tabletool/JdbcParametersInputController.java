@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -28,7 +29,7 @@ import javax.swing.table.TableCellRenderer;
 class JdbcParametersInputController implements ActionListener
 {
     private static final String[] COLUMN_HEADERS =
-            {"In","In Value","Out","Out Value"};
+            {"In","In Numeric","In Value","Out","Out Numeric","Out Value"};
 
     private JFrame parent;
     private JDialog dialog;
@@ -58,7 +59,21 @@ class JdbcParametersInputController implements ActionListener
         initGrid();
     }
 
-    void initGrid()
+    private void createTable()
+    {
+        table = new JTable(data,COLUMN_HEADERS);
+        table.getColumnModel().getColumn(0).setCellEditor(cbEditor);
+        table.getColumnModel().getColumn(1).setCellEditor(cbEditor);
+        table.getColumnModel().getColumn(3).setCellEditor(cbEditor);
+        table.getColumnModel().getColumn(4).setCellEditor(cbEditor);
+        table.getColumnModel().getColumn(0).setCellRenderer(cbRenderer);
+        table.getColumnModel().getColumn(1).setCellRenderer(cbRenderer);
+        table.getColumnModel().getColumn(3).setCellRenderer(cbRenderer);
+        table.getColumnModel().getColumn(4).setCellRenderer(cbRenderer);
+        tablepane = new JScrollPane(table);
+    }
+
+    private void initGrid()
     {
         var f = new JDialog(parent,"JDBC Parameters Input",false);
         f.setLocationRelativeTo(parent);
@@ -67,17 +82,13 @@ class JdbcParametersInputController implements ActionListener
 
         var explanation = new JTextArea("Please configure " +
                 "JDBC parameters to set in the query.\n" +
+                "Either varchar or number values are supported.\n" +
                 "Use Enter to accept a value in a cell.");
         explanation.setEditable(false);
         f.getContentPane().add(explanation,BorderLayout.NORTH);
         
-        data = new Object[10][4];
-        table = new JTable(data,COLUMN_HEADERS);
-        table.getColumnModel().getColumn(0).setCellEditor(cbEditor);
-        table.getColumnModel().getColumn(2).setCellEditor(cbEditor);
-        table.getColumnModel().getColumn(0).setCellRenderer(cbRenderer);
-        table.getColumnModel().getColumn(2).setCellRenderer(cbRenderer);
-        tablepane = new JScrollPane(table);
+        data = new Object[9][6];
+        createTable();
         f.getContentPane().add(tablepane);
 
         var buttonPanel = new JPanel();
@@ -109,16 +120,11 @@ class JdbcParametersInputController implements ActionListener
 
     void add()
     {
-        Object[][] newData = new Object[data.length+1][4];
+        Object[][] newData = new Object[data.length+1][6];
         System.arraycopy(data,0,newData,0,data.length);
         data = newData;
         dialog.getContentPane().remove(tablepane);
-        table = new JTable(data,COLUMN_HEADERS);
-        table.getColumnModel().getColumn(0).setCellEditor(cbEditor);
-        table.getColumnModel().getColumn(2).setCellEditor(cbEditor);
-        table.getColumnModel().getColumn(0).setCellRenderer(cbRenderer);
-        table.getColumnModel().getColumn(2).setCellRenderer(cbRenderer);
-        tablepane = new JScrollPane(table);
+        createTable();
         dialog.getContentPane().add(tablepane);
         dialog.revalidate();
     }
@@ -126,16 +132,11 @@ class JdbcParametersInputController implements ActionListener
     void remove()
     {
         if(data.length==0) return;
-        Object[][] newData = new Object[data.length-1][4];
+        Object[][] newData = new Object[data.length-1][6];
         System.arraycopy(data,0,newData,0,newData.length);
         data = newData;
         dialog.getContentPane().remove(tablepane);
-        table = new JTable(data,COLUMN_HEADERS);
-        table.getColumnModel().getColumn(0).setCellEditor(cbEditor);
-        table.getColumnModel().getColumn(2).setCellEditor(cbEditor);
-        table.getColumnModel().getColumn(0).setCellRenderer(cbRenderer);
-        table.getColumnModel().getColumn(2).setCellRenderer(cbRenderer);
-        tablepane = new JScrollPane(table);
+        createTable();
         dialog.getContentPane().add(tablepane);
         dialog.revalidate();        
     }
@@ -169,15 +170,27 @@ class JdbcParametersInputController implements ActionListener
         for(int i=0;i<table.getRowCount();i++)
         {
             boolean in = Boolean.TRUE.equals(table.getModel().getValueAt(i,0));
+            boolean inNumeric = Boolean.TRUE.equals(
+                    table.getModel().getValueAt(i,1));
             boolean out = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,2));
+                    table.getModel().getValueAt(i,3));
             if(out && stmt instanceof CallableStatement cstmt)
             {
                 cstmt.registerOutParameter(i+1,JDBCType.OTHER);
             }
             if(in)
             {
-                stmt.setObject(i+1,table.getModel().getValueAt(i,1));
+                Object value = table.getModel().getValueAt(i,1);
+                boolean setNull = value == null;
+                if(inNumeric)
+                {        
+                    stmt.setBigDecimal(i+1,setNull?null:new BigDecimal(
+                            value.toString()));
+                }
+                else
+                {
+                    stmt.setString(i+1,setNull?null:value.toString());
+                }
             }
         }
     }
@@ -189,10 +202,15 @@ class JdbcParametersInputController implements ActionListener
         for(int i=0;i<table.getRowCount();i++)
         {
             boolean out = Boolean.TRUE.equals(
-                table.getModel().getValueAt(i,2));
+                table.getModel().getValueAt(i,3));
+            boolean outNumeric = Boolean.TRUE.equals(
+                    table.getModel().getValueAt(i,3));
             if(out && stmt instanceof CallableStatement cstmt)
             {
-                table.getModel().setValueAt(cstmt.getObject(i+1),i,3);
+                Object value = outNumeric?
+                        cstmt.getBigDecimal(i+1) : cstmt.getString(i+1);
+                table.getModel().setValueAt(
+                        value==null?null:value.toString(),i,5);
             }
         }
     }
