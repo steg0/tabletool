@@ -180,9 +180,18 @@ class JdbcParametersInputController implements ActionListener
                     table.getModel().getValueAt(i,1));
             boolean out = Boolean.TRUE.equals(
                     table.getModel().getValueAt(i,3));
-            if(out && stmt instanceof CallableStatement cstmt)
+            boolean outNumeric = Boolean.TRUE.equals(
+                    table.getModel().getValueAt(i,4));
+                if(out && stmt instanceof CallableStatement cstmt)
             {
-                cstmt.registerOutParameter(i+1,JDBCType.OTHER);
+                if(outNumeric)
+                {
+                    cstmt.registerOutParameter(i+1,JDBCType.DECIMAL);
+                }
+                else
+                {
+                    cstmt.registerOutParameter(i+1,JDBCType.VARCHAR);
+                }
             }
             if(in)
             {
