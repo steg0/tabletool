@@ -72,7 +72,7 @@ class JdbcParametersInputController implements ActionListener
         explanation.setEditable(false);
         f.getContentPane().add(explanation,BorderLayout.NORTH);
         
-        data = new Object[5][4];
+        data = new Object[10][4];
         table = new JTable(data,COLUMN_HEADERS);
         table.getColumnModel().getColumn(0).setCellEditor(cbEditor);
         table.getColumnModel().getColumn(2).setCellEditor(cbEditor);
