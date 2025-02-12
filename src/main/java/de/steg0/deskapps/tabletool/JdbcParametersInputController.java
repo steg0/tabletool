@@ -182,17 +182,6 @@ class JdbcParametersInputController implements ActionListener
                     table.getModel().getValueAt(i,3));
             boolean outNumeric = Boolean.TRUE.equals(
                     table.getModel().getValueAt(i,4));
-                if(out && stmt instanceof CallableStatement cstmt)
-            {
-                if(outNumeric)
-                {
-                    cstmt.registerOutParameter(i+1,JDBCType.DECIMAL);
-                }
-                else
-                {
-                    cstmt.registerOutParameter(i+1,JDBCType.VARCHAR);
-                }
-            }
             if(in)
             {
                 Object value = table.getModel().getValueAt(i,2);
@@ -205,6 +194,17 @@ class JdbcParametersInputController implements ActionListener
                 else
                 {
                     stmt.setString(i+1,setNull?null:value.toString());
+                }
+            }
+            if(out && stmt instanceof CallableStatement cstmt)
+            {
+                if(outNumeric)
+                {
+                    cstmt.registerOutParameter(i+1,JDBCType.DECIMAL);
+                }
+                else
+                {
+                    cstmt.registerOutParameter(i+1,JDBCType.VARCHAR);
                 }
             }
         }

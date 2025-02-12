@@ -130,10 +130,18 @@ class ConnectionWorker
                         if(!noSemicolon.trim().endsWith("end")) text = text
                                 .substring(0,text.length()-1);
                     }
+
                     CallableStatement st = connection.prepareCall(text);
+
                     if(parametersController != null)
                         parametersController.applyToStatement(st);
-                    if(st.execute())
+
+                    boolean update = st.execute();
+
+                    if(parametersController != null)
+                        parametersController.readFromStatement(st);
+
+                    if(update)
                     {
                         reportResult(st);
                     }
@@ -142,8 +150,6 @@ class ConnectionWorker
                         reportNullResult();
                         displayUpdateCount(st);
                     }
-                    if(parametersController != null)
-                        parametersController.readFromStatement(st);
                 }
                 else
                 {
@@ -154,9 +160,16 @@ class ConnectionWorker
                             ResultSet.TYPE_FORWARD_ONLY,
                             ResultSet.CONCUR_UPDATABLE
                     );
+
                     if(parametersController != null)
                         parametersController.applyToStatement(st);
-                    if(st.execute())
+
+                    boolean update = st.execute();
+
+                    if(parametersController != null)
+                        parametersController.readFromStatement(st);
+
+                    if(update)
                     {
                         reportResult(st);
                     }
@@ -165,8 +178,6 @@ class ConnectionWorker
                         reportNullResult();
                         displayUpdateCount(st);
                     }
-                    if(parametersController != null)
-                        parametersController.readFromStatement(st);
                 }
             }
             catch(SQLException e)
