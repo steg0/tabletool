@@ -127,6 +127,11 @@ class Connections
         }
     }
 
+    boolean isConnected(ConnectionState connection)
+    {
+        return workers[connection.connectionIndex] != null;
+    }
+
     int getSize()
     {
         return connectionInfo.length;

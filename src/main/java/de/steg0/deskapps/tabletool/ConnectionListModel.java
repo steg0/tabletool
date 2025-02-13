@@ -64,7 +64,8 @@ implements ComboBoxModel<Connections.ConnectionState>
     {
         ConnectionInfo info = connection.info();
         String oldPassword = info.password;
-        if("PROMPT".equals(info.password))
+        if("PROMPT".equals(info.password) &&
+           !connections.isConnected(connection))
         {
             info.password = null;
             
