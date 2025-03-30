@@ -235,6 +235,7 @@ class PropertyHolder
         final Map<String,String> snippetTemplates;
         final Color background;
         final boolean confirmations;
+        final boolean updatableResultSets;
         
         ConnectionInfo(String nameKey)
         {
@@ -282,6 +283,10 @@ class PropertyHolder
             confirmations = properties.containsKey(prefix+".confirmations")?
                     Boolean.valueOf(String.valueOf(properties.get(
                             prefix+".confirmations"))) : false;
+            updatableResultSets = properties.containsKey(prefix+
+                    ".updatableResultSets")? Boolean.valueOf(String.valueOf(
+                            properties.get(prefix+".updatableResultSets"))) :
+                            true;
         }
     
         public boolean equals(Object o)

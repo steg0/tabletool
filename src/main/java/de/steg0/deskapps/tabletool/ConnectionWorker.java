@@ -155,11 +155,15 @@ class ConnectionWorker
                 {
                     if(text.endsWith(";")) text =
                             text.substring(0,text.length()-1);
-                    PreparedStatement st = connection.prepareStatement(
-                            text,
-                            ResultSet.TYPE_FORWARD_ONLY,
-                            ResultSet.CONCUR_UPDATABLE
-                    );
+                    PreparedStatement st = info.updatableResultSets?
+                            connection.prepareStatement(
+                                    text,
+                                    ResultSet.TYPE_FORWARD_ONLY,
+                                    ResultSet.CONCUR_UPDATABLE
+                            ) :
+                            connection.prepareStatement(
+                                    text
+                            );
 
                     if(parametersController != null)
                         parametersController.applyToStatement(st);
