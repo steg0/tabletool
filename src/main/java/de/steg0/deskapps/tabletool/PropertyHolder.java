@@ -246,7 +246,8 @@ class PropertyHolder
             username=String.valueOf(properties.get(prefix+".username"));
             password=String.valueOf(properties.get(prefix+".password"));
 
-            String driverSpec = url.replaceFirst("^jdbc\\:([a-z]+)\\:.*$","$1");
+            String driverSpec = url.replaceFirst("^jdbc\\:([a-z0-9]+)\\:.*$",
+                    "$1");
             logger.fine("Looking up templates for driver "+driverSpec);
 
             completionTemplate = properties.containsKey(
