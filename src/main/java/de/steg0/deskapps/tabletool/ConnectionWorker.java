@@ -4,6 +4,7 @@ import static javax.swing.SwingUtilities.invokeLater;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -44,17 +45,18 @@ class ConnectionWorker
     
     /**
      * @param resultConsumer where a Statement will be pushed to right after
-     * <code>execute()</code> on the Swing event thread, if execute() returned
-     * <code>true</code> 
-     * @param resultConsumer where an update count will be pushed to right after
-     * <code>execute()</code> on the Swing event thread, if execute() returned
-     * <code>false</code> 
+     * <code>execute()</code> on the Swing event thread, if
+     * <code>execute()</code> returned <code>true</code> 
+     * @param resultConsumer where an update count will be pushed to right
+     * after <code>execute()</code> on the Swing event thread, if
+     * <code>execute()</code> returned <code>false</code> 
      * @param log where log messages will be pushed to as far as available. This
      * is not necessarily called from the event thread.
      */
     void submit(
             String sql,
             int fetchsize,
+            JdbcParametersInputController parametersController,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
             Consumer<UpdateCountEvent> updateCountConsumer,
             Consumer<String> log
@@ -62,6 +64,7 @@ class ConnectionWorker
     {
         logger.info(sql);
         var sqlRunnable = new SqlRunnable();
+        sqlRunnable.parametersController = parametersController;
         sqlRunnable.resultConsumer = resultConsumer;
         sqlRunnable.updateCountConsumer = updateCountConsumer;
         sqlRunnable.fetchsize = fetchsize;
@@ -73,6 +76,7 @@ class ConnectionWorker
     
     private class SqlRunnable implements Runnable
     {
+        private JdbcParametersInputController parametersController;
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
         private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
@@ -126,8 +130,18 @@ class ConnectionWorker
                         if(!noSemicolon.trim().endsWith("end")) text = text
                                 .substring(0,text.length()-1);
                     }
+
                     CallableStatement st = connection.prepareCall(text);
-                    if(st.execute())
+
+                    if(parametersController != null)
+                        parametersController.applyToStatement(st);
+
+                    boolean update = st.execute();
+
+                    if(parametersController != null)
+                        parametersController.readFromStatement(st);
+
+                    if(update)
                     {
                         reportResult(st);
                     }
@@ -139,13 +153,27 @@ class ConnectionWorker
                 }
                 else
                 {
-                    Statement st = connection.createStatement(
-                            ResultSet.TYPE_FORWARD_ONLY,
-                            ResultSet.CONCUR_UPDATABLE
-                    );
                     if(text.endsWith(";")) text =
                             text.substring(0,text.length()-1);
-                    if(st.execute(text))
+                    PreparedStatement st = info.updatableResultSets?
+                            connection.prepareStatement(
+                                    text,
+                                    ResultSet.TYPE_FORWARD_ONLY,
+                                    ResultSet.CONCUR_UPDATABLE
+                            ) :
+                            connection.prepareStatement(
+                                    text
+                            );
+
+                    if(parametersController != null)
+                        parametersController.applyToStatement(st);
+
+                    boolean update = st.execute();
+
+                    if(parametersController != null)
+                        parametersController.readFromStatement(st);
+
+                    if(update)
                     {
                         reportResult(st);
                     }

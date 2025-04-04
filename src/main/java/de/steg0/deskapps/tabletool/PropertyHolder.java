@@ -235,6 +235,7 @@ class PropertyHolder
         final Map<String,String> snippetTemplates;
         final Color background;
         final boolean confirmations;
+        final boolean updatableResultSets;
         
         ConnectionInfo(String nameKey)
         {
@@ -245,7 +246,8 @@ class PropertyHolder
             username=String.valueOf(properties.get(prefix+".username"));
             password=String.valueOf(properties.get(prefix+".password"));
 
-            String driverSpec = url.replaceFirst("^jdbc\\:([a-z]+)\\:.*$","$1");
+            String driverSpec = url.replaceFirst("^jdbc\\:([a-z0-9]+)\\:.*$",
+                    "$1");
             logger.fine("Looking up templates for driver "+driverSpec);
 
             completionTemplate = properties.containsKey(
@@ -282,6 +284,10 @@ class PropertyHolder
             confirmations = properties.containsKey(prefix+".confirmations")?
                     Boolean.valueOf(String.valueOf(properties.get(
                             prefix+".confirmations"))) : false;
+            updatableResultSets = properties.containsKey(prefix+
+                    ".updatableResultSets")? Boolean.valueOf(String.valueOf(
+                            properties.get(prefix+".updatableResultSets"))) :
+                            true;
         }
     
         public boolean equals(Object o)

@@ -80,10 +80,18 @@
     <entry key="connections.derby.bg">#f0f0d7</entry>
     <!--
         confirmations means that the tool gives a note when an operation
-        has come back with an update count.
+        has come back with an update count. Default is false.
     -->
     <!--
     <entry key="connections.derby.confirmations">true</entry>
+    -->
+    <!--
+        updatableResultSets means that the tool uses ResultSet.TYPE_FORWARD_ONLY
+        in conjunction with ResultSet.CONCUR_UPDATABLE for statements.
+        Otherwise the flags aren't specified. Default is true.
+    -->
+    <!--
+    <entry key="connections.derby.updatableResultSets">true</entry>
     -->
 
     <!--

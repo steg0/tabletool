@@ -111,7 +111,7 @@ class Connections
             );
             if(connectionInfo[i].initSql != null)
             {
-                workers[i].submit(connectionInfo[i].initSql,0,
+                workers[i].submit(connectionInfo[i].initSql,0,null,
                         (r,c) -> {},e -> {},log);
             }
         }
@@ -125,6 +125,11 @@ class Connections
             if(workers[i] != connection) continue;
             workers[i] = null;
         }
+    }
+
+    boolean isConnected(ConnectionState connection)
+    {
+        return workers[connection.connectionIndex] != null;
     }
 
     int getSize()

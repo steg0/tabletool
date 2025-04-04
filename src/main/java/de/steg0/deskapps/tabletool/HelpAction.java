@@ -17,7 +17,7 @@ import javax.swing.border.EmptyBorder;
 
 class HelpAction extends AbstractAction
 {
-    JFrame parent;
+    private JFrame parent;
     
     HelpAction(JFrame parent)
     {

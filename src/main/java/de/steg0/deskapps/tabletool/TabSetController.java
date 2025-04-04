@@ -53,6 +53,7 @@ implements KeyListener
     private Logger logger = Logger.getLogger("tabtype");
 
     private final JFrame parent,cellDisplay,infoDisplay;
+    private final JdbcParametersInputController parametersController;
     private final PropertyHolder propertyHolder;
     
     private Connections connections;
@@ -65,11 +66,13 @@ implements KeyListener
     private File workspaceFile;
     
     TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
+            JdbcParametersInputController parametersController,
             PropertyHolder propertyHolder,File workspaceFile)
     {
         this.parent = parent;
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
+        this.parametersController = parametersController;
         this.propertyHolder = propertyHolder;
         this.workspaceFile = workspaceFile;
         menubar = new TabSetMenuBar(parent,this,propertyHolder);
@@ -568,6 +571,7 @@ implements KeyListener
                 parent,
                 cellDisplay,
                 infoDisplay,
+                parametersController,
                 propertyHolder,
                 connections,
                 getPwd(),

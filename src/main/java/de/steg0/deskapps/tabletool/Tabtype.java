@@ -33,6 +33,7 @@ extends WindowAdapter
 {
 
     private JFrame frame,cellDisplay=new JFrame(),infoDisplay=new JFrame();
+    private JdbcParametersInputController parametersController;
     private File properties[],workspace,sqlFiles[];
     private TabSetController controller;
     
@@ -69,6 +70,8 @@ extends WindowAdapter
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
         
+        parametersController = new JdbcParametersInputController(frame);
+
         var propertyHolder = new PropertyHolder(properties);
 
         controller = ensureFrameConfiguration(propertyHolder);
@@ -127,7 +130,7 @@ extends WindowAdapter
             UIManager.getDefaults().putDefaults(propertyHolder
                     .getGradientUIDefaults());
             return new TabSetController(frame,cellDisplay,infoDisplay,
-                    propertyHolder,workspace);
+                    parametersController,propertyHolder,workspace);
         }
         catch(Exception e)
         {
@@ -163,23 +166,22 @@ extends WindowAdapter
     @Override
     public void windowClosing(WindowEvent event)
     {
+        try
+        {
+            controller.saveWorkspace();
+        }
+        catch(IOException e)
+        {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Error saving workspace: "+e.getMessage(),
+                    "Error saving workspace",
+                    JOptionPane.ERROR_MESSAGE);
+        }
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
             frame.dispose();
-        
-            try
-            {
-                controller.saveWorkspace();
-            }
-            catch(IOException e)
-            {
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error saving workspace: "+e.getMessage(),
-                        "Error saving workspace",
-                        JOptionPane.ERROR_MESSAGE);
-            }
         }
     }
     

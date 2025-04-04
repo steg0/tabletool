@@ -3,7 +3,7 @@
   <groupId>de.steg0.deskapps.tabletool</groupId>
   <artifactId>tabtype</artifactId>
   <packaging>jar</packaging>
-  <version>0.55-SNAPSHOT</version>
+  <version>0.56-SNAPSHOT</version>
   <name>tabtype</name>
   <url>http://www.steg0.eu</url>
 
@@ -128,6 +128,8 @@
           <arguments>
             <argument>-config</argument>
             <argument>src/main/resources/sample.properties.xml</argument>
+            <argument>-config</argument>
+            <argument>local.properties</argument>
             <argument>-logconfig</argument>
             <argument>test.logging.properties</argument>
             <argument>test.tabtype</argument>

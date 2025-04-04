@@ -1,6 +1,10 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.function.Consumer;
@@ -11,6 +15,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.KeyStroke;
 import javax.swing.event.EventListenerList;
@@ -59,24 +64,49 @@ implements ComboBoxModel<Connections.ConnectionState>
     {
         ConnectionInfo info = connection.info();
         String oldPassword = info.password;
-        if("PROMPT".equals(info.password))
+        if("PROMPT".equals(info.password) &&
+           !connections.isConnected(connection))
         {
             info.password = null;
+            
+            var dialog = new JDialog(parent,"Credentials prompt",true);
+            var inputPanel = new JPanel(new GridBagLayout());
+            inputPanel.add(new JLabel("Connection: "+info.name),
+                    new GridBagConstraints(0,0,2,1,0,0,
+                            GridBagConstraints.NORTHWEST,
+                            GridBagConstraints.NONE,
+                            new Insets(0,5,0,5),5,5));
+            inputPanel.add(new JLabel("User: "+info.username),
+                    new GridBagConstraints(0,1,2,1,0,0,
+                            GridBagConstraints.NORTHWEST,
+                            GridBagConstraints.NONE,
+                            new Insets(0,5,0,5),5,5));
+            inputPanel.add(new JLabel("Password:"),
+                    new GridBagConstraints(0,2,1,1,0,0,
+                            GridBagConstraints.NORTHWEST,
+                            GridBagConstraints.NONE,
+                            new Insets(0,5,0,0),5,5));
             var pf = new JPasswordField();
-            var dialog = new JDialog(parent,"Enter password",true);
-            dialog.getContentPane().add(new JLabel(
-                    "Password for "+info.name+":"),BorderLayout.NORTH);
-            dialog.getContentPane().add(pf,BorderLayout.CENTER);
-            var okButton = new JButton("OK");
+            pf.setPreferredSize(new Dimension(120,20));
+            inputPanel.add(pf,
+                    new GridBagConstraints(1,2,1,1,1,0,
+                            GridBagConstraints.NORTHWEST,
+                            GridBagConstraints.HORIZONTAL,
+                            new Insets(0,0,0,5),5,5));
+            dialog.getContentPane().add(inputPanel);
+
             dialog.setLocationRelativeTo(parent);
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             ((BorderLayout)dialog.getContentPane().getLayout()).setVgap(5);
+            
+            var okButton = new JButton("OK");
             okButton.addActionListener(e ->
             {
                 info.password=new String(pf.getPassword());
                 dialog.dispose();
             });
             dialog.getContentPane().add(okButton,BorderLayout.SOUTH);
+
             dialog.getRootPane().setDefaultButton(okButton);
             dialog.getRootPane().registerKeyboardAction(
                     evt -> dialog.dispose(),

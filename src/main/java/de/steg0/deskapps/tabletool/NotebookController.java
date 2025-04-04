@@ -75,6 +75,7 @@ class NotebookController
     Logger logger = Logger.getLogger("tabtype");
     
     private final JFrame parent,cellDisplay,infoDisplay;
+    private final JdbcParametersInputController parametersController;
     private final PropertyHolder propertyHolder;
     private final BufferConfigSource bufferConfigSource;
     
@@ -142,6 +143,7 @@ class NotebookController
             JFrame parent,
             JFrame cellDisplay,
             JFrame infoDisplay,
+            JdbcParametersInputController parametersController,
             PropertyHolder propertyHolder,
             Connections connections,
             File pwd,
@@ -150,6 +152,7 @@ class NotebookController
         this.parent = parent;
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
+        this.parametersController = parametersController;
         this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         this.listener = listener;
@@ -241,8 +244,9 @@ class NotebookController
 
     private BufferController newBufferController()
     {
-        return new BufferController(parent,cellDisplay,infoDisplay,logConsumer,
-                bufferConfigSource,bufferListener);
+        return new BufferController(parent,cellDisplay,infoDisplay,
+                parametersController,logConsumer,bufferConfigSource,
+                bufferListener);
     }
 
     private void setBranding(Color bg,String label)
