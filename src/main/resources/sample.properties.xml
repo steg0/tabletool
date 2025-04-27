@@ -272,4 +272,34 @@
         from v$sqlarea a join v$session s using(sql_id) join v$sort_usage u on u.session_addr=s.saddr
         where s.username=&amp;param order by a.last_load_time desc
     </entry>
+
+    <entry key="drivers.postgresql.infoTemplate">
+        select
+            table_catalog,
+            table_schema,
+            table_name,
+            column_name,
+            ordinal_position,
+            column_default,
+            is_nullable,
+            data_type,
+            character_maximum_length,
+            character_octet_length,
+            numeric_precision,
+            numeric_precision_radix,
+            numeric_scale
+        from information_schema.columns
+        where lower(table_name) = lower(&amp;param)
+    </entry>
+    <entry key="drivers.postgresql.completionTemplate">
+        select tablename
+        from pg_tables
+        where schemaname not in('information_schema','pg_catalog')
+        and tablename ilike &amp;param || '%'
+        union
+        select column_name
+        from information_schema.columns
+        where table_schema not in('information_schema','pg_catalog')
+        and column_name ilike &amp;param || '%'
+    </entry>
 </properties>
