@@ -139,6 +139,10 @@
               <key>swing.plaf.metal.controlFont</key>
               <value>Segoe UI</value>
             </property>
+            <property>
+              <key>derby.system.home</key>
+              <value>${user.home}</value>
+            </property>
           </systemProperties>
         </configuration>
       </plugin>
