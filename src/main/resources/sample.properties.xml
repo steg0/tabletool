@@ -275,6 +275,59 @@
         where s.username=&amp;param order by a.last_load_time desc
     </entry>
 
+    <entry key="drivers.as400.infoTemplate">
+        select
+            table_schema,
+            table_name,
+            c.ordinal_position,
+            column_name,
+            column_heading,
+            data_type,
+            length,
+            numeric_scale,
+            numeric_precision,
+            numeric_precision_radix,
+            character_maximum_length,
+            character_octet_length,
+            storage,
+            datetime_precision,
+            is_nullable,
+            is_updatable,
+            has_default,
+            column_default,
+            user_defined_type_schema,
+            user_defined_type_name,
+            is_identity,
+            identity_generation,
+            identity_start,
+            identity_increment,
+            identity_minimum,
+            identity_maximum,
+            identity_cycle,
+            identity_cache,
+            identity_order,
+            column_expression,
+            hidden,
+            has_fldproc
+        from qsys2.syscolumns c
+        join qsys2.library_list_info i
+            on i.schema_name=c.table_schema
+        where lower(table_name) like lower(&amp;param || '%')
+    </entry>
+    <entry key="drivers.as400.completionTemplate">
+        select table_name
+        from qsys2.systables t
+        join qsys2.library_list_info i
+            on i.schema_name=t.table_schema
+        where lower(table_name) like lower(&amp;param || '%')
+        union
+        select column_name
+        from qsys2.syscolumns c
+        join qsys2.library_list_info i
+            on i.schema_name=c.table_schema
+        where lower(column_name) like lower(&amp;param || '%')
+    </entry>
+
     <entry key="drivers.postgresql.infoTemplate">
         select
             table_catalog,
