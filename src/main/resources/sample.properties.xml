@@ -24,10 +24,8 @@
     -->
     <entry key="tab.placement">1</entry>
 
-    <entry key="editor.font">Luxi Mono</entry>
-    <!--
-    <entry key="editor.fontsize">12</entry>
-    -->
+    <entry key="editor.font">Go Mono</entry>
+    <entry key="editor.fontsize">13</entry>
     <!--
     <entry key="editor.tabsize">4</entry>
     -->
@@ -170,8 +168,64 @@
     ]]></entry>
 
     <!--
-        Example SQLs for Oracle
+        Example SQLs
     -->
+
+    <entry key="drivers.derby.infoTemplate">
+        select
+            t.tablename,
+            c.columnname,
+            c.columnnumber,
+            c.columndatatype,
+            c.columndefault,
+            c.columndefaultid,
+            c.autoincrementvalue,
+            c.autoincrementstart,
+            c.autoincrementinc,
+            c.autoincrementcycle
+        from sys.syscolumns c
+        join sys.systables t
+            on c.referenceid=t.tableid
+        where lower(t.tablename)=lower(&amp;param)
+    </entry>
+    <entry key="drivers.derby.completionTemplate">
+        select tablename
+        from sys.systables
+        where lower(tablename) like lower(&amp;param || '%')
+        union
+        select columnname
+        from sys.syscolumns
+        where lower(columnname) like lower(&amp;param || '%')
+    </entry>
+
+    <entry key="drivers.sqlserver.infoTemplate">
+        select
+            table_catalog,
+            table_schema,
+            table_name,
+            column_name,
+            ordinal_position,
+            column_default,
+            is_nullable,
+            data_type,
+            character_maximum_length,
+            character_octet_length,
+            numeric_precision,
+            numeric_precision_radix,
+            numeric_scale
+        from information_schema.columns
+        where lower(table_name) = lower(&amp;param)
+    </entry>
+    <entry key="drivers.sqlserver.completionTemplate">
+        select tablename
+        from sys.tables
+        where lower(tablename) like lower(&amp;param || '%')
+        union
+        select column_name
+        from information_schema.columns
+        where table_schema not in('information_schema','pg_catalog')
+        and lower(column_name) like lower(&amp;param || '%')
+    </entry>
 
     <entry key="drivers.oracle.infoTemplate">
         select
@@ -196,69 +250,15 @@
             on co.table_name=t.table_name
             and co.column_name=t.column_name
         where t.table_name=upper(&amp;param)
-        order by t.table_name,column_id
     </entry>
     <entry key="drivers.oracle.completionTemplate">
-        select to_clob(table_name) completion from user_tables
+        select table_name
+        from user_tables
         where instr(table_name,upper(&amp;param)) = 1
-        union all
-        select to_clob(column_name) from user_tab_cols
+        union
+        select column_name
+        from user_tab_cols
         where instr(column_name,upper(&amp;param)) = 1
-        union all
-        select
-            'insert into '||table_name||'('||
-            rtrim(xmlcast(xmlagg(xmlelement(e,
-            case when nullable='Y' then chr(10)||'--'||column_name else chr(10)||column_name end
-            ,',').extract('//text()') ) as clob),',')
-            ||chr(10)||')values('||
-            rtrim(xmlcast(xmlagg(xmlelement(e,
-            case
-            when nullable='Y' then chr(10)||'--'''' /*'||column_name||'*/'
-            else chr(10)||''''' /*'||column_name||'*/'
-            end
-            ,',').extract('//text()') ) as clob),',')
-            ||chr(10)||');'
-        from user_tab_cols
-        where instr('INSERT INTO '||table_name,upper(&amp;param)) = 1
-        group by table_name
-        union all
-        select
-            'update '||table_name||' set '||
-            rtrim(xmlcast(xmlagg(xmlelement(e,
-            case
-            when nullable='Y' then chr(10)||'--'||column_name||'='''''
-            else chr(10)||column_name||'='''''
-            end
-            ,',').extract('//text()') ) as clob),',')
-            ||chr(10)||';'
-        from user_tab_cols
-        where instr('UPDATE '||table_name,upper(&amp;param)) = 1
-        group by table_name
-        union all
-        select
-            'select '||
-            rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||column_name,',').extract('//text()') ) as clob),',')
-            ||chr(10)||'from '||table_name||';'
-        from user_tab_cols
-        where instr('SELECT * FROM '||table_name,upper(&amp;param)) = 1
-        group by table_name
-        union all
-        select
-            'merge into '||table_name||' t using(select '||
-            rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||''''' '||column_name,',').extract('//text()') ) as clob),',')
-            ||chr(10)||'from dual) s on('||
-            rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||'s.'||column_name||'=t.'||column_name,' and ').extract('//text()') ) as clob),' and ')
-            ||chr(10)||') when matched then update set '||
-            rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||'t.'||column_name||'=s.'||column_name,',').extract('//text()') ) as clob),',')
-            ||chr(10)||'when not matched then insert('||
-            rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||column_name,',').extract('//text()') ) as clob),',')
-            ||chr(10)||')values('||
-            rtrim(xmlcast(xmlagg(xmlelement(e,chr(10)||'s.'||column_name,',').extract('//text()') ) as clob),',')
-            ||chr(10)||');'
-        from user_tab_cols
-        where instr('MERGE INTO '||table_name,upper(&amp;param)) = 1
-        group by table_name
-        fetch first 16 rows only
     </entry>
     <entry key="drivers.oracle.snippets.xmlserialize">
         xmlserialize(document xmltype(&amp;param) indent size=2)
