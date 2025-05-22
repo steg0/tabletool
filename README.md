@@ -19,7 +19,6 @@ The tool builds as modular JAR and can be started up without arguments. However,
 An example command line is:
 
   java -XX:+UseSerialGC \
-    -Dfile.encoding=Cp1252 \
     -Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel \
     -p $HOME/.m2/repository/com/oracle/ojdbc7/12.1.0.1/ojdbc7-12.1.0.1.jar \
     -jar tabtype.jar \

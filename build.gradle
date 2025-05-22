@@ -1,0 +1,70 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    runtimeOnly libs.com.microsoft.sqlserver.mssql.jdbc
+    runtimeOnly libs.org.apache.derby.derby
+    runtimeOnly libs.org.postgresql.postgresql
+    runtimeOnly libs.com.oracle.database.jdbc.ojdbc11
+    runtimeOnly libs.com.oracle.database.xml.xdb
+    runtimeOnly libs.com.oracle.database.security.oraclepki
+    runtimeOnly libs.com.oracle.database.security.osdt.core
+    runtimeOnly libs.com.oracle.database.security.osdt.cert
+    runtimeOnly libs.com.ibm.db2.jcc
+    testImplementation libs.junit.junit
+}
+
+version = '0.57-SNAPSHOT'
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+    options.compilerArgs << '-Xlint'
+    options.compilerArgs << '-Xlint:-serial'
+    options.compilerArgs << '-Xlint:-fallthrough'
+    options.compilerArgs << '-Xlint:-module'
+    options.compilerArgs << '-Xlint:-missing-explicit-ctor'
+    options.compilerArgs << '-Xlint:-options'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaExec) {
+    args '-config'
+    args 'src/main/resources/sample.properties.xml'
+    args '-config'
+    args 'local.properties'
+    args '-logconfig'
+    args 'test.logging.properties'
+    args 'test.tabtype'
+}
+
+tasks.withType(Jar) {
+    manifest {
+        attributes(
+            'Main-Class': application.mainClass,
+            'Implementation-Version': version
+        )
+    }
+    archiveFileName = "tabtype.jar"
+}
+
+application {
+    mainModule = 'de.steg0.deskapps.tabletool'
+    mainClass = 'de.steg0.deskapps.tabletool.Tabtype'
+    applicationDefaultJvmArgs = [
+        "-XX:+UseSerialGC",
+        "-Dswing.plaf.metal.controlFont=Segoe UI",
+        "-Dderby.system.home=${System.properties['user.home']}"
+    ]
+}
