@@ -3,12 +3,12 @@
   <groupId>de.steg0.deskapps.tabletool</groupId>
   <artifactId>tabtype</artifactId>
   <packaging>jar</packaging>
-  <version>0.56-SNAPSHOT</version>
+  <version>0.57-SNAPSHOT</version>
   <name>tabtype</name>
   <url>http://www.steg0.eu</url>
 
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.release>21</maven.compiler.release>
     <maven.compiler.showWarnings>true</maven.compiler.showWarnings>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -138,6 +138,10 @@
             <property>
               <key>swing.plaf.metal.controlFont</key>
               <value>Segoe UI</value>
+            </property>
+            <property>
+              <key>derby.system.home</key>
+              <value>${user.home}</value>
             </property>
           </systemProperties>
         </configuration>
