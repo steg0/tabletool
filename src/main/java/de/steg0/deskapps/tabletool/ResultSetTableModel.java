@@ -20,9 +20,9 @@ class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
     private static final MessageFormat FETCH_INFO_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {2} at {1}\n");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {2} at {1}");
     private static final MessageFormat FETCH_ALL_INFO_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {2} at {1}\n");
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {2} at {1}");
 
     private Statement st;
     ResultSet rs;
@@ -62,8 +62,8 @@ implements TableModel,AutoCloseable
         this.rs = st.getResultSet();
         this.fetchsize = fetchsize;
         this.connectionDescription = connectionDescription;
-        this.inlog = inlog;
-        this.outlog = outlog;
+        this.inlog = inlog == null? "" : inlog;
+        this.outlog = outlog == null? "" : outlog;
         fill();
     }
     

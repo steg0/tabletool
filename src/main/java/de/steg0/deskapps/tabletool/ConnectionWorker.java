@@ -107,7 +107,7 @@ class ConnectionWorker
                     {
                         report(log,"Query accepted at "+new Date());
                     }
-                    getResult(sql);
+                    getResult();
                 }
                 catch(SQLException e)
                 {
@@ -116,36 +116,38 @@ class ConnectionWorker
                 catch(Exception e)
                 {
                     report(log,"Internal error: " + e.getMessage());
-                    logger.log(Level.SEVERE, "Internal error", e);
+                    logger.log(Level.SEVERE, "Internal error",e);
                 }
             }
         }
 
-        private void getResult(String text)
+        private void getResult()
         throws Exception
         {
             try
             {
                 Matcher callableStatementParts = CallableStatementMatchers
-                        .prefixMatch(text);
-                String lc = text.toLowerCase();
+                        .prefixMatch(sql);
+                String lc = sql.toLowerCase();
                 String inlog,outlog;
                 if(callableStatementParts.group(1).length() > 0)
                 {
-                    if(text.endsWith(";"))
+                    if(sql.endsWith(";"))
                     {
-                        String noSemicolon = lc.substring(0,text.length()-1);
-                        if(!noSemicolon.trim().endsWith("end")) text = text
-                                .substring(0,text.length()-1);
+                        String noSemicolon = lc.substring(0,sql.length()-1);
+                        if(!noSemicolon.trim().endsWith("end")) sql = sql
+                                .substring(0,sql.length()-1);
                     }
 
-                    CallableStatement st = connection.prepareCall(text);
+                    CallableStatement st = connection.prepareCall(sql);
 
-                    inlog=with(st,parametersController::applyToStatement);
+                    inlog = parameterTransfer(st,
+                            JdbcParametersInputController::applyToStatement);
 
                     boolean update = st.execute();
 
-                    outlog=with(st,parametersController::readFromStatement);
+                    outlog = parameterTransfer(st,
+                            JdbcParametersInputController::readFromStatement);
 
                     if(update)
                     {
@@ -159,24 +161,24 @@ class ConnectionWorker
                 }
                 else
                 {
-                    if(text.endsWith(";")) text =
-                            text.substring(0,text.length()-1);
+                    if(sql.endsWith(";")) sql = sql.substring(0,sql.length()-1);
                     PreparedStatement st = info.updatableResultSets?
                             connection.prepareStatement(
-                                    text,
+                                    sql,
                                     ResultSet.TYPE_FORWARD_ONLY,
                                     ResultSet.CONCUR_UPDATABLE
                             ) :
                             connection.prepareStatement(
-                                    text
+                                    sql
                             );
 
-                    /* XXX what if that is null? */
-                    inlog=with(st,parametersController::applyToStatement);
+                    inlog = parameterTransfer(st,
+                            JdbcParametersInputController::applyToStatement);
 
                     boolean update = st.execute();
 
-                    outlog=with(st,parametersController::readFromStatement);
+                    outlog = parameterTransfer(st,
+                            JdbcParametersInputController::readFromStatement);
 
                     if(update)
                     {
@@ -196,13 +198,15 @@ class ConnectionWorker
             }
         }
 
-        private interface StatementFunction
+        private interface ParameterControllerFunction
         {
-            String apply(PreparedStatement st) throws SQLException;
+            String apply(JdbcParametersInputController controller,
+                    PreparedStatement st) throws SQLException;
         }
         
         /**Applies <code>f</code> to <code>st</code> in the event thread. */
-        private String with(PreparedStatement st,StatementFunction f)
+        private String parameterTransfer(PreparedStatement st,
+                ParameterControllerFunction f)
         throws Exception
         {
             class SwingRunnable implements Runnable
@@ -214,7 +218,8 @@ class ConnectionWorker
                 {
                     try
                     {
-                        if(parametersController!=null) report = f.apply(st);
+                        if(parametersController!=null) report = f.apply(
+                            parametersController,st);
                     }
                     catch(SQLException e)
                     {

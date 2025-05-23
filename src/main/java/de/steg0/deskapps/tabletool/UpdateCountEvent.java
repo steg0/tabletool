@@ -23,13 +23,13 @@ class UpdateCountEvent extends EventObject
         super(source);
         this.count = count;
         this.ms = ms;
-        this.inlog = inlog;
-        this.outlog = outlog;
+        this.inlog = inlog == null? "" : inlog;
+        this.outlog = outlog == null? "" : outlog;
     }
 
     @Override
     public ConnectionWorker getSource()
     {
         return (ConnectionWorker)super.getSource();
-    }   
+    }
 }
