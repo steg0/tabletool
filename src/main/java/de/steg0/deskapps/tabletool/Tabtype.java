@@ -70,7 +70,11 @@ extends WindowAdapter
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
         
-        parametersController = new JdbcParametersInputController(frame);
+        var jdbcParametersDialog = new JFrame("JDBC Parameters Input");
+        jdbcParametersDialog.setIconImages(getIcons());
+        jdbcParametersDialog.setLocationRelativeTo(frame);
+        parametersController = new JdbcParametersInputController(
+                jdbcParametersDialog);
 
         var propertyHolder = new PropertyHolder(properties);
 

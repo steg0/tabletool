@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
@@ -110,6 +111,11 @@ class ConnectionWorker
                 catch(SQLException e)
                 {
                     report(log,SQLExceptionPrinter.toString(sql,e));
+                }
+                catch(Exception e)
+                {
+                    report(log,"Internal error: " + e.getMessage());
+                    logger.log(Level.SEVERE, "Internal error", e);
                 }
             }
         }

@@ -78,7 +78,7 @@ class BufferActions
                 String sql = placeholderSupport.quotedReplaceInString(
                     infoTemplate,text);
                 logger.fine("Info using SQL: "+sql);
-                b.connection.submit(sql,maxresults,b.parametersController,
+                b.connection.submit(sql,maxresults,null,
                         b.infoResultConsumer,b.updateCountConsumer,b.log);
             }
         },
@@ -162,7 +162,7 @@ class BufferActions
                     String sql = placeholderSupport.quotedReplaceInString(
                             completionTemplate,text);
                     logger.fine("Completion using SQL: "+sql);
-                    b.connection.submit(sql,maxresults,b.parametersController,
+                    b.connection.submit(sql,maxresults,null,
                             resultConsumer,b.updateCountConsumer,b.log);
                 }
                 catch(BadLocationException e)

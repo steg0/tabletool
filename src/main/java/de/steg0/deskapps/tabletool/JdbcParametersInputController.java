@@ -33,8 +33,7 @@ class JdbcParametersInputController implements ActionListener
     private static final String[] COLUMN_HEADERS =
             {"In","Numeric?","In Value","Out","Numeric?","Out Value"};
 
-    private JFrame parent;
-    private JDialog dialog;
+    private final JFrame dialog;
     private JTable table;
     private JScrollPane tablepane;
     private Object[][] data;
@@ -58,9 +57,9 @@ class JdbcParametersInputController implements ActionListener
         }
     };
 
-    JdbcParametersInputController(JFrame parent)
+    JdbcParametersInputController(JFrame dialog)
     {
-        this.parent = parent;
+        this.dialog = dialog;
     }
 
     private void createTable()
@@ -79,21 +78,20 @@ class JdbcParametersInputController implements ActionListener
 
     private void initGrid()
     {
-        var f = new JDialog(parent,"JDBC Parameters Input",false);
-        f.setLocationRelativeTo(parent);
-        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        var layout = new BorderLayout(5,5);
+        dialog.getContentPane().setLayout(layout);
 
         var explanation = new JTextArea("Please configure " +
                 "JDBC parameters to set in the query.\n" +
                 "Either varchar or number values are supported.\n" +
                 "Use Enter to accept a value in a cell.");
         explanation.setEditable(false);
-        f.getContentPane().add(explanation,BorderLayout.NORTH);
+        dialog.getContentPane().add(explanation,BorderLayout.NORTH);
         
         data = new Object[9][6];
         createTable();
-        f.getContentPane().add(tablepane);
+        dialog.getContentPane().add(tablepane);
 
         var buttonPanel = new JPanel();
 
@@ -111,15 +109,14 @@ class JdbcParametersInputController implements ActionListener
         closeButton.addActionListener(this);
         buttonPanel.add(closeButton);
 
-        f.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
+        dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
 
-        f.getRootPane().registerKeyboardAction(
-                evt -> f.dispose(),
+        dialog.getRootPane().registerKeyboardAction(
+                evt -> dialog.dispose(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
-        f.setPreferredSize(new Dimension(400,300));
-        f.pack();
-        dialog = f;
+        dialog.setPreferredSize(new Dimension(400,300));
+        dialog.pack();
     }
 
     void add()
@@ -147,7 +144,7 @@ class JdbcParametersInputController implements ActionListener
 
     void setVisible(boolean visible)
     {
-        if(dialog==null) initGrid();
+        if(table==null) initGrid();
         dialog.setVisible(visible);
         if(visible) table.requestFocusInWindow();
     }
@@ -172,7 +169,8 @@ class JdbcParametersInputController implements ActionListener
     void applyToStatement(PreparedStatement stmt)
     throws SQLException
     {
-        if(dialog==null) initGrid();
+        if(table==null) initGrid();
+        if(!dialog.isVisible()) return;
         for(int i=0;i<table.getRowCount();i++)
         {
             boolean in = Boolean.TRUE.equals(table.getModel().getValueAt(i,0));
@@ -213,7 +211,7 @@ class JdbcParametersInputController implements ActionListener
     void readFromStatement(PreparedStatement stmt)
     throws SQLException
     {
-        if(dialog==null) initGrid();
+        if(table==null) initGrid();
         for(int i=0;i<table.getRowCount();i++)
         {
             boolean out = Boolean.TRUE.equals(
