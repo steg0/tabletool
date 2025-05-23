@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.lang.Boolean.TRUE;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -49,7 +51,7 @@ class JdbcParametersInputController implements ActionListener
                 Object value,boolean isSelected,boolean hasFocus,int row,
                 int column)
         {
-            cb.setSelected(Boolean.TRUE.equals(value));
+            cb.setSelected(TRUE.equals(value));
             cb.setBorderPainted(hasFocus);
             Color focusColor = closeButton.getForeground();
             cb.setBorder(BorderFactory.createLineBorder(focusColor));
@@ -166,20 +168,17 @@ class JdbcParametersInputController implements ActionListener
         }
     }
 
-    void applyToStatement(PreparedStatement stmt)
+    String applyToStatement(PreparedStatement stmt)
     throws SQLException
     {
         if(table==null) initGrid();
-        if(!dialog.isVisible()) return;
+        if(!dialog.isVisible()) return "";
         for(int i=0;i<table.getRowCount();i++)
         {
-            boolean in = Boolean.TRUE.equals(table.getModel().getValueAt(i,0));
-            boolean inNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,1));
-            boolean out = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,3));
-            boolean outNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,4));
+            boolean in = TRUE.equals(table.getModel().getValueAt(i,0));
+            boolean inNumeric = TRUE.equals(table.getModel().getValueAt(i,1));
+            boolean out = TRUE.equals(table.getModel().getValueAt(i,3));
+            boolean outNumeric = TRUE.equals(table.getModel().getValueAt(i,4));
             if(in)
             {
                 Object value = table.getModel().getValueAt(i,2);
@@ -206,18 +205,17 @@ class JdbcParametersInputController implements ActionListener
                 }
             }
         }
+        return describeInValues();
     }
 
-    void readFromStatement(PreparedStatement stmt)
+    String readFromStatement(PreparedStatement stmt)
     throws SQLException
     {
         if(table==null) initGrid();
         for(int i=0;i<table.getRowCount();i++)
         {
-            boolean out = Boolean.TRUE.equals(
-                table.getModel().getValueAt(i,3));
-            boolean outNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,4));
+            boolean out = TRUE.equals(table.getModel().getValueAt(i,3));
+            boolean outNumeric = TRUE.equals(table.getModel().getValueAt(i,4));
             if(out && stmt instanceof CallableStatement cstmt)
             {
                 Object value = outNumeric?
@@ -226,5 +224,55 @@ class JdbcParametersInputController implements ActionListener
                         value==null?null:value.toString(),i,5);
             }
         }
+        return describeOutValues();
+    }
+
+    private String describeInValues()
+    {
+        var b = new StringBuilder();
+        for(int i=0;i<table.getRowCount();i++)
+        {
+            var data = table.getModel();
+            boolean in = TRUE.equals(data.getValueAt(i,0));
+            if(in)
+            {
+                if(i>0) b.append(", ");
+                b.append("?");
+                b.append(Integer.toString(i+1));
+                b.append(":");
+                boolean numeric = TRUE.equals(data.getValueAt(i,1));
+                Object val = data.getValueAt(i,2);
+                if(!numeric&&val!=null) b.append("\"");
+                String s = String.valueOf(val);
+                b.append(s.replace("\n","\\n").replace("\"","\\\""));
+                if(!numeric&&val!=null) b.append("\"");
+            }
+        }
+        return b.toString();
+    }
+
+    private String describeOutValues()
+    {
+        var b = new StringBuilder();
+        for(int i=0;i<table.getRowCount();i++)
+        {
+            var data = table.getModel();
+            boolean out = TRUE.equals(data.getValueAt(i,3));
+            if(out)
+            {
+                if(i>0) b.append(", ");
+                b.append("?");
+                b.append(Integer.toString(i+1));
+                b.append(":");
+                boolean numeric = TRUE.equals(data.getValueAt(i,4));
+                Object val = data.getValueAt(i,5);
+                if(!numeric&&val!=null) b.append("\"");
+                String s = String.valueOf(val);
+                b.append(s.replace("\n","\\n").replace("\"","\\\""));
+                if(!numeric&&val!=null) b.append("\"");
+            }
+        }
+        if(b.length()>0) return " -> " + b.toString();
+        return "";
     }
 }

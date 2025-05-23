@@ -775,13 +775,15 @@ class BufferController
                 new Date().toString(),
                 rsm.connectionDescription
         };
+        String paramlog = (rsm.inlog + rsm.outlog).trim();
+        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
         if(rsm.getRowCount() < rsm.fetchsize)
         {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs) + paramlog);
         }
         else
         {
-            log.accept(FETCH_LOG_FORMAT.format(logargs));
+            log.accept(FETCH_LOG_FORMAT.format(logargs) + paramlog);
         }
     };
     

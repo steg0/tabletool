@@ -40,7 +40,9 @@ implements Consumer<UpdateCountEvent>
                         JOptionPane.WARNING_MESSAGE);
 
         }
-        buffer.log.accept(msg);
+        String paramlog = (e.inlog + e.outlog).trim();
+        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
+        buffer.log.accept(msg + paramlog);
         buffer.restoreCaretPosition(false);
     }
 }

@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import static javax.swing.SwingUtilities.invokeLater;
+import static javax.swing.SwingUtilities.invokeAndWait;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -121,13 +122,14 @@ class ConnectionWorker
         }
 
         private void getResult(String text)
-        throws SQLException
+        throws Exception
         {
             try
             {
                 Matcher callableStatementParts = CallableStatementMatchers
                         .prefixMatch(text);
                 String lc = text.toLowerCase();
+                String inlog,outlog;
                 if(callableStatementParts.group(1).length() > 0)
                 {
                     if(text.endsWith(";"))
@@ -139,22 +141,20 @@ class ConnectionWorker
 
                     CallableStatement st = connection.prepareCall(text);
 
-                    if(parametersController != null)
-                        parametersController.applyToStatement(st);
+                    inlog=with(st,parametersController::applyToStatement);
 
                     boolean update = st.execute();
 
-                    if(parametersController != null)
-                        parametersController.readFromStatement(st);
+                    outlog=with(st,parametersController::readFromStatement);
 
                     if(update)
                     {
-                        reportResult(st);
+                        reportResult(st,inlog,outlog);
                     }
                     else
                     {
                         reportNullResult();
-                        displayUpdateCount(st);
+                        displayUpdateCount(st,inlog,outlog);
                     }
                 }
                 else
@@ -171,22 +171,21 @@ class ConnectionWorker
                                     text
                             );
 
-                    if(parametersController != null)
-                        parametersController.applyToStatement(st);
+                    /* XXX what if that is null? */
+                    inlog=with(st,parametersController::applyToStatement);
 
                     boolean update = st.execute();
 
-                    if(parametersController != null)
-                        parametersController.readFromStatement(st);
+                    outlog=with(st,parametersController::readFromStatement);
 
                     if(update)
                     {
-                        reportResult(st);
+                        reportResult(st,inlog,outlog);
                     }
                     else
                     {
                         reportNullResult();
-                        displayUpdateCount(st);
+                        displayUpdateCount(st,inlog,outlog);
                     }
                 }
             }
@@ -196,13 +195,46 @@ class ConnectionWorker
                 throw e;
             }
         }
+
+        private interface StatementFunction
+        {
+            String apply(PreparedStatement st) throws SQLException;
+        }
         
-        private void displayUpdateCount(Statement statement)
+        /**Applies <code>f</code> to <code>st</code> in the event thread. */
+        private String with(PreparedStatement st,StatementFunction f)
+        throws Exception
+        {
+            class SwingRunnable implements Runnable
+            {
+                SQLException e;
+                String report;
+                
+                public void run()
+                {
+                    try
+                    {
+                        if(parametersController!=null) report = f.apply(st);
+                    }
+                    catch(SQLException e)
+                    {
+                        this.e = e;
+                    }
+                }
+            };
+            var r = new SwingRunnable();
+            invokeAndWait(r);
+            if(r.e != null) throw r.e;
+            return r.report;
+        }
+
+        private void displayUpdateCount(Statement statement,String inlog,
+                String outlog)
         throws SQLException
         {
             long now = System.currentTimeMillis();
             var countEvent = new UpdateCountEvent(ConnectionWorker.this,
-                    statement.getUpdateCount(), now-ts);
+                    statement.getUpdateCount(),now-ts,inlog,outlog);
             invokeLater(() -> updateCountConsumer.accept(countEvent));
             statement.close();
         }
@@ -212,11 +244,13 @@ class ConnectionWorker
             invokeLater(() -> resultConsumer.accept(null,0L));
         }
 
-        private void reportResult(Statement statement)
+        private void reportResult(Statement statement,String inlog,
+                String outlog)
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(info.name,statement,fetchsize);
+            lastReportedResult.update(info.name,statement,fetchsize,inlog,
+                    outlog);
             long now = System.currentTimeMillis();
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));
