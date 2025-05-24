@@ -564,9 +564,11 @@ class BufferController
             return;
         }
 
+        String placeholderlog=null;
         try
         {
             text=placeholderInputController.fill(text);
+            placeholderlog=placeholderInputController.describeLastValues();
         }
         catch(SubstitutionCanceledException e)
         {
@@ -598,8 +600,9 @@ class BufferController
         {
             assert false : e.getMessage();
         }
-        connection.submit(text,fetchsize,parametersController,resultConsumer,
-                updateCountConsumer,log);
+
+        connection.submit(text,fetchsize,parametersController,placeholderlog,
+                resultConsumer,updateCountConsumer,log);
     }
 
     void closeCurrentResultSet()
@@ -689,13 +692,18 @@ class BufferController
                 rsm.date.toString(),
                 rsm.connectionDescription
         };
+        String paramlog = (rsm.inlog + rsm.outlog).trim();
+        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
+        if(!rsm.placeholderlog.isEmpty()) paramlog += " - " +
+                rsm.placeholderlog;
+
         if(rsm.getRowCount() < rsm.fetchsize)
         {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs) + paramlog);
         }
         else
         {
-            log.accept(FETCH_LOG_FORMAT.format(logargs));
+            log.accept(FETCH_LOG_FORMAT.format(logargs) + paramlog);
         }
         
         addResultSetTable(rsm);
@@ -775,15 +783,13 @@ class BufferController
                 new Date().toString(),
                 rsm.connectionDescription
         };
-        String paramlog = (rsm.inlog + rsm.outlog).trim();
-        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
         if(rsm.getRowCount() < rsm.fetchsize)
         {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs) + paramlog);
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
         }
         else
         {
-            log.accept(FETCH_LOG_FORMAT.format(logargs) + paramlog);
+            log.accept(FETCH_LOG_FORMAT.format(logargs));
         }
     };
     

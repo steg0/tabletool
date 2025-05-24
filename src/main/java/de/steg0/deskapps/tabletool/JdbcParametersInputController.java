@@ -148,7 +148,13 @@ class JdbcParametersInputController implements ActionListener
     {
         if(table==null) initGrid();
         dialog.setVisible(visible);
-        if(visible) table.requestFocusInWindow();
+        if(visible)
+        {
+            if(table.isEditing()) table.getCellEditor().stopCellEditing();
+            table.setRowSelectionInterval(0,0);
+            table.setColumnSelectionInterval(0,0);
+            table.requestFocusInWindow();
+        }
     }
 
     @Override

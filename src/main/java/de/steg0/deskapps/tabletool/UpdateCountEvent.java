@@ -16,15 +16,21 @@ class UpdateCountEvent extends EventObject
      * execution.
      */
     final String outlog;
+    /**
+     * A description of text placeholder values set in the dialog for the
+     * execution.
+     */
+    final String placeholderlog;
 
     UpdateCountEvent(ConnectionWorker source,long count,long ms,
-            String inlog,String outlog)
+            String inlog,String outlog,String placeholderlog)
     {
         super(source);
         this.count = count;
         this.ms = ms;
         this.inlog = inlog == null? "" : inlog;
         this.outlog = outlog == null? "" : outlog;
+        this.placeholderlog = placeholderlog;
     }
 
     @Override

@@ -42,6 +42,11 @@ implements TableModel,AutoCloseable
      */
     String outlog;
     /**
+     * A description of text placeholder values set in the dialog for the
+     * execution.
+     */
+    String placeholderlog;
+    /**
      * The log message associated with the last fetch operation. Empty
      * or <code>null</code> means that no message is available, either because
      * no result is available, or one was loaded back from a file that didn't
@@ -55,7 +60,7 @@ implements TableModel,AutoCloseable
      * Neither one is closed; it is expected they have to be closed
      * externally. */
     void update(String connectionDescription,Statement st,int fetchsize,
-            String inlog,String outlog)
+            String inlog,String outlog,String placeholderlog)
     throws SQLException
     {
         this.st = st;
@@ -64,6 +69,7 @@ implements TableModel,AutoCloseable
         this.connectionDescription = connectionDescription;
         this.inlog = inlog == null? "" : inlog;
         this.outlog = outlog == null? "" : outlog;
+        this.placeholderlog = placeholderlog;
         fill();
     }
     
@@ -105,6 +111,8 @@ implements TableModel,AutoCloseable
         }
         String paramlog = (inlog + outlog).trim();
         if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
+        if(!placeholderlog.isEmpty()) paramlog += " - " +
+                placeholderlog;
         resultMessage += paramlog;
     }
     

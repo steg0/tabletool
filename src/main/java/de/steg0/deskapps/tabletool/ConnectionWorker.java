@@ -59,6 +59,7 @@ class ConnectionWorker
             String sql,
             int fetchsize,
             JdbcParametersInputController parametersController,
+            String placeholderlog,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
             Consumer<UpdateCountEvent> updateCountConsumer,
             Consumer<String> log
@@ -72,6 +73,7 @@ class ConnectionWorker
         sqlRunnable.fetchsize = fetchsize;
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
+        sqlRunnable.placeholderlog = placeholderlog;
         sqlRunnable.ts = System.currentTimeMillis();
         executor.execute(sqlRunnable);
     }
@@ -83,6 +85,7 @@ class ConnectionWorker
         private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
         private String sql;
+        private String placeholderlog;
         private int fetchsize;
         private long ts;
 
@@ -239,7 +242,8 @@ class ConnectionWorker
         {
             long now = System.currentTimeMillis();
             var countEvent = new UpdateCountEvent(ConnectionWorker.this,
-                    statement.getUpdateCount(),now-ts,inlog,outlog);
+                    statement.getUpdateCount(),now-ts,inlog,outlog,
+                    placeholderlog);
             invokeLater(() -> updateCountConsumer.accept(countEvent));
             statement.close();
         }
@@ -255,7 +259,7 @@ class ConnectionWorker
         {
             lastReportedResult = new ResultSetTableModel();
             lastReportedResult.update(info.name,statement,fetchsize,inlog,
-                    outlog);
+                    outlog,placeholderlog);
             long now = System.currentTimeMillis();
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));
