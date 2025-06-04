@@ -34,7 +34,7 @@ implements Consumer<UpdateCountEvent>
                 JOptionPane.showMessageDialog(
                         parent,
                         msg +
-                        "You are seeing this message because the " +
+                        "\nYou are seeing this message because the " +
                         "connection has confirmations enabled.",
                         "Update count notification",
                         JOptionPane.WARNING_MESSAGE);
