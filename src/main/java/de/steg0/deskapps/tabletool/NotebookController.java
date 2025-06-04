@@ -169,6 +169,7 @@ class NotebookController
         var im = connectionsSelector.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_PAGE_UP,0),"Focus Buffer");
         im.put(getKeyStroke(KeyEvent.VK_PAGE_DOWN,0),"Focus Buffer");
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         var am = connectionsSelector.getActionMap();
         am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(connectionsSelector);
@@ -185,12 +186,24 @@ class NotebookController
                 });
             });
         });
+        im = autocommitCb.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = autocommitCb.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(autocommitCb);
-        
+
         commitButton.addActionListener((e) -> commit());
+        im = commitButton.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = commitButton.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(commitButton);
         
         disconnectButton.addActionListener((e) -> disconnect());
+        im = disconnectButton.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = disconnectButton.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(disconnectButton);
         
         connectionPanel.add(new JLabel("Fetch:"));
@@ -205,6 +218,10 @@ class NotebookController
         connectionPanel.add(fetchsizeField);
         
         rollbackButton.addActionListener((e) -> rollback());
+        im = rollbackButton.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = rollbackButton.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(rollbackButton);
         
         var connectionPanelConstraints = new GridBagConstraints();
