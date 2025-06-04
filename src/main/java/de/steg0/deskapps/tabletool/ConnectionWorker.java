@@ -267,8 +267,7 @@ class ConnectionWorker
     }
 
     /**
-     * This is not needed before
-     * {@link #submit(String,int,Consumer,Consumer)} where it's done
+     * This is not needed before <code>submit</code> where it's done
      * automatically.
      */
     void closeResultSet(Consumer<String> log)
