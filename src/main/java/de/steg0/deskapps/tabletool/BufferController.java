@@ -544,7 +544,7 @@ class BufferController
         savedCaretPosition = editor.getCaretPosition();
         if(getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
-            logger.log(Level.FINE,"Found connect alias");
+            logger.log(Level.FINE,"Found connect comment");
             fireBufferEvent(Type.DRY_FETCH);
             return;
         }

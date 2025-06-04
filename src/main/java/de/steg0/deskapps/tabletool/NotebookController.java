@@ -751,13 +751,16 @@ class NotebookController
 
     private boolean openConnection(String contextline)
     {
-        logger.log(Level.FINE,"Looking for alias in context: {0}",contextline);
+        logger.log(Level.FINE,"Looking for alias in context: <{0}>",
+                contextline);
         for(int i=0;i<connections.getSize();i++)
         {
-            if(contextline.startsWith(
-                    BufferController.CONNECT_COMMENT+
-                    connections.getElementAt(i).info().name))
+            String matchstr = BufferController.CONNECT_COMMENT +
+                    connections.getElementAt(i).info().name;
+            logger.log(Level.FINE,"Comparing with option: <{0}>",matchstr);
+            if(contextline.startsWith(matchstr))
             {
+                logger.fine("Match");
                 connectionsSelector.setSelectedIndex(i);
                 connectionsSelector.repaint();
                 restoreFocus();
