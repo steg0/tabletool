@@ -25,6 +25,7 @@ namespace Tabtype
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string[] deps = Directory.GetFiles(appDirectory + "dependency");
             string procargs=Environment.ExpandEnvironmentVariables(
+                    "%JAVA_OPTS% " +
                     "-XX:+UseSerialGC " +
                     "-Dderby.system.home=%USERPROFILE% " +
                     "-Dfile.encoding=UTF-8 " +
