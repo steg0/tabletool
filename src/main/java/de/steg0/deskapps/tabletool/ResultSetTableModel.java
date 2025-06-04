@@ -69,7 +69,7 @@ implements TableModel,AutoCloseable
         this.connectionDescription = connectionDescription;
         this.inlog = inlog == null? "" : inlog;
         this.outlog = outlog == null? "" : outlog;
-        this.placeholderlog = placeholderlog;
+        this.placeholderlog = placeholderlog == null? "" : placeholderlog;
         fill();
     }
     
