@@ -141,6 +141,7 @@
         It is possible to assign them to drivers as well as connections
         (with "connections.SOME_NAME_REGEX.infoTemplate."). Multiple matches
         are resolved by giving connection assignments higher precedence.
+        Empty columns will not be shown in the result of this query.
     -->
     <entry key="drivers.derby.infoTemplate">
         select * from sys.systables where tablename = upper(&amp;param)

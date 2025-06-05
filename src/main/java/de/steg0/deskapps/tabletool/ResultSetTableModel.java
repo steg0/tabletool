@@ -11,7 +11,10 @@ import java.sql.Statement;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
@@ -24,6 +27,8 @@ implements TableModel,AutoCloseable
     private static final MessageFormat FETCH_ALL_INFO_FORMAT = 
             new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {2} at {1}");
 
+    Logger logger = Logger.getLogger("tabtype");
+
     private Statement st;
     ResultSet rs;
     private String cols[];
@@ -31,6 +36,7 @@ implements TableModel,AutoCloseable
     int fetchsize;
     boolean resultSetClosed;
     String connectionDescription;
+    private boolean skipEmptyColumns;
     /**
      * A description of JDBC IN parameters set in the dialog for the
      * execution.
@@ -60,7 +66,8 @@ implements TableModel,AutoCloseable
      * Neither one is closed; it is expected they have to be closed
      * externally. */
     void update(String connectionDescription,Statement st,int fetchsize,
-            String inlog,String outlog,String placeholderlog)
+            String inlog,String outlog,String placeholderlog,
+            boolean skipEmptyColumns)
     throws SQLException
     {
         this.st = st;
@@ -70,30 +77,51 @@ implements TableModel,AutoCloseable
         this.inlog = inlog == null? "" : inlog;
         this.outlog = outlog == null? "" : outlog;
         this.placeholderlog = placeholderlog == null? "" : placeholderlog;
+        this.skipEmptyColumns = skipEmptyColumns;
+        logger.log(Level.FINE,"skipEmptyColumns: {0}",skipEmptyColumns);
         fill();
     }
     
     private void fill()
     throws SQLException
     {
-        rows = new ArrayList<Object[]>(fetchsize);
+        var rowbuf = new ArrayList<List<Object>>(fetchsize);
         ResultSetMetaData m = rs.getMetaData();
-        cols = new String[m.getColumnCount()];
-        for(int i=1;i<=cols.length;i++)
+        int columnCount = m.getColumnCount();
+        var colbuf = new LinkedList<String>();
+        var keepcols = new boolean[columnCount];
+        for(int i=1;i<=columnCount;i++)
         {
-            cols[i-1] = m.getColumnLabel(i);
+            colbuf.add(m.getColumnLabel(i));
         }
         int rowcount=0;
         while(rowcount<fetchsize && rs.next())
         {
-            Object[] row = new Object[cols.length];
-            for(int i=1;i<=cols.length;i++)
+            var row = new LinkedList<Object>();
+            for(int i=1;i<=columnCount;i++)
             {
-                row[i-1]=rs.getObject(i);
+                Object o = rs.getObject(i);
+                if(o != null && !String.valueOf(o).isEmpty())
+                    keepcols[i-1] = true;
+                row.add(rs.getObject(i));
             }
-            rows.add(row);
+            rowbuf.add(row);
             rowcount++;
         }
+        
+        for(int i=columnCount-1;i>=0;i--)
+        {
+            if(skipEmptyColumns && !keepcols[i])
+            {
+                logger.log(Level.FINE,"Skipping column {0}",i);
+                colbuf.remove(i);
+                for(var l : rowbuf) l.remove(i);
+            }
+        }
+        cols = colbuf.toArray(String[]::new);
+        rows = new ArrayList<Object[]>(fetchsize);
+        for(var row : rowbuf) rows.add(row.toArray());
+        
         resultSetClosed = rs.isClosed();
         date = new Date();
         Object[] logargs = {

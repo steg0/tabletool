@@ -62,7 +62,8 @@ class ConnectionWorker
             String placeholderlog,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
             Consumer<UpdateCountEvent> updateCountConsumer,
-            Consumer<String> log
+            Consumer<String> log,
+            boolean skipEmptyColumns
     )
     {
         logger.info(sql);
@@ -73,6 +74,7 @@ class ConnectionWorker
         sqlRunnable.fetchsize = fetchsize;
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
+        sqlRunnable.skipEmptyColumns = skipEmptyColumns;
         sqlRunnable.placeholderlog = placeholderlog;
         sqlRunnable.ts = System.currentTimeMillis();
         executor.execute(sqlRunnable);
@@ -84,6 +86,7 @@ class ConnectionWorker
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
         private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
+        private boolean skipEmptyColumns;
         private String sql;
         private String placeholderlog;
         private int fetchsize;
@@ -259,7 +262,7 @@ class ConnectionWorker
         {
             lastReportedResult = new ResultSetTableModel();
             lastReportedResult.update(info.name,statement,fetchsize,inlog,
-                    outlog,placeholderlog);
+                    outlog,placeholderlog,skipEmptyColumns);
             long now = System.currentTimeMillis();
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));

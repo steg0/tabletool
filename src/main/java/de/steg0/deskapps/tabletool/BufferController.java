@@ -603,7 +603,7 @@ class BufferController
         }
 
         connection.submit(text,fetchsize,parametersController,placeholderlog,
-                resultConsumer,updateCountConsumer,log);
+                resultConsumer,updateCountConsumer,log,false);
     }
 
     void closeCurrentResultSet()

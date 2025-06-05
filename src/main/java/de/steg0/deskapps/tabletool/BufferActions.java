@@ -79,7 +79,8 @@ class BufferActions
                     infoTemplate,text);
                 logger.fine("Info using SQL: "+sql);
                 b.connection.submit(sql,maxresults,null,null,
-                        b.infoResultConsumer,b.updateCountConsumer,b.log);
+                        b.infoResultConsumer,b.updateCountConsumer,b.log,
+                        false);
             }
         },
         showSnippetsPopupAction = new AbstractAction()
@@ -158,12 +159,13 @@ class BufferActions
                     var resultConsumer = new CompletionConsumer(b,
                                 (int)xy.getCenterX(),(int)xy.getCenterY(),
                                 b.log,maxresults);
-                    var placeholderSupport = new PlaceholderSupport(b.configSource);
+                    var placeholderSupport = new PlaceholderSupport(
+                            b.configSource);
                     String sql = placeholderSupport.quotedReplaceInString(
                             completionTemplate,text);
                     logger.fine("Completion using SQL: "+sql);
                     b.connection.submit(sql,maxresults,null,null,
-                            resultConsumer,b.updateCountConsumer,b.log);
+                            resultConsumer,b.updateCountConsumer,b.log,false);
                 }
                 catch(BadLocationException e)
                 {
