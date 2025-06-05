@@ -78,7 +78,7 @@ implements TableModel,AutoCloseable
         this.outlog = outlog == null? "" : outlog;
         this.placeholderlog = placeholderlog == null? "" : placeholderlog;
         this.skipEmptyColumns = skipEmptyColumns;
-        logger.log(Level.FINE,"skipEmptyColumns: {0}",skipEmptyColumns);
+        logger.log(Level.FINE,"skipEmptyColumns={0}",skipEmptyColumns);
         fill();
     }
     

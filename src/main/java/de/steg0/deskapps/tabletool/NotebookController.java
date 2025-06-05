@@ -111,11 +111,11 @@ class NotebookController
         int lines = Math.min(10,log.getLineCount());
         int lineheight = log.getFontMetrics(log.getFont()).getHeight();
         int logheight = lineheight * lines;
-        logger.log(Level.FINE,"logheight: {0}",logheight);
+        logger.log(Level.FINE,"logheight={0}",logheight);
         int dividerSize = logBufferPane.getDividerSize();
-        logger.log(Level.FINE,"dividerSize: {0}",dividerSize);
+        logger.log(Level.FINE,"dividerSize={0}",dividerSize);
         int logBufferHeight = logBufferPane.getHeight();
-        logger.log(Level.FINE,"logBufferHeight: {0}",logBufferHeight);
+        logger.log(Level.FINE,"logBufferHeight={0}",logBufferHeight);
         logBufferPane.setDividerLocation(logBufferHeight - logheight - 
                 dividerSize - (int)(lineheight * .4));
     }
