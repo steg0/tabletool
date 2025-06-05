@@ -507,11 +507,13 @@ class NotebookController
             @Override 
             public void focusLost(FocusEvent e)
             {
-                lastFocusedBuffer = buffers.indexOf(c);
                 hasSavedFocusPosition = true;
             }
             @Override 
-            public void focusGained(FocusEvent e) { }
+            public void focusGained(FocusEvent e)
+            {
+                lastFocusedBuffer = buffers.indexOf(c);
+            }
         });
         c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
@@ -759,6 +761,7 @@ class NotebookController
 
     void openConnection()
     {
+        logger.log(Level.FINE,"lastFocusedBuffer={0}",lastFocusedBuffer);
         if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");

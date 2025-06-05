@@ -326,6 +326,7 @@ class BufferController
     {
         String t = editor.getText();
         int caret = editor.getCaretPosition();
+        logger.log(Level.FINE,"caret={0}",caret);
         int index = t.lastIndexOf('\n',caret-1)+1;
         return endWithCaret? t.substring(index,caret) : t.substring(index);
     }
