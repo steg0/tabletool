@@ -80,7 +80,7 @@ class BufferActions
                 logger.fine("Info using SQL: "+sql);
                 b.connection.submit(sql,maxresults,null,null,
                         b.infoResultConsumer,b.updateCountConsumer,b.log,
-                        false);
+                        true);
             }
         },
         showSnippetsPopupAction = new AbstractAction()
