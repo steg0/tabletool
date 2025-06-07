@@ -24,6 +24,11 @@
     -->
     <entry key="tab.placement">1</entry>
 
+    <!--
+        The font to use for editor buffers. This will also be used for
+        info display and cell value windows (except for blob hexdumps,
+        which will use the system monospace font).
+    -->
     <entry key="editor.font">Go Mono</entry>
     <entry key="editor.fontsize">13</entry>
     <!--
@@ -113,10 +118,12 @@
     -->
     <!--
         completionTemplate allows generating content for F8.
-        An optional placeholder is replaced with the text under the cursor.
+        An optional placeholder is replaced with the text under the
+        cursor.
         It is possible to assign them to drivers as well as connections
-        (with "connections.SOME_NAME_REGEX.completionTemplate."). Multiple matches
-        are resolved by giving connection assignments higher precedence.
+        (with "connections.SOME_NAME_REGEX.completionTemplate."). Multiple
+        matches are resolved by giving connection assignments higher
+        precedence.
     -->
     <entry key="drivers.derby.completionTemplate">
         select tablename from sys.systables where lower(tablename) like lower(&amp;param||'%')
@@ -139,8 +146,10 @@
         infoTemplate is used for the F1 action. The placeholder
         is replaced with the text under the cursor.
         It is possible to assign them to drivers as well as connections
-        (with "connections.SOME_NAME_REGEX.infoTemplate."). Multiple matches
-        are resolved by giving connection assignments higher precedence.
+        (with "connections.SOME_NAME_REGEX.infoTemplate."). Multiple
+        matches are resolved by giving connection assignments higher
+        precedence.
+        Empty columns will not be shown in the result of this query.
     -->
     <entry key="drivers.derby.infoTemplate">
         select * from sys.systables where tablename = upper(&amp;param)
@@ -250,6 +259,7 @@
             on co.table_name=t.table_name
             and co.column_name=t.column_name
         where t.table_name=upper(&amp;param)
+        order by t.table_name,column_id
     </entry>
     <entry key="drivers.oracle.completionTemplate">
         select table_name

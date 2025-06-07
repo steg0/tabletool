@@ -342,6 +342,15 @@ implements KeyListener
                 }
             }
         },
+        selectLastTabAction = new AbstractAction("Select Last Tab")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
+                NotebookController c = getSelected();
+                if(c.hasSavedFocusPosition) c.restoreFocus();
+            }
+        },
         selectPreviousTabAction = new AbstractAction("Select Previous Tab")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -494,6 +503,8 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_8,CTRL_MASK),"Select Tab 8");
         im.put(getKeyStroke(KeyEvent.VK_9,CTRL_MASK),"Select Tab 9");
         im.put(getKeyStroke(KeyEvent.VK_0,CTRL_MASK),"Select Tab 10");
+        im.put(getKeyStroke(KeyEvent.VK_BACK_QUOTE,CTRL_MASK),
+                "Select Last Tab");
         im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK),"Select Previous Tab");
         im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK),"Select Next Tab");
         im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK|CTRL_MASK),
@@ -517,6 +528,7 @@ implements KeyListener
         am.put("Select Tab 8",new SelectTabAction(7,7));
         am.put("Select Tab 9",new SelectTabAction(8,8));
         am.put("Select Tab 10",new SelectTabAction(9,-1));
+        am.put("Select Last Tab",selectLastTabAction);
         am.put("Select Previous Tab",selectPreviousTabAction);
         am.put("Select Next Tab",selectNextTabAction);
         am.put("Move Tab Left",moveTabLeftAction);

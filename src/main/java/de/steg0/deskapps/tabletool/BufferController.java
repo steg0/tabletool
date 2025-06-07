@@ -57,9 +57,9 @@ class BufferController
     private static final String CONNECTION_LABEL_SUFFIX = " ";
 
     private static final MessageFormat FETCH_LOG_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {4} in {1} ms and ResultSet {2} at {3}");
     private static final MessageFormat FETCH_ALL_LOG_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}\n");
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {4} in {1} ms and ResultSet {2} at {3}");
 
     private static final Pattern QUERYPATTERN = Pattern.compile(
             "^(?:[^\\;\\-\\']*\\'[^\\']*\\'|[^\\;\\-\\']*\\-\\-[^\\n]*\\n|[^\\;\\-\\']*\\-(?!\\-))*[^\\;\\-\\']*(?:\\;|$)");
@@ -326,6 +326,7 @@ class BufferController
     {
         String t = editor.getText();
         int caret = editor.getCaretPosition();
+        logger.log(Level.FINE,"caret={0}",caret);
         int index = t.lastIndexOf('\n',caret-1)+1;
         return endWithCaret? t.substring(index,caret) : t.substring(index);
     }
@@ -544,7 +545,7 @@ class BufferController
         savedCaretPosition = editor.getCaretPosition();
         if(getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
-            logger.log(Level.FINE,"Found connect alias");
+            logger.log(Level.FINE,"Found connect comment");
             fireBufferEvent(Type.DRY_FETCH);
             return;
         }
@@ -564,9 +565,11 @@ class BufferController
             return;
         }
 
+        String placeholderlog=null;
         try
         {
             text=placeholderInputController.fill(text);
+            placeholderlog=placeholderInputController.describeLastValues();
         }
         catch(SubstitutionCanceledException e)
         {
@@ -598,8 +601,9 @@ class BufferController
         {
             assert false : e.getMessage();
         }
-        connection.submit(text,fetchsize,parametersController,resultConsumer,
-                updateCountConsumer,log);
+
+        connection.submit(text,fetchsize,parametersController,placeholderlog,
+                resultConsumer,updateCountConsumer,log,false);
     }
 
     void closeCurrentResultSet()
@@ -689,13 +693,18 @@ class BufferController
                 rsm.date.toString(),
                 rsm.connectionDescription
         };
+        String paramlog = (rsm.inlog + rsm.outlog).trim();
+        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
+        if(!rsm.placeholderlog.isEmpty()) paramlog += " - " +
+                rsm.placeholderlog;
+
         if(rsm.getRowCount() < rsm.fetchsize)
         {
-            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs));
+            log.accept(FETCH_ALL_LOG_FORMAT.format(logargs) + paramlog);
         }
         else
         {
-            log.accept(FETCH_LOG_FORMAT.format(logargs));
+            log.accept(FETCH_LOG_FORMAT.format(logargs) + paramlog);
         }
         
         addResultSetTable(rsm);
@@ -712,7 +721,8 @@ class BufferController
 
         resultview = new JTable(rsm);
         
-        new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
+        new CellDisplayController(cellDisplay,resultview,log,configSource.pwd,
+                editor.getFont());
         new BufferResultSetPopup(parent,this).attach();
         
         resultview.setCellSelectionEnabled(true);
@@ -791,6 +801,7 @@ class BufferController
         TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
                 editor.getFont().getSize() : sizes.get(0),
                 configSource.getResultViewHeight());
+        inforesultview.setFont(editor.getFont());
         inforesultview.setCellSelectionEnabled(true);
         inforesultview.setAutoCreateRowSorter(true);
         inforesultview.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);

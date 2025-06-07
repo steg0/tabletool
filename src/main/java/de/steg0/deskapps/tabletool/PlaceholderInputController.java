@@ -35,6 +35,7 @@ class PlaceholderInputController
     private BufferConfigSource configSource;
     private JFrame parent;
     private String[][] lastValues;
+    private String[] occurrences;
 
     static class SubstitutionCanceledException extends Exception
     {
@@ -76,26 +77,24 @@ class PlaceholderInputController
      */
     String fill(String s) throws SubstitutionCanceledException
     {
-        String[] placeholderOccurrences = new PlaceholderSupport(configSource)
+        occurrences = new PlaceholderSupport(configSource)
                 .getPlaceholderOccurrences(stripComments(s));
-        if(placeholderOccurrences.length>0)
+        if(occurrences.length>0)
         {
-            String[][] placeholderMap =
-                    new String[placeholderOccurrences.length][];
+            String[][] placeholderMap = new String[occurrences.length][];
             for(int i=0;i<placeholderMap.length;i++)
             {
                 String newValue = null;
                 /* try pre-fill with last remembered values */
                 if(lastValues!=null) for(String[] kv : lastValues)
                 {
-                    if(kv[0].equals(placeholderOccurrences[i]))
+                    if(kv[0].equals(occurrences[i]))
                     {
                         newValue = kv[1];
                         break;
                     }
                 }
-                placeholderMap[i] =
-                        new String[]{placeholderOccurrences[i],newValue};
+                placeholderMap[i] = new String[]{occurrences[i],newValue};
             }
             var f = new JDialog(parent,"Placeholder Input",true);
             f.setLocationRelativeTo(parent);
@@ -159,4 +158,23 @@ class PlaceholderInputController
         }
         return s;
     }
+
+    String describeLastValues()
+    {
+        if(occurrences == null || occurrences.length==0) return "";
+        var b = new StringBuilder();
+        for(int i=0;i<lastValues.length;i++)
+        {
+            if(i>0) b.append(", ");
+            b.append(lastValues[i][0]);
+            String s = lastValues[i][1];
+            b.append(":");
+            if(s!=null) b.append("\"")
+                    .append(s.replace("\n","\\n").replace("\"","\\\""))
+                    .append("\"");
+            else b.append("null");
+        }
+        return b.toString();
+    }
+
 }

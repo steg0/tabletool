@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import static javax.swing.SwingUtilities.invokeLater;
+import static javax.swing.SwingUtilities.invokeAndWait;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -12,6 +13,7 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
@@ -57,9 +59,11 @@ class ConnectionWorker
             String sql,
             int fetchsize,
             JdbcParametersInputController parametersController,
+            String placeholderlog,
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
             Consumer<UpdateCountEvent> updateCountConsumer,
-            Consumer<String> log
+            Consumer<String> log,
+            boolean skipEmptyColumns
     )
     {
         logger.info(sql);
@@ -70,6 +74,8 @@ class ConnectionWorker
         sqlRunnable.fetchsize = fetchsize;
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
+        sqlRunnable.skipEmptyColumns = skipEmptyColumns;
+        sqlRunnable.placeholderlog = placeholderlog;
         sqlRunnable.ts = System.currentTimeMillis();
         executor.execute(sqlRunnable);
     }
@@ -80,7 +86,9 @@ class ConnectionWorker
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
         private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
+        private boolean skipEmptyColumns;
         private String sql;
+        private String placeholderlog;
         private int fetchsize;
         private long ts;
 
@@ -105,82 +113,87 @@ class ConnectionWorker
                     {
                         report(log,"Query accepted at "+new Date());
                     }
-                    getResult(sql);
+                    getResult();
                 }
                 catch(SQLException e)
                 {
                     report(log,SQLExceptionPrinter.toString(sql,e));
                 }
+                catch(Exception e)
+                {
+                    report(log,"Internal error: " + e.getMessage());
+                    logger.log(Level.SEVERE, "Internal error",e);
+                }
             }
         }
 
-        private void getResult(String text)
-        throws SQLException
+        private void getResult()
+        throws Exception
         {
             try
             {
                 Matcher callableStatementParts = CallableStatementMatchers
-                        .prefixMatch(text);
-                String lc = text.toLowerCase();
+                        .prefixMatch(sql);
+                String lc = sql.toLowerCase();
+                String inlog,outlog;
                 if(callableStatementParts.group(1).length() > 0)
                 {
-                    if(text.endsWith(";"))
+                    if(sql.endsWith(";"))
                     {
-                        String noSemicolon = lc.substring(0,text.length()-1);
-                        if(!noSemicolon.trim().endsWith("end")) text = text
-                                .substring(0,text.length()-1);
+                        String noSemicolon = lc.substring(0,sql.length()-1);
+                        if(!noSemicolon.trim().endsWith("end")) sql = sql
+                                .substring(0,sql.length()-1);
                     }
 
-                    CallableStatement st = connection.prepareCall(text);
+                    CallableStatement st = connection.prepareCall(sql);
 
-                    if(parametersController != null)
-                        parametersController.applyToStatement(st);
+                    inlog = parameterTransfer(st,
+                            JdbcParametersInputController::applyToStatement);
 
                     boolean update = st.execute();
 
-                    if(parametersController != null)
-                        parametersController.readFromStatement(st);
+                    outlog = parameterTransfer(st,
+                            JdbcParametersInputController::readFromStatement);
 
                     if(update)
                     {
-                        reportResult(st);
+                        reportResult(st,inlog,outlog);
                     }
                     else
                     {
                         reportNullResult();
-                        displayUpdateCount(st);
+                        displayUpdateCount(st,inlog,outlog);
                     }
                 }
                 else
                 {
-                    if(text.endsWith(";")) text =
-                            text.substring(0,text.length()-1);
+                    if(sql.endsWith(";")) sql = sql.substring(0,sql.length()-1);
                     PreparedStatement st = info.updatableResultSets?
                             connection.prepareStatement(
-                                    text,
+                                    sql,
                                     ResultSet.TYPE_FORWARD_ONLY,
                                     ResultSet.CONCUR_UPDATABLE
                             ) :
                             connection.prepareStatement(
-                                    text
+                                    sql
                             );
 
-                    if(parametersController != null)
-                        parametersController.applyToStatement(st);
+                    inlog = parameterTransfer(st,
+                            JdbcParametersInputController::applyToStatement);
 
                     boolean update = st.execute();
 
-                    if(parametersController != null)
-                        parametersController.readFromStatement(st);
+                    outlog = parameterTransfer(st,
+                            JdbcParametersInputController::readFromStatement);
 
                     if(update)
                     {
-                        reportResult(st);
+                        reportResult(st,inlog,outlog);
                     }
                     else
                     {
                         reportNullResult();
-                        displayUpdateCount(st);
+                        displayUpdateCount(st,inlog,outlog);
                     }
                 }
             }
@@ -190,13 +203,50 @@ class ConnectionWorker
                 throw e;
             }
         }
+
+        private interface ParameterControllerFunction
+        {
+            String apply(JdbcParametersInputController controller,
+                    PreparedStatement st) throws SQLException;
+        }
         
-        private void displayUpdateCount(Statement statement)
+        /**Applies <code>f</code> to <code>st</code> in the event thread. */
+        private String parameterTransfer(PreparedStatement st,
+                ParameterControllerFunction f)
+        throws Exception
+        {
+            class SwingRunnable implements Runnable
+            {
+                SQLException e;
+                String report;
+                
+                public void run()
+                {
+                    try
+                    {
+                        if(parametersController!=null) report = f.apply(
+                            parametersController,st);
+                    }
+                    catch(SQLException e)
+                    {
+                        this.e = e;
+                    }
+                }
+            };
+            var r = new SwingRunnable();
+            invokeAndWait(r);
+            if(r.e != null) throw r.e;
+            return r.report;
+        }
+
+        private void displayUpdateCount(Statement statement,String inlog,
+                String outlog)
         throws SQLException
         {
             long now = System.currentTimeMillis();
             var countEvent = new UpdateCountEvent(ConnectionWorker.this,
-                    statement.getUpdateCount(), now-ts);
+                    statement.getUpdateCount(),now-ts,inlog,outlog,
+                    placeholderlog);
             invokeLater(() -> updateCountConsumer.accept(countEvent));
             statement.close();
         }
@@ -206,11 +256,13 @@ class ConnectionWorker
             invokeLater(() -> resultConsumer.accept(null,0L));
         }
 
-        private void reportResult(Statement statement)
+        private void reportResult(Statement statement,String inlog,
+                String outlog)
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(info.name,statement,fetchsize);
+            lastReportedResult.update(info.name,statement,fetchsize,inlog,
+                    outlog,placeholderlog,skipEmptyColumns);
             long now = System.currentTimeMillis();
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));
@@ -218,8 +270,7 @@ class ConnectionWorker
     }
 
     /**
-     * This is not needed before
-     * {@link #submit(String,int,Consumer,Consumer)} where it's done
+     * This is not needed before <code>submit</code> where it's done
      * automatically.
      */
     void closeResultSet(Consumer<String> log)

@@ -111,11 +111,11 @@ class NotebookController
         int lines = Math.min(10,log.getLineCount());
         int lineheight = log.getFontMetrics(log.getFont()).getHeight();
         int logheight = lineheight * lines;
-        logger.log(Level.FINE,"logheight: {0}",logheight);
+        logger.log(Level.FINE,"logheight={0}",logheight);
         int dividerSize = logBufferPane.getDividerSize();
-        logger.log(Level.FINE,"dividerSize: {0}",dividerSize);
+        logger.log(Level.FINE,"dividerSize={0}",dividerSize);
         int logBufferHeight = logBufferPane.getHeight();
-        logger.log(Level.FINE,"logBufferHeight: {0}",logBufferHeight);
+        logger.log(Level.FINE,"logBufferHeight={0}",logBufferHeight);
         logBufferPane.setDividerLocation(logBufferHeight - logheight - 
                 dividerSize - (int)(lineheight * .4));
     }
@@ -169,6 +169,7 @@ class NotebookController
         var im = connectionsSelector.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_PAGE_UP,0),"Focus Buffer");
         im.put(getKeyStroke(KeyEvent.VK_PAGE_DOWN,0),"Focus Buffer");
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         var am = connectionsSelector.getActionMap();
         am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(connectionsSelector);
@@ -185,12 +186,24 @@ class NotebookController
                 });
             });
         });
+        im = autocommitCb.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = autocommitCb.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(autocommitCb);
-        
+
         commitButton.addActionListener((e) -> commit());
+        im = commitButton.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = commitButton.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(commitButton);
         
         disconnectButton.addActionListener((e) -> disconnect());
+        im = disconnectButton.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = disconnectButton.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(disconnectButton);
         
         connectionPanel.add(new JLabel("Fetch:"));
@@ -205,6 +218,10 @@ class NotebookController
         connectionPanel.add(fetchsizeField);
         
         rollbackButton.addActionListener((e) -> rollback());
+        im = rollbackButton.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = rollbackButton.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
         connectionPanel.add(rollbackButton);
         
         var connectionPanelConstraints = new GridBagConstraints();
@@ -490,11 +507,13 @@ class NotebookController
             @Override 
             public void focusLost(FocusEvent e)
             {
-                lastFocusedBuffer = buffers.indexOf(c);
                 hasSavedFocusPosition = true;
             }
             @Override 
-            public void focusGained(FocusEvent e) { }
+            public void focusGained(FocusEvent e)
+            {
+                lastFocusedBuffer = buffers.indexOf(c);
+            }
         });
         c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
@@ -742,6 +761,7 @@ class NotebookController
 
     void openConnection()
     {
+        logger.log(Level.FINE,"lastFocusedBuffer={0}",lastFocusedBuffer);
         if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");
@@ -751,13 +771,16 @@ class NotebookController
 
     private boolean openConnection(String contextline)
     {
-        logger.log(Level.FINE,"Looking for alias in context: {0}",contextline);
+        logger.log(Level.FINE,"Looking for alias in context: <{0}>",
+                contextline);
         for(int i=0;i<connections.getSize();i++)
         {
-            if(contextline.startsWith(
-                    BufferController.CONNECT_COMMENT+
-                    connections.getElementAt(i).info().name))
+            String matchstr = BufferController.CONNECT_COMMENT +
+                    connections.getElementAt(i).info().name;
+            logger.log(Level.FINE,"Comparing with option: <{0}>",matchstr);
+            if(contextline.startsWith(matchstr))
             {
+                logger.fine("Match");
                 connectionsSelector.setSelectedIndex(i);
                 connectionsSelector.repaint();
                 restoreFocus();

@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -43,6 +44,11 @@ class ShowSampleConfigAction extends AbstractAction
             textarea.setEditable(false);
             textarea.setLineWrap(true);
             textarea.setWrapStyleWord(true);
+
+            textarea.setFont(new Font(
+                    Font.MONOSPACED,
+                    Font.PLAIN,
+                    textarea.getFont().getSize()));
             
             String line;
             while((line=r.readLine())!=null)

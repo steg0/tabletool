@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.lang.Boolean.TRUE;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -33,8 +35,7 @@ class JdbcParametersInputController implements ActionListener
     private static final String[] COLUMN_HEADERS =
             {"In","Numeric?","In Value","Out","Numeric?","Out Value"};
 
-    private JFrame parent;
-    private JDialog dialog;
+    private final JFrame dialog;
     private JTable table;
     private JScrollPane tablepane;
     private Object[][] data;
@@ -50,7 +51,7 @@ class JdbcParametersInputController implements ActionListener
                 Object value,boolean isSelected,boolean hasFocus,int row,
                 int column)
         {
-            cb.setSelected(Boolean.TRUE.equals(value));
+            cb.setSelected(TRUE.equals(value));
             cb.setBorderPainted(hasFocus);
             Color focusColor = closeButton.getForeground();
             cb.setBorder(BorderFactory.createLineBorder(focusColor));
@@ -58,9 +59,9 @@ class JdbcParametersInputController implements ActionListener
         }
     };
 
-    JdbcParametersInputController(JFrame parent)
+    JdbcParametersInputController(JFrame dialog)
     {
-        this.parent = parent;
+        this.dialog = dialog;
     }
 
     private void createTable()
@@ -79,21 +80,20 @@ class JdbcParametersInputController implements ActionListener
 
     private void initGrid()
     {
-        var f = new JDialog(parent,"JDBC Parameters Input",false);
-        f.setLocationRelativeTo(parent);
-        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        var layout = new BorderLayout(5,5);
+        dialog.getContentPane().setLayout(layout);
 
         var explanation = new JTextArea("Please configure " +
                 "JDBC parameters to set in the query.\n" +
                 "Either varchar or number values are supported.\n" +
                 "Use Enter to accept a value in a cell.");
         explanation.setEditable(false);
-        f.getContentPane().add(explanation,BorderLayout.NORTH);
+        dialog.getContentPane().add(explanation,BorderLayout.NORTH);
         
         data = new Object[9][6];
         createTable();
-        f.getContentPane().add(tablepane);
+        dialog.getContentPane().add(tablepane);
 
         var buttonPanel = new JPanel();
 
@@ -111,15 +111,14 @@ class JdbcParametersInputController implements ActionListener
         closeButton.addActionListener(this);
         buttonPanel.add(closeButton);
 
-        f.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
+        dialog.getContentPane().add(buttonPanel,BorderLayout.SOUTH);
 
-        f.getRootPane().registerKeyboardAction(
-                evt -> f.dispose(),
+        dialog.getRootPane().registerKeyboardAction(
+                evt -> dialog.dispose(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
-        f.setPreferredSize(new Dimension(400,300));
-        f.pack();
-        dialog = f;
+        dialog.setPreferredSize(new Dimension(400,300));
+        dialog.pack();
     }
 
     void add()
@@ -147,9 +146,15 @@ class JdbcParametersInputController implements ActionListener
 
     void setVisible(boolean visible)
     {
-        if(dialog==null) initGrid();
+        if(table==null) initGrid();
         dialog.setVisible(visible);
-        if(visible) table.requestFocusInWindow();
+        if(visible)
+        {
+            if(table.isEditing()) table.getCellEditor().stopCellEditing();
+            table.setRowSelectionInterval(0,0);
+            table.setColumnSelectionInterval(0,0);
+            table.requestFocusInWindow();
+        }
     }
 
     @Override
@@ -169,19 +174,17 @@ class JdbcParametersInputController implements ActionListener
         }
     }
 
-    void applyToStatement(PreparedStatement stmt)
+    String applyToStatement(PreparedStatement stmt)
     throws SQLException
     {
-        if(dialog==null) initGrid();
+        if(table==null) initGrid();
+        if(!dialog.isVisible()) return "";
         for(int i=0;i<table.getRowCount();i++)
         {
-            boolean in = Boolean.TRUE.equals(table.getModel().getValueAt(i,0));
-            boolean inNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,1));
-            boolean out = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,3));
-            boolean outNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,4));
+            boolean in = TRUE.equals(table.getModel().getValueAt(i,0));
+            boolean inNumeric = TRUE.equals(table.getModel().getValueAt(i,1));
+            boolean out = TRUE.equals(table.getModel().getValueAt(i,3));
+            boolean outNumeric = TRUE.equals(table.getModel().getValueAt(i,4));
             if(in)
             {
                 Object value = table.getModel().getValueAt(i,2);
@@ -208,18 +211,17 @@ class JdbcParametersInputController implements ActionListener
                 }
             }
         }
+        return describeInValues();
     }
 
-    void readFromStatement(PreparedStatement stmt)
+    String readFromStatement(PreparedStatement stmt)
     throws SQLException
     {
-        if(dialog==null) initGrid();
+        if(table==null) initGrid();
         for(int i=0;i<table.getRowCount();i++)
         {
-            boolean out = Boolean.TRUE.equals(
-                table.getModel().getValueAt(i,3));
-            boolean outNumeric = Boolean.TRUE.equals(
-                    table.getModel().getValueAt(i,4));
+            boolean out = TRUE.equals(table.getModel().getValueAt(i,3));
+            boolean outNumeric = TRUE.equals(table.getModel().getValueAt(i,4));
             if(out && stmt instanceof CallableStatement cstmt)
             {
                 Object value = outNumeric?
@@ -228,5 +230,55 @@ class JdbcParametersInputController implements ActionListener
                         value==null?null:value.toString(),i,5);
             }
         }
+        return describeOutValues();
+    }
+
+    private String describeInValues()
+    {
+        var b = new StringBuilder();
+        for(int i=0;i<table.getRowCount();i++)
+        {
+            var data = table.getModel();
+            boolean in = TRUE.equals(data.getValueAt(i,0));
+            if(in)
+            {
+                if(i>0) b.append(", ");
+                b.append("?");
+                b.append(Integer.toString(i+1));
+                b.append(":");
+                boolean numeric = TRUE.equals(data.getValueAt(i,1));
+                Object val = data.getValueAt(i,2);
+                if(!numeric&&val!=null) b.append("\"");
+                String s = String.valueOf(val);
+                b.append(s.replace("\n","\\n").replace("\"","\\\""));
+                if(!numeric&&val!=null) b.append("\"");
+            }
+        }
+        return b.toString();
+    }
+
+    private String describeOutValues()
+    {
+        var b = new StringBuilder();
+        for(int i=0;i<table.getRowCount();i++)
+        {
+            var data = table.getModel();
+            boolean out = TRUE.equals(data.getValueAt(i,3));
+            if(out)
+            {
+                if(i>0) b.append(", ");
+                b.append("?");
+                b.append(Integer.toString(i+1));
+                b.append(":");
+                boolean numeric = TRUE.equals(data.getValueAt(i,4));
+                Object val = data.getValueAt(i,5);
+                if(!numeric&&val!=null) b.append("\"");
+                String s = String.valueOf(val);
+                b.append(s.replace("\n","\\n").replace("\"","\\\""));
+                if(!numeric&&val!=null) b.append("\"");
+            }
+        }
+        if(b.length()>0) return " -> " + b.toString();
+        return "";
     }
 }

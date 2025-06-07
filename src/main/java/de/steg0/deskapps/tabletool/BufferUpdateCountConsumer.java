@@ -11,7 +11,7 @@ class BufferUpdateCountConsumer
 implements Consumer<UpdateCountEvent>
 {
     private static final MessageFormat UPDATE_LOG_FORMAT = 
-            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} on {3} affected in {1} ms at {2}\n");
+            new MessageFormat("{0,choice,-1#0 rows|0#0 rows|1#1 row|1<{0} rows} on {3} affected in {1} ms at {2}");
 
     private final JFrame parent;
     private final BufferController buffer;
@@ -28,19 +28,24 @@ implements Consumer<UpdateCountEvent>
         ConnectionWorker cw = e.getSource();
         Object[] logargs = {e.count,e.ms,new Date().toString(),
                 cw.info.name};
-        String msg = UPDATE_LOG_FORMAT.format(logargs);
+        String msg = UPDATE_LOG_FORMAT.format(logargs).trim();
         if(cw.info.confirmations)
         {
                 JOptionPane.showMessageDialog(
                         parent,
                         msg +
-                        "You are seeing this message because the " +
+                        "\nYou are seeing this message because the " +
                         "connection has confirmations enabled.",
                         "Update count notification",
                         JOptionPane.WARNING_MESSAGE);
 
         }
-        buffer.log.accept(msg);
+        String paramlog = (e.inlog + e.outlog);
+        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
+        if(!e.placeholderlog.isEmpty()) paramlog += " - " +
+                e.placeholderlog;
+
+        buffer.log.accept(msg + paramlog);
         buffer.restoreCaretPosition(false);
     }
 }
