@@ -52,7 +52,7 @@ class CellDisplayController
     private final File pwd;
 
     CellDisplayController(JFrame cellDisplay,JTable source,Consumer<String> log,
-            File pwd)
+            File pwd,Font editorfont)
     {
         this.cellDisplay = cellDisplay;
         this.pwd = pwd;
@@ -66,7 +66,7 @@ class CellDisplayController
                 {
                     int row = source.rowAtPoint(event.getPoint()),
                         col = source.columnAtPoint(event.getPoint());        
-                    showForSource(source,row,col,log);
+                    showForSource(source,row,col,log,editorfont);
                 }               
             }
         });
@@ -77,7 +77,7 @@ class CellDisplayController
                 {
                 case KeyEvent.VK_ENTER:
                     showForSource(source,source.getSelectedRow(),
-                            source.getSelectedColumn(),log);
+                            source.getSelectedColumn(),log,editorfont);
                     event.consume();
                 }
             }
@@ -88,7 +88,7 @@ class CellDisplayController
     }
 
     void showForSource(JTable source,int row,int col,
-            Consumer<String> log)
+            Consumer<String> log,Font editorfont)
     {
         if(row<0 || col<0)
         {
@@ -98,7 +98,7 @@ class CellDisplayController
         Object cellcontent = source.getValueAt(row,col);
         try
         {
-            show(rsm.rs,cellcontent,col+1);
+            show(rsm.rs,cellcontent,col+1,editorfont);
         }
         catch(SQLException e)
         {
@@ -115,7 +115,7 @@ class CellDisplayController
         }
     }
     
-    void show(ResultSet resultset,Object value,int column)
+    void show(ResultSet resultset,Object value,int column,Font editorfont)
     throws SQLException,IOException
     {
         var textarea = new JTextArea(17,72);
@@ -136,6 +136,7 @@ class CellDisplayController
                 b.append('\n');
             }
             textarea.setText(b.toString());
+            textarea.setFont(editorfont);
 
             var updateButton = new JButton("Update & Close");
             var updateAction = new ClobUpdateAction();
@@ -201,6 +202,7 @@ class CellDisplayController
         else
         {
             if(value!=null) textarea.setText(value.toString());
+            textarea.setFont(editorfont);
 
             if(resultset!=null)
             {

@@ -721,7 +721,8 @@ class BufferController
 
         resultview = new JTable(rsm);
         
-        new CellDisplayController(cellDisplay,resultview,log,configSource.pwd);
+        new CellDisplayController(cellDisplay,resultview,log,configSource.pwd,
+                editor.getFont());
         new BufferResultSetPopup(parent,this).attach();
         
         resultview.setCellSelectionEnabled(true);
@@ -800,6 +801,7 @@ class BufferController
         TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
                 editor.getFont().getSize() : sizes.get(0),
                 configSource.getResultViewHeight());
+        inforesultview.setFont(editor.getFont());
         inforesultview.setCellSelectionEnabled(true);
         inforesultview.setAutoCreateRowSorter(true);
         inforesultview.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
