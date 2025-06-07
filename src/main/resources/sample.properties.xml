@@ -259,6 +259,7 @@
             on co.table_name=t.table_name
             and co.column_name=t.column_name
         where t.table_name=upper(&amp;param)
+        order by t.table_name,column_id
     </entry>
     <entry key="drivers.oracle.completionTemplate">
         select table_name
