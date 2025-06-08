@@ -57,6 +57,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 
+import de.steg0.deskapps.tabletool.ConnectionListModel.PasswordPromptCanceledException;
+
 /**
  * Represents a "notebook", i. e. a series of text field/result table pairs that
  * operate on a selectable {@link ConnectionWorker}.
@@ -887,6 +889,11 @@ class NotebookController
             }
             setBranding(item.info().background,item.info().name);
             restoreFocus();
+        }
+        catch(PasswordPromptCanceledException e)
+        {
+            reportDisconnect(first().connection);
+            logConsumer.accept("Password prompt canceled");
         }
         catch(SQLException e)
         {

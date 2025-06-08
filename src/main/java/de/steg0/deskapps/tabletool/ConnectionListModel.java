@@ -52,6 +52,10 @@ implements ComboBoxModel<Connections.ConnectionState>
         }
     }
 
+    static class PasswordPromptCanceledException extends Exception
+    {
+    }
+
     /**
      * blocking; establishes connection if needed. Note: this checks if a
      * password has the special value "PROMPT", in which case it asks
@@ -60,61 +64,19 @@ implements ComboBoxModel<Connections.ConnectionState>
      */
     ConnectionWorker getConnection(Connections.ConnectionState connection,
             Consumer<String> log,JFrame parent)
-    throws SQLException
+    throws SQLException,PasswordPromptCanceledException
     {
         ConnectionInfo info = connection.info();
         String oldPassword = info.password;
         if("PROMPT".equals(info.password) &&
            !connections.isConnected(connection))
         {
-            info.password = null;
-            
-            var dialog = new JDialog(parent,"Credentials prompt",true);
-            var inputPanel = new JPanel(new GridBagLayout());
-            inputPanel.add(new JLabel("Connection: "+info.name),
-                    new GridBagConstraints(0,0,2,1,0,0,
-                            GridBagConstraints.NORTHWEST,
-                            GridBagConstraints.NONE,
-                            new Insets(0,5,0,5),5,5));
-            inputPanel.add(new JLabel("User: "+info.username),
-                    new GridBagConstraints(0,1,2,1,0,0,
-                            GridBagConstraints.NORTHWEST,
-                            GridBagConstraints.NONE,
-                            new Insets(0,5,0,5),5,5));
-            inputPanel.add(new JLabel("Password:"),
-                    new GridBagConstraints(0,2,1,1,0,0,
-                            GridBagConstraints.NORTHWEST,
-                            GridBagConstraints.NONE,
-                            new Insets(0,5,0,0),5,5));
-            var pf = new JPasswordField();
-            pf.setPreferredSize(new Dimension(120,20));
-            inputPanel.add(pf,
-                    new GridBagConstraints(1,2,1,1,1,0,
-                            GridBagConstraints.NORTHWEST,
-                            GridBagConstraints.HORIZONTAL,
-                            new Insets(0,0,0,5),5,5));
-            dialog.getContentPane().add(inputPanel);
+            promptForPassword(parent,info);
 
-            dialog.setLocationRelativeTo(parent);
-            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            ((BorderLayout)dialog.getContentPane().getLayout()).setVgap(5);
-            
-            var okButton = new JButton("OK");
-            okButton.addActionListener(e ->
+            if("PROMPT".equals(info.password))
             {
-                info.password=new String(pf.getPassword());
-                dialog.dispose();
-            });
-            dialog.getContentPane().add(okButton,BorderLayout.SOUTH);
-
-            dialog.getRootPane().setDefaultButton(okButton);
-            dialog.getRootPane().registerKeyboardAction(
-                    evt -> dialog.dispose(),
-                    KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
-                    JComponent.WHEN_IN_FOCUSED_WINDOW);
-            dialog.pack();
-            pf.requestFocusInWindow();
-            dialog.setVisible(true);
+                throw new PasswordPromptCanceledException();
+            }
         }
         try
         {
@@ -163,4 +125,53 @@ implements ComboBoxModel<Connections.ConnectionState>
         return selected;
     }
     
+    private void promptForPassword(JFrame parent,ConnectionInfo info)
+    {
+        var dialog = new JDialog(parent,"Credentials prompt",true);
+        var inputPanel = new JPanel(new GridBagLayout());
+        inputPanel.add(new JLabel("Connection: "+info.name),
+                new GridBagConstraints(0,0,2,1,0,0,
+                        GridBagConstraints.NORTHWEST,
+                        GridBagConstraints.NONE,
+                        new Insets(0,5,0,5),5,5));
+        inputPanel.add(new JLabel("User: "+info.username),
+                new GridBagConstraints(0,1,2,1,0,0,
+                        GridBagConstraints.NORTHWEST,
+                        GridBagConstraints.NONE,
+                        new Insets(0,5,0,5),5,5));
+        inputPanel.add(new JLabel("Password:"),
+                new GridBagConstraints(0,2,1,1,0,0,
+                        GridBagConstraints.NORTHWEST,
+                        GridBagConstraints.NONE,
+                        new Insets(0,5,0,0),5,5));
+        var pf = new JPasswordField();
+        pf.setPreferredSize(new Dimension(120,20));
+        inputPanel.add(pf,
+                new GridBagConstraints(1,2,1,1,1,0,
+                        GridBagConstraints.NORTHWEST,
+                        GridBagConstraints.HORIZONTAL,
+                        new Insets(0,0,0,5),5,5));
+        dialog.getContentPane().add(inputPanel);
+
+        dialog.setLocationRelativeTo(parent);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        ((BorderLayout)dialog.getContentPane().getLayout()).setVgap(5);
+        
+        var okButton = new JButton("OK");
+        okButton.addActionListener(e ->
+        {
+            info.password=new String(pf.getPassword());
+            dialog.dispose();
+        });
+        dialog.getContentPane().add(okButton,BorderLayout.SOUTH);
+
+        dialog.getRootPane().setDefaultButton(okButton);
+        dialog.getRootPane().registerKeyboardAction(
+                evt -> dialog.dispose(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        dialog.pack();
+        pf.requestFocusInWindow();
+        dialog.setVisible(true);
+    }
 }

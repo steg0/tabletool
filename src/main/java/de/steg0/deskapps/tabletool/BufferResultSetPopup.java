@@ -4,6 +4,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 
 import javax.swing.JFrame;
@@ -58,7 +59,8 @@ class BufferResultSetPopup
 
     private void openResultAsHtml(boolean transposed)
     {
-        try(var exporter = new HtmlExporter())
+        try(var exporter = new DesktopExporter("tthtml",".html");
+            var writer = new OutputStreamWriter(exporter.getOutputStream()))
         {
             var htmlbuf = new StringBuilder();
             htmlbuf.append("<pre>");
@@ -67,16 +69,14 @@ class BufferResultSetPopup
                 htmlbuf.append(HtmlEscaper.nonAscii(c));
             });
             htmlbuf.append("</pre>");
-            exporter.getWriter().write(htmlbuf.toString());                
+            writer.write(htmlbuf.toString());
             if(transposed)
             {
-                b.getResultSetTableModel().toHtmlTransposed(
-                        exporter.getWriter());
+                b.getResultSetTableModel().toHtmlTransposed(writer);
             }
             else
             {
-                exporter.getWriter().write(b.getResultSetTableModel()
-                        .toHtml());
+                writer.write(b.getResultSetTableModel().toHtml());
             }
             exporter.openWithDesktop();
         }
