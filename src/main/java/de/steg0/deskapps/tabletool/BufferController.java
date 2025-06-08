@@ -798,10 +798,10 @@ class BufferController
     private void showInfoTable(ResultSetTableModel rsm)
     {
         JTable inforesultview = new JTable(rsm);
+        inforesultview.setFont(editor.getFont());
         TableFontSizer.setFontSize(inforesultview,sizes.isEmpty()?
                 editor.getFont().getSize() : sizes.get(0),
                 configSource.getResultViewHeight());
-        inforesultview.setFont(editor.getFont());
         inforesultview.setCellSelectionEnabled(true);
         inforesultview.setAutoCreateRowSorter(true);
         inforesultview.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
