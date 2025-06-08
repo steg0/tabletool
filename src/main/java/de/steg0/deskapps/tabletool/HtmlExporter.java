@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-public class HtmlExporter implements AutoCloseable
+class HtmlExporter implements AutoCloseable
 {
-    File tmpfile;
-    Writer w;
+    private File tmpfile;
+    private Writer w;
 
     HtmlExporter() throws IOException
     {
