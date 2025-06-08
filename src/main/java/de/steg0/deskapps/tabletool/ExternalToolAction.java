@@ -52,6 +52,11 @@ class ExternalToolAction extends AbstractAction
         String text = b.editor.getSelectedText() != null?
                 b.editor.getSelectedText() :
                 b.selectCurrentQuery();
+        if(text==null)
+        {
+            b.log.accept("No query available at " + new Date());
+            return;
+        }
         InputStream is=null,es=null;
         OutputStream os=null;
         try
