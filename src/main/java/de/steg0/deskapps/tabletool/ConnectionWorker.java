@@ -121,7 +121,8 @@ class ConnectionWorker
                 }
                 catch(Exception e)
                 {
-                    report(log,"Internal error: " + e.getMessage());
+                    report(log,"Internal error: " + e.getMessage() + " at " + 
+                            new Date());
                     logger.log(Level.SEVERE, "Internal error",e);
                 }
             }

@@ -893,7 +893,7 @@ class NotebookController
         catch(PasswordPromptCanceledException e)
         {
             reportDisconnect(first().connection);
-            logConsumer.accept("Password prompt canceled");
+            logConsumer.accept("Password prompt canceled at " + new Date());
         }
         catch(SQLException e)
         {
