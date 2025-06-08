@@ -14,8 +14,10 @@
         Frame defaults. If no position is set, the window is centered.
     -->
 
+    <!--
     <entry key="frame.x">50</entry>
     <entry key="frame.y">10</entry>
+    -->
     <entry key="frame.w">700</entry>
     <entry key="frame.h">450</entry>
 
