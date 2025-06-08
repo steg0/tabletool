@@ -4,35 +4,34 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.OutputStream;
 
-class HtmlExporter implements AutoCloseable
+class DesktopExporter implements AutoCloseable
 {
     private File tmpfile;
-    private Writer w;
+    private OutputStream o;
 
-    HtmlExporter() throws IOException
+    DesktopExporter(String prefix,String suffix) throws IOException
     {
-        tmpfile = File.createTempFile("tthtml",".html");
+        tmpfile = File.createTempFile(prefix,suffix);
         tmpfile.deleteOnExit();
-        w = new OutputStreamWriter(new FileOutputStream(tmpfile));
+        o = new FileOutputStream(tmpfile);
     }
 
-    Writer getWriter()
+    OutputStream getOutputStream()
     {
-        return w;
+        return o;
     }
 
     void openWithDesktop() throws Exception
     {
-        w.flush();
+        o.flush();
         Desktop.getDesktop().open(tmpfile);
     }
 
     @Override
     public void close() throws IOException
     {
-        w.close();
+        o.close();
     }
 }
