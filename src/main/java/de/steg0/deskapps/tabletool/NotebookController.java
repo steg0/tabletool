@@ -767,7 +767,9 @@ class NotebookController
         if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");
-            connectionsSelector.requestFocusInWindow();
+            var connectionDialog = new OpenConnectionDialogController(
+                    this,parent);
+            connectionDialog.pick("");
         }
     }
 
@@ -783,13 +785,18 @@ class NotebookController
             if(contextline.startsWith(matchstr))
             {
                 logger.fine("Match");
-                connectionsSelector.setSelectedIndex(i);
-                connectionsSelector.repaint();
-                restoreFocus();
+                openConnection(i);
                 return true;
             }
         }
         return false;
+    }
+
+    void openConnection(int index)
+    {
+        connectionsSelector.setSelectedIndex(index);
+        connectionsSelector.repaint();
+        restoreFocus();
     }
 
     void disconnect()
