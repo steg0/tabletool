@@ -180,8 +180,9 @@ class NotebookController
             public void keyTyped(KeyEvent e)
             {
                 char c = e.getKeyChar();
-                if(c != KeyEvent.CHAR_UNDEFINED)
+                if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
                 {
+                    e.consume();
                     var connectionDialog = new OpenConnectionDialogController(
                             NotebookController.this,parent);
                     connectionDialog.pick(String.valueOf(c));
