@@ -110,11 +110,12 @@ class TabSetMenuBar
         menu.setMnemonic(KeyEvent.VK_C);
 
         item = new JMenuItem(tabset.openAction);
-        item.setAccelerator(getKeyStroke(KeyEvent.VK_D,CTRL_MASK));
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_K,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_O);
         menu.add(item);
 
         item = new JMenuItem(tabset.disconnectAction);
+        item.setAccelerator(getKeyStroke(KeyEvent.VK_D,CTRL_MASK));
         item.setMnemonic(KeyEvent.VK_D);
         menu.add(item);
         

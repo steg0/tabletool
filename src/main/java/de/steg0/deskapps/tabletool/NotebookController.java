@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -174,6 +175,19 @@ class NotebookController
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         var am = connectionsSelector.getActionMap();
         am.put("Focus Buffer",focusBufferAction);
+        connectionsSelector.addKeyListener(new KeyAdapter()
+        {
+            public void keyTyped(KeyEvent e)
+            {
+                char c = e.getKeyChar();
+                if(c != KeyEvent.CHAR_UNDEFINED)
+                {
+                    var connectionDialog = new OpenConnectionDialogController(
+                            NotebookController.this,parent);
+                    connectionDialog.pick(String.valueOf(c));
+                }
+            }    
+        });
         connectionPanel.add(connectionsSelector);
         
         logConsumer = new NotebookLogConsumer(log);
