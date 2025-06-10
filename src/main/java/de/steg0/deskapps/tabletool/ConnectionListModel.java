@@ -157,7 +157,6 @@ implements ComboBoxModel<Connections.ConnectionState>,
                         new Insets(0,0,0,5),5,5));
         dialog.getContentPane().add(inputPanel);
 
-        dialog.setLocationRelativeTo(parent);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         ((BorderLayout)dialog.getContentPane().getLayout()).setVgap(5);
         
@@ -175,6 +174,7 @@ implements ComboBoxModel<Connections.ConnectionState>,
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.pack();
+        dialog.setLocationRelativeTo(parent);
         pf.requestFocusInWindow();
         dialog.setVisible(true);
     }
