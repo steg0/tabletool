@@ -21,6 +21,8 @@ import javax.swing.KeyStroke;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 
 import de.steg0.deskapps.tabletool.PropertyHolder.ConnectionInfo;
 
@@ -30,8 +32,10 @@ import de.steg0.deskapps.tabletool.PropertyHolder.ConnectionInfo;
  * dialog if a connection is configured for prompted passwords.
  */
 class ConnectionListModel
-implements ComboBoxModel<Connections.ConnectionState>
+implements ComboBoxModel<Connections.ConnectionState>,
+        TableModel
 {
+    private static final String PROMPT = "PROMPT";
 
     private final Connections connections;
     private Object selected;
@@ -68,12 +72,12 @@ implements ComboBoxModel<Connections.ConnectionState>
     {
         ConnectionInfo info = connection.info();
         String oldPassword = info.password;
-        if("PROMPT".equals(info.password) &&
+        if(PROMPT.equals(info.password) &&
            !connections.isConnected(connection))
         {
             promptForPassword(parent,info);
 
-            if("PROMPT".equals(info.password))
+            if(PROMPT.equals(info.password))
             {
                 throw new PasswordPromptCanceledException();
             }
@@ -153,7 +157,6 @@ implements ComboBoxModel<Connections.ConnectionState>
                         new Insets(0,0,0,5),5,5));
         dialog.getContentPane().add(inputPanel);
 
-        dialog.setLocationRelativeTo(parent);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         ((BorderLayout)dialog.getContentPane().getLayout()).setVgap(5);
         
@@ -171,7 +174,92 @@ implements ComboBoxModel<Connections.ConnectionState>
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
         dialog.pack();
+        dialog.setLocationRelativeTo(parent);
         pf.requestFocusInWindow();
         dialog.setVisible(true);
+    }
+
+    @Override
+    public int getRowCount()
+    {
+        return getSize();
+    }
+
+    @Override
+    public int getColumnCount()
+    {
+        return 4;
+    }
+
+    @Override
+    public String getColumnName(int columnIndex)
+    {
+        return switch(columnIndex)
+        {
+            case 1 -> "Url";
+            case 2 -> "User";
+            case 3 -> "Prompt for password?";
+            default -> "Name";
+        };
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex)
+    {
+        return switch(columnIndex)
+        {
+            case 1 -> String.class;
+            case 2 -> String.class;
+            case 3 -> Boolean.class;
+            default -> String.class;
+        };
+    }
+
+    @Override
+    public boolean isCellEditable(int rowIndex,int columnIndex)
+    {
+        return columnIndex > 0;
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex,int columnIndex)
+    {
+        Connections.ConnectionState state = getElementAt(rowIndex);
+        ConnectionInfo info = state.info();
+        return switch(columnIndex)
+        {
+            case 1 -> info.url;
+            case 2 -> info.username;
+            case 3 -> PROMPT.equals(info.password);
+            default -> state.toString();
+        };
+    }
+
+    @Override
+    public void setValueAt(Object value,int rowIndex,int columnIndex)
+    {
+        Connections.ConnectionState state = getElementAt(rowIndex);
+        ConnectionInfo info = state.info();
+        switch(columnIndex)
+        {
+            case 1:
+                info.url = value == null? "jdbc:" : value.toString();
+                break;
+            case 2:
+                info.username = value == null? "" : value.toString();
+                break;
+            case 3:
+                if(Boolean.TRUE.equals(value)) info.password=PROMPT;
+        }
+    }
+
+    @Override
+    public void addTableModelListener(TableModelListener l)
+    {
+    }
+
+    @Override
+    public void removeTableModelListener(TableModelListener l)
+    {
     }
 }

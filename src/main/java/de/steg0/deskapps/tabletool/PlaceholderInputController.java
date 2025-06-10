@@ -97,10 +97,9 @@ class PlaceholderInputController
                 placeholderMap[i] = new String[]{occurrences[i],newValue};
             }
             var f = new JDialog(parent,"Placeholder Input",true);
-            f.setLocationRelativeTo(parent);
             f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             ((BorderLayout)f.getContentPane().getLayout()).setVgap(5);
-
+            
             var explanation = new JTextArea("Please provide values " +
                     "for placeholders found in the query.\n" +
                     "Use Enter to accept a value in a cell, and Ctrl+Enter " +
@@ -127,6 +126,7 @@ class PlaceholderInputController
                     KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),
                     JComponent.WHEN_IN_FOCUSED_WINDOW);
             f.pack();
+            f.setLocationRelativeTo(parent);
 
             table.setRowSelectionInterval(0,0);
             table.setColumnSelectionInterval(1,1);

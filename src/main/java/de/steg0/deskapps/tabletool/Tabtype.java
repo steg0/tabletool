@@ -72,7 +72,6 @@ extends WindowAdapter
         
         var jdbcParametersDialog = new JFrame("JDBC Parameters Input");
         jdbcParametersDialog.setIconImages(getIcons());
-        jdbcParametersDialog.setLocationRelativeTo(frame);
         parametersController = new JdbcParametersInputController(
                 jdbcParametersDialog);
 
@@ -95,6 +94,7 @@ extends WindowAdapter
         controller.menubar.recreate();
         
         frame.pack();
+        jdbcParametersDialog.setLocationRelativeTo(frame);
         Point location = propertyHolder.getDefaultFrameLocation();
         if(location==null) frame.setLocationRelativeTo(null);
         else frame.setLocation(location);

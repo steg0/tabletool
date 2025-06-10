@@ -54,7 +54,7 @@ class ExternalToolAction extends AbstractAction
                 b.selectCurrentQuery();
         if(text==null)
         {
-            b.log.accept("No query available at " + new Date());
+            b.log.accept("No query found at " + new Date());
             return;
         }
         InputStream is=null,es=null;

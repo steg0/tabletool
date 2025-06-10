@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -174,6 +175,20 @@ class NotebookController
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         var am = connectionsSelector.getActionMap();
         am.put("Focus Buffer",focusBufferAction);
+        connectionsSelector.addKeyListener(new KeyAdapter()
+        {
+            public void keyTyped(KeyEvent e)
+            {
+                char c = e.getKeyChar();
+                if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
+                {
+                    e.consume();
+                    var connectionDialog = new OpenConnectionDialogController(
+                            NotebookController.this,parent);
+                    connectionDialog.pick(String.valueOf(c));
+                }
+            }    
+        });
         connectionPanel.add(connectionsSelector);
         
         logConsumer = new NotebookLogConsumer(log);
@@ -767,7 +782,9 @@ class NotebookController
         if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
         {
             logger.fine("No suitable connection definition found");
-            connectionsSelector.requestFocusInWindow();
+            var connectionDialog = new OpenConnectionDialogController(
+                    this,parent);
+            connectionDialog.pick("");
         }
     }
 
@@ -783,13 +800,18 @@ class NotebookController
             if(contextline.startsWith(matchstr))
             {
                 logger.fine("Match");
-                connectionsSelector.setSelectedIndex(i);
-                connectionsSelector.repaint();
-                restoreFocus();
+                openConnection(i);
                 return true;
             }
         }
         return false;
+    }
+
+    void openConnection(int index)
+    {
+        connectionsSelector.setSelectedIndex(index);
+        connectionsSelector.repaint();
+        restoreFocus();
     }
 
     void disconnect()
@@ -893,7 +915,7 @@ class NotebookController
         catch(PasswordPromptCanceledException e)
         {
             reportDisconnect(first().connection);
-            logConsumer.accept("Password prompt canceled");
+            logConsumer.accept("Password prompt canceled at " + new Date());
         }
         catch(SQLException e)
         {

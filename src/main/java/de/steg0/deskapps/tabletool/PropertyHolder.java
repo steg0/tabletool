@@ -229,9 +229,8 @@ class PropertyHolder
         static final String CONNECTIONS_PREFIX = "connections.";
         static final String DRIVERS_PREFIX = "drivers.";
         
-        final String name,url,username,completionTemplate,infoTemplate,
-            initSql;
-        String password;
+        final String completionTemplate,infoTemplate,initSql;
+        String name,url,username,password;
         final Map<String,String> snippetTemplates;
         final Color background;
         final boolean confirmations;
