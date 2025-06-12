@@ -94,19 +94,19 @@ extends WindowAdapter
         controller.menubar.recreate();
         
         frame.pack();
-        jdbcParametersDialog.setLocationRelativeTo(frame);
         Point location = propertyHolder.getDefaultFrameLocation();
         if(location==null) frame.setLocationRelativeTo(null);
         else frame.setLocation(location);
-
+        
         Point parentLocation = frame.getLocation();
         int dialogx = (int)parentLocation.getX()+30,
-            dialogy = (int)parentLocation.getY()+30;
+        dialogy = (int)parentLocation.getY()+30;
         cellDisplay.setLocation(dialogx,dialogy);
         infoDisplay.setLocation(dialogx,dialogy);
+        jdbcParametersDialog.setLocation(dialogx,dialogy);
         infoDisplay.getContentPane().setPreferredSize(
                 propertyHolder.getDefaultFrameSize());
-
+            
         frame.setVisible(true);
     }
     

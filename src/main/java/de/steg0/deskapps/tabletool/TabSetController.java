@@ -157,21 +157,21 @@ implements KeyListener
                 if(notebook.file==null||notebook.file.getParentFile()==null)
                 {
                     JOptionPane.showMessageDialog(
-                        tabbedPane,
+                        parent,
                         "No folder available for current file",
                         "Error opening containing folder",
                         JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                File parent = notebook.file.getParentFile();
+                File parentFile = notebook.file.getParentFile();
                 try
                 {
-                    Desktop.getDesktop().open(parent);
+                    Desktop.getDesktop().open(parentFile);
                 }
                 catch(IOException e)
                 {
                     JOptionPane.showMessageDialog(
-                            tabbedPane,
+                            parent,
                             "Error opening "+parent+": "+e.getMessage(),
                             "Error opening containing folder",
                             JOptionPane.ERROR_MESSAGE);
@@ -310,7 +310,7 @@ implements KeyListener
                 catch(IOException e)
                 {
                     JOptionPane.showMessageDialog(
-                            tabbedPane,
+                            parent,
                             "Error opening properties files:\n"+e.getMessage(),
                             "Error opening properties",
                             JOptionPane.ERROR_MESSAGE);
@@ -335,7 +335,7 @@ implements KeyListener
                 catch(IOException e)
                 {
                     JOptionPane.showMessageDialog(
-                            tabbedPane,
+                            parent,
                             "Error refreshing files:\n"+e.getMessage(),
                             "Error refreshing properties",
                             JOptionPane.ERROR_MESSAGE);
@@ -674,7 +674,7 @@ implements KeyListener
         if(file==null)
         {
             var filechooser = new JFileChooser(getPwd());
-            int returnVal = filechooser.showOpenDialog(tabbedPane);
+            int returnVal = filechooser.showOpenDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
         }
@@ -692,7 +692,7 @@ implements KeyListener
         catch(Exception e)
         {
             JOptionPane.showMessageDialog(
-                    tabbedPane,
+                    parent,
                     "Error loading: "+e.getMessage(),
                     "Error loading",
                     JOptionPane.ERROR_MESSAGE);
@@ -708,7 +708,7 @@ implements KeyListener
         if(notebook.file == null)
         {
             JOptionPane.showMessageDialog(
-                    tabbedPane,
+                    parent,
                     "Error reverting: Notebook not present on disk",
                     "Error reverting",
                     JOptionPane.ERROR_MESSAGE);
@@ -736,7 +736,7 @@ implements KeyListener
         catch(Exception e)
         {
             JOptionPane.showMessageDialog(
-                    tabbedPane,
+                    parent,
                     "Error loading: "+e.getMessage(),
                     "Error loading",
                     JOptionPane.ERROR_MESSAGE);
