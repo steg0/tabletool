@@ -639,13 +639,13 @@ class NotebookController
         if(file==null || saveAs)
         {
             var filechooser = new JFileChooser(bufferConfigSource.pwd);
-            int returnVal = filechooser.showSaveDialog(bufferPanel);
+            int returnVal = filechooser.showSaveDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
             newFile=filechooser.getSelectedFile();
             if(newFile.exists())
             {
                 int option = JOptionPane.showConfirmDialog(
-                        bufferPane,
+                        parent,
                         "File exists. Continue?",
                         "File exists",
                         JOptionPane.YES_NO_OPTION);
@@ -657,7 +657,7 @@ class NotebookController
             if(wasModified())
             {
                 int option = JOptionPane.showConfirmDialog(
-                        bufferPane,
+                        parent,
                         "File seems modified on disk. Continue?",
                         "File modified",
                         JOptionPane.YES_NO_OPTION);
@@ -682,7 +682,7 @@ class NotebookController
         catch(IOException e)
         {
             JOptionPane.showMessageDialog(
-                    bufferPane,
+                    parent,
                     "Error saving: "+e.getMessage(),
                     "Error saving",
                     JOptionPane.ERROR_MESSAGE);
@@ -695,14 +695,14 @@ class NotebookController
         if(file == null)
         {
             JOptionPane.showMessageDialog(
-                    bufferPane,
+                    parent,
                     "Please save to a file first.",
                     "Cannot rename",
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
         String newname = (String)JOptionPane.showInputDialog(
-                bufferPane,
+                parent,
                 "Please enter a new name:",
                 "Rename file",
                 JOptionPane.QUESTION_MESSAGE,
@@ -719,7 +719,7 @@ class NotebookController
         else
         {
             JOptionPane.showMessageDialog(
-                    bufferPane,
+                    parent,
                     "Could not rename the file to \""+newname+"\"",
                     "Error renaming",
                     JOptionPane.ERROR_MESSAGE);
