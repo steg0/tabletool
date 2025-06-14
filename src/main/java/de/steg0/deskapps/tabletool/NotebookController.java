@@ -111,6 +111,7 @@ class NotebookController
 
     private void resize()
     {
+        logger.fine("Autoresizing log area to accommodate text");
         int lines = Math.min(10,log.getLineCount());
         int lineheight = log.getFontMetrics(log.getFont()).getHeight();
         int logheight = lineheight * lines;
@@ -129,6 +130,23 @@ class NotebookController
             @Override public void insertUpdate(DocumentEvent e) { resize(); }
             @Override public void removeUpdate(DocumentEvent e) { resize(); }
             @Override public void changedUpdate(DocumentEvent e) { resize(); }
+        });
+        log.addKeyListener(new KeyAdapter()
+        {
+            /**
+             * Overrides normal F6 behavior in the split pane which would
+             * just focus the top-most buffer. It's a bit more convenient
+             * that way.
+             */
+            public void keyPressed(KeyEvent e)
+            {
+                if(e.getKeyCode() == KeyEvent.VK_F6 && hasSavedFocusPosition)
+                {
+                    logger.fine("F6 pressed in log, restoring buffer focus");
+                    restoreFocus();
+                    e.consume();
+                }
+            }
         });
     }
     
