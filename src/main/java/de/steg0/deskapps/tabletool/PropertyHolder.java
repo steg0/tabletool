@@ -33,6 +33,11 @@ class PropertyHolder
         assert propertiesfiles != null;
         this.propertiesfiles = propertiesfiles;
     }
+
+    PropertyHolder(Properties properties)
+    {
+        this.properties = properties;
+    }
     
     void load()
     throws IOException
@@ -148,14 +153,14 @@ class PropertyHolder
     Object[] getColorUIDefaults()
     {
         return properties
-            .stringPropertyNames().stream()
-            .filter((k) -> k.startsWith(UIDEFAULTS_COLOR_PREFIX))
-            .map((k) -> new Object[]{
-                    k.substring(UIDEFAULTS_COLOR_PREFIX.length()),
-                    Color.decode(properties.get(k).toString())
-            })
-            .flatMap(Arrays::stream)
-            .toArray(Object[]::new);
+                .stringPropertyNames().stream()
+                .filter((k) -> k.startsWith(UIDEFAULTS_COLOR_PREFIX))
+                .map((k) -> new Object[]{
+                        k.substring(UIDEFAULTS_COLOR_PREFIX.length()),
+                        Color.decode(properties.get(k).toString())
+                })
+                .flatMap(Arrays::stream)
+                .toArray(Object[]::new);
     }
 
     private static final String UIDEFAULTS_GRADIENT_PREFIX =
@@ -164,18 +169,18 @@ class PropertyHolder
     Object[] getGradientUIDefaults()
     {
         return properties
-            .stringPropertyNames().stream()
-            .filter((k) -> k.startsWith(UIDEFAULTS_GRADIENT_PREFIX))
-            .map((k) -> new Object[]{
-                    k.substring(UIDEFAULTS_GRADIENT_PREFIX.length()),
-                    Arrays.stream(properties.get(k).toString()
-                            .split("\\s*,\\s*"))
-                            .map(x -> x.startsWith("#")?
-                                    Color.decode(x) : Double.valueOf(x))
-                            .collect(Collectors.toList())
-            })
-            .flatMap(Arrays::stream)
-            .toArray(Object[]::new);
+                .stringPropertyNames().stream()
+                .filter((k) -> k.startsWith(UIDEFAULTS_GRADIENT_PREFIX))
+                .map((k) -> new Object[]{
+                        k.substring(UIDEFAULTS_GRADIENT_PREFIX.length()),
+                        Arrays.stream(properties.get(k).toString()
+                                .split("\\s*,\\s*"))
+                                .map(x -> x.startsWith("#")?
+                                        Color.decode(x) : Double.valueOf(x))
+                                .collect(Collectors.toList())
+                })
+                .flatMap(Arrays::stream)
+                .toArray(Object[]::new);
     }
 
     private Color getColorProperty(String key,Color defaultColor)
@@ -195,12 +200,12 @@ class PropertyHolder
     ExternalToolDefinition[] getExternalToolDefinitions()
     {
         return properties
-            .stringPropertyNames().stream()
-            .filter((k) -> k.startsWith(EXTERNAL_TOOL_DEFINITION_PREFIX))
-            .map(PropertyHolder::getExternalToolNameKey)
-            .distinct()
-            .map(this::getExternalToolDefinition)
-            .toArray(ExternalToolDefinition[]::new);
+                .stringPropertyNames().stream()
+                .filter((k) -> k.startsWith(EXTERNAL_TOOL_DEFINITION_PREFIX))
+                .map(PropertyHolder::getExternalToolNameKey)
+                .distinct()
+                .map(this::getExternalToolDefinition)
+                .toArray(ExternalToolDefinition[]::new);
     }
 
     private static String getExternalToolNameKey(Object propertyKey)
@@ -245,35 +250,25 @@ class PropertyHolder
             username=String.valueOf(properties.get(prefix+".username"));
             password=String.valueOf(properties.get(prefix+".password"));
 
-            String driverSpec = url.replaceFirst("^jdbc\\:([a-z0-9]+)\\:.*$",
+            String driverSpec = url.replaceFirst("^jdbc\\:([a-z0-9]*)\\:.*$",
                     "$1");
             logger.fine("Looking up templates for driver "+driverSpec);
 
-            completionTemplate = properties.containsKey(
-                    prefix+".completionTemplate")? String.valueOf(
-                            properties.get(prefix+".completionTemplate")) :
-                    properties.containsKey(
-                            DRIVERS_PREFIX+driverSpec+".completionTemplate")?
-                            String.valueOf(properties.get(DRIVERS_PREFIX+
-                                    driverSpec+".completionTemplate")) : null;
+            completionTemplate = getForConnection(nameKey,
+                    ".completionTemplate").getOrDefault("",getForDriver(
+                                driverSpec,".completionTemplate").get(""));
             
-            infoTemplate = properties.containsKey(prefix+".infoTemplate")?
-                    String.valueOf(properties.get(prefix+".infoTemplate")) :
-                    properties.containsKey(
-                            DRIVERS_PREFIX+driverSpec+".infoTemplate")?
-                            String.valueOf(properties.get(DRIVERS_PREFIX+
-                                    driverSpec+".infoTemplate")) : null;
+            infoTemplate = getForConnection(nameKey,".infoTemplate")
+                    .getOrDefault("",getForDriver(driverSpec,".infoTemplate")
+                            .get(""));
 
-            initSql = properties.containsKey(prefix+".initSql")?
-                    String.valueOf(properties.get(prefix+".initSql")) :
-                    properties.containsKey(DRIVERS_PREFIX+
-                            driverSpec+".initSql")?
-                            String.valueOf(properties.get(DRIVERS_PREFIX+
-                                    driverSpec+".initSql")) : null;
+            initSql = getForConnection(nameKey,".initSql")
+                    .getOrDefault("",getForDriver(driverSpec,".initSql")
+                            .get(""));
 
             var tmap = new TreeMap<String,String>();
-            tmap.putAll(getSnippetsForDriver(driverSpec));
-            tmap.putAll(getSnippetsForConnection(nameKey));
+            tmap.putAll(getForDriver(driverSpec,".snippets."));
+            tmap.putAll(getForConnection(nameKey,".snippets."));
             snippetTemplates = Collections.unmodifiableMap(tmap);
 
             background = properties.containsKey(prefix+".bg")?
@@ -305,14 +300,14 @@ class PropertyHolder
     ConnectionInfo[] getConnections()
     {
         return properties
-            .keySet().stream()
-            .filter((k) -> String.valueOf(k).startsWith(
-                    ConnectionInfo.CONNECTIONS_PREFIX) && 
-                    String.valueOf(k).endsWith(".url"))
-            .map(PropertyHolder::getConnectionNameKey)
-            .sorted()
-            .map(ConnectionInfo::new)
-            .toArray(ConnectionInfo[]::new);
+                .keySet().stream()
+                .filter((k) -> String.valueOf(k).startsWith(
+                        ConnectionInfo.CONNECTIONS_PREFIX) && 
+                        String.valueOf(k).endsWith(".url"))
+                .map(PropertyHolder::getConnectionNameKey)
+                .sorted()
+                .map(ConnectionInfo::new)
+                .toArray(ConnectionInfo[]::new);
     }
 
     private static String getConnectionNameKey(Object propertyKey)
@@ -322,49 +317,53 @@ class PropertyHolder
         return s.substring(0,s.indexOf("."));
     }
 
-    private Map<String,String> getSnippetsForDriver(String driverName)
+    private Map<String,String> getForDriver(String driverName,String type)
     {
         return properties
-            .stringPropertyNames().stream()
-            .filter((k) -> String.valueOf(k).startsWith(
-                    ConnectionInfo.DRIVERS_PREFIX+driverName+
-                    ".snippets."))
-            .collect(toMap(PropertyHolder::getSnippetNameKeyForDriver,
-                    properties::getProperty));
+                .stringPropertyNames().stream()
+                .filter((k) -> String.valueOf(k).startsWith(
+                        ConnectionInfo.DRIVERS_PREFIX+driverName+type))
+                .collect(toMap(k -> getItemNameKeyForDriver(k,driverName,
+                        type),properties::getProperty));
     }
     
-    private static String getSnippetNameKeyForDriver(Object propertyKey)
+    private static String getItemNameKeyForDriver(Object propertyKey,
+            String driverName,String type)
     {
         String s = String.valueOf(propertyKey).substring(
-                ConnectionInfo.DRIVERS_PREFIX.length());
-        return s.substring(s.lastIndexOf(".")+1);
+                ConnectionInfo.DRIVERS_PREFIX.length() + 1);
+        int end = s.lastIndexOf(type);
+        return end >= 0? s.substring(end + type.length()) : "";
     }
 
-    private Map<String,String> getSnippetsForConnection(String connectionName)
+    private Map<String,String> getForConnection(String connectionName,
+            String type)
     {
         return properties
-            .stringPropertyNames().stream()
-            .filter((k) -> 
-                k.startsWith(ConnectionInfo.CONNECTIONS_PREFIX) &&
-                connectionNamePatternForSnippetsMatches(k,connectionName))
-            .collect(toMap(PropertyHolder::getSnippetNameKeyForConnection,
-                    properties::getProperty));
+                .stringPropertyNames().stream()
+                .filter((k) -> 
+                        k.startsWith(ConnectionInfo.CONNECTIONS_PREFIX) &&
+                        connectionNamePatternMatches(k,connectionName,type))
+                .collect(toMap(k -> getItemNameKeyForConnection(k,
+                        connectionName,type),properties::getProperty));
     }
 
-    private static boolean connectionNamePatternForSnippetsMatches(
-            String propertyKey,String connectionName)
+    private static boolean connectionNamePatternMatches(
+            String propertyKey,String connectionName,String type)
     {
-        int rightBoundary = propertyKey.lastIndexOf(".snippets.");
+        int rightBoundary = propertyKey.lastIndexOf(type);
         if(rightBoundary < 0) return false;
         String patternString = propertyKey.substring(
                 ConnectionInfo.CONNECTIONS_PREFIX.length(),rightBoundary);
         return Pattern.compile(patternString).matcher(connectionName).matches();
     }
     
-    private static String getSnippetNameKeyForConnection(String propertyKey)
+    private static String getItemNameKeyForConnection(String propertyKey,
+            String connectionName,String type)
     {
         String s = propertyKey.substring(
-                ConnectionInfo.CONNECTIONS_PREFIX.length());
-        return s.substring(s.lastIndexOf(".snippets.")+10);
+                ConnectionInfo.CONNECTIONS_PREFIX.length() + 1);
+        int end = s.lastIndexOf(type);
+        return end >= 0? s.substring(end + type.length()) : "";
     }
 }
