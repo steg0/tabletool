@@ -21,7 +21,7 @@ Focused lines that start with the string "-- connect ", followed by one of the c
 
 ▶ Actions in a notebook
 
-While editing SQL in a notebook, the following keys are supported:
+While editing SQL in a notebook, in addition to the shortcuts shown in the menu bar, the following keys are supported:
 
 • Alt+Up, Alt+Down - increase/decrease fetch size.
 • Alt+Left, Alt+Right - select prior/next tab.
@@ -42,9 +42,7 @@ While editing SQL in a notebook, the following keys are supported:
 • F1 - execute infoTemplate for word under cursor or selection.
 • F2 - insert snippets into word under cursor or selection.
 • F6 - toggle log panel focus.
-• F7 - commit.
 • F8 - execute completionTemplate for word under cursor or selection.
-• F9 - rollback.
 
 To navigate across a result table, use Up/Down arrow keys.
 
