@@ -37,6 +37,7 @@ implements TableModel,AutoCloseable
     boolean resultSetClosed;
     String connectionDescription;
     private boolean skipEmptyColumns;
+    boolean updatable;
     /**
      * A description of JDBC IN parameters set in the dialog for the
      * execution.
@@ -67,7 +68,7 @@ implements TableModel,AutoCloseable
      * externally. */
     void update(String connectionDescription,Statement st,int fetchsize,
             String inlog,String outlog,String placeholderlog,
-            boolean skipEmptyColumns)
+            boolean skipEmptyColumns,boolean updatable)
     throws SQLException
     {
         this.st = st;
@@ -78,7 +79,9 @@ implements TableModel,AutoCloseable
         this.outlog = outlog == null? "" : outlog;
         this.placeholderlog = placeholderlog == null? "" : placeholderlog;
         this.skipEmptyColumns = skipEmptyColumns;
-        logger.log(Level.FINE,"skipEmptyColumns={0}",skipEmptyColumns);
+        this.updatable = updatable;
+        Boolean[] logargs = {skipEmptyColumns,updatable};
+        logger.log(Level.FINE,"skipEmptyColumns={0},updatable={1}",logargs);
         fill();
     }
     

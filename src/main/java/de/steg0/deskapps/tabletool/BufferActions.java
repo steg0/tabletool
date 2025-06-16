@@ -80,7 +80,7 @@ class BufferActions
                 logger.fine("Info using SQL: "+sql);
                 b.connection.submit(sql,maxresults,null,null,
                         b.infoResultConsumer,b.updateCountConsumer,b.log,
-                        true);
+                        true,false);
             }
         },
         showSnippetsPopupAction = new AbstractAction()
@@ -164,8 +164,8 @@ class BufferActions
                     String sql = placeholderSupport.quotedReplaceInString(
                             completionTemplate,text);
                     logger.fine("Completion using SQL: "+sql);
-                    b.connection.submit(sql,maxresults,null,null,
-                            resultConsumer,b.updateCountConsumer,b.log,false);
+                    b.connection.submit(sql,maxresults,null,null,resultConsumer,
+                            b.updateCountConsumer,b.log,false,false);
                 }
                 catch(BadLocationException e)
                 {

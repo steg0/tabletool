@@ -98,7 +98,7 @@ class CellDisplayController
         Object cellcontent = source.getValueAt(row,col);
         try
         {
-            show(rsm.rs,cellcontent,col+1,editorfont);
+            show(rsm.rs,rsm.updatable,cellcontent,col+1,editorfont);
         }
         catch(SQLException e)
         {
@@ -115,7 +115,8 @@ class CellDisplayController
         }
     }
     
-    void show(ResultSet resultset,Object value,int column,Font editorfont)
+    void show(ResultSet resultset,boolean updatable,Object value,int column,
+            Font editorfont)
     throws SQLException,IOException
     {
         var textarea = new JTextArea(17,72);
@@ -144,6 +145,7 @@ class CellDisplayController
             updateAction.resultset = resultset;
             updateAction.column = column;
             updateButton.addActionListener(updateAction);
+            updateButton.setEnabled(updatable);
             buttonPanel.add(updateButton);
 
             dialogtitle = "CLOB display - Tabtype";
@@ -174,6 +176,7 @@ class CellDisplayController
             importAction.resultset = resultset;
             importAction.column = column;
             loadButton.addActionListener(importAction);
+            loadButton.setEnabled(updatable);
             buttonPanel.add(loadButton);
 
             try(var is = blob.getBinaryStream())
@@ -204,7 +207,7 @@ class CellDisplayController
             if(value!=null) textarea.setText(value.toString());
             textarea.setFont(editorfont);
 
-            if(resultset!=null)
+            if(resultset!=null && updatable)
             {
                 var updateButton = new JButton("Update & Close");
                 updateButton.setMnemonic(KeyEvent.VK_U);

@@ -54,6 +54,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
@@ -80,7 +81,7 @@ class NotebookController
     private final JFrame parent,cellDisplay,infoDisplay;
     private final JdbcParametersInputController parametersController;
     private final PropertyHolder propertyHolder;
-    private final BufferConfigSource bufferConfigSource;
+    private BufferConfigSource bufferConfigSource;
     
     File file;
     
@@ -102,6 +103,7 @@ class NotebookController
     private final JButton disconnectButton = new JButton("Disconnect");
     private final JCheckBox autocommitCb = new JCheckBox("Autocommit",
             Connections.AUTOCOMMIT_DEFAULT);
+    private final JCheckBox updatableCb = new JCheckBox("Updatable",false);
     
     private final JScrollPane bufferPane;
     private final int scrollIncrement;
@@ -248,9 +250,16 @@ class NotebookController
         numberFormatter.setMinimum(1);
         fetchsizeField = new JFormattedTextField(numberFormatter);
         fetchsizeField.setColumns(5);
-        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
+        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         connectionPanel.add(fetchsizeField);
+
+        updatableCb.addChangeListener(updatableResultSetsListener);
+        im = updatableCb.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = updatableCb.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
+        connectionPanel.add(updatableCb);
         
         rollbackButton.addActionListener((e) -> rollback());
         im = rollbackButton.getInputMap();
@@ -550,7 +559,6 @@ class NotebookController
                 lastFocusedBuffer = buffers.indexOf(c);
             }
         });
-        c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
         {
             c.editor.setFont(first().editor.getFont());
@@ -886,13 +894,17 @@ class NotebookController
         return true;
     }
     
-    private final PropertyChangeListener fetchSizeListener = (e) ->
+    private final PropertyChangeListener fetchSizeListener = e ->
     {
         int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
-        for(BufferController buffer : buffers)
-        {
-            buffer.fetchsize = fetchsize;
-        }
+        bufferConfigSource.fetchsize = fetchsize;
+    };
+
+    private final ChangeListener updatableResultSetsListener = e ->
+    {
+        bufferConfigSource.updatableResultSets = updatableCb.isSelected();
+        logger.log(Level.FINE,"bufferConfigSource.updatableResultSets={0}",
+                bufferConfigSource.updatableResultSets);
     };
 
     private void onConnection(Consumer<ConnectionWorker> c)
@@ -928,6 +940,7 @@ class NotebookController
                 buffer.connection = connection;
             }
             setBranding(item.info().background,item.info().name);
+            updatableCb.setSelected(item.info().updatableResultSets);
             restoreFocus();
         }
         catch(PasswordPromptCanceledException e)

@@ -538,7 +538,6 @@ class BufferController
     private int savedCaretPosition,savedSelectionStart,savedSelectionEnd;
 
     ConnectionWorker connection;
-    int fetchsize;
     
     void fetch(boolean split)
     {
@@ -602,8 +601,9 @@ class BufferController
             assert false : e.getMessage();
         }
 
-        connection.submit(text,fetchsize,parametersController,placeholderlog,
-                resultConsumer,updateCountConsumer,log,false);
+        connection.submit(text,configSource.fetchsize,parametersController,
+                placeholderlog,resultConsumer,updateCountConsumer,log,false,
+                configSource.updatableResultSets);
     }
 
     void closeCurrentResultSet()

@@ -9,6 +9,8 @@ class BufferConfigSource
     private final PropertyHolder propertyHolder;
     private final ConnectionListModel connectionListModel;
     final File pwd;
+    int fetchsize;
+    boolean updatableResultSets;
 
     BufferConfigSource(PropertyHolder propertyHolder,
             ConnectionListModel connectionListModel,File pwd)
