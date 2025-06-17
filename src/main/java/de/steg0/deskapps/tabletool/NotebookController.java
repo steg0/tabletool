@@ -237,6 +237,7 @@ class NotebookController
         connectionPanel.add(commitButton);
         
         disconnectButton.addActionListener((e) -> disconnect());
+        disconnectButton.setMnemonic(KeyEvent.VK_D);
         im = disconnectButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = disconnectButton.getActionMap();
