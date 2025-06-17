@@ -85,6 +85,7 @@
     <entry key="connections.derby.password">PROMPT</entry>
     -->
     <entry key="connections.derby.bg">#f0f0d7</entry>
+    <entry key="connections.derby.logBg">#e3e3c7</entry>
     <!--
         confirmations means that the tool gives a note when an operation
         has come back with an update count. Default is false.

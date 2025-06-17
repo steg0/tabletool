@@ -301,7 +301,7 @@ class NotebookController
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
         
-        setBranding(null,"");
+        setBranding(null,null,"");
     }
 
     private BufferController newBufferController()
@@ -311,12 +311,13 @@ class NotebookController
                 bufferListener);
     }
 
-    private void setBranding(Color bg,String label)
+    private void setBranding(Color bg,Color logBg,String label)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
         if(bg==null) bg=first().defaultBackground;
+        if(logBg==null) logBg=bg;
         bufferPanel.setBackground(bg);
-        log.setBackground(bg);
+        log.setBackground(logBg);
         for(BufferController buffer : buffers) buffer.setBranding(bg,label);
     }
     
@@ -940,7 +941,8 @@ class NotebookController
             {
                 buffer.connection = connection;
             }
-            setBranding(item.info().background,item.info().name);
+            setBranding(item.info().background,item.info().logBackground,
+                    item.info().name);
             updatableCb.setSelected(item.info().updatableResultSets);
             restoreFocus();
         }
@@ -974,7 +976,8 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBranding(null,"");
+        setBranding(null,null,"");
+        updatableCb.setSelected(false);
     }
     
     void reportAutocommitChanged(ConnectionWorker connection,boolean enabled)
