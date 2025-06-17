@@ -86,6 +86,7 @@
     -->
     <entry key="connections.derby.bg">#f0f0d7</entry>
     <entry key="connections.derby.logBg">#e3e3c7</entry>
+    <entry key="connections.derby.focusedBorderColor">#ee3838</entry>
     <!--
         confirmations means that the tool gives a note when an operation
         has come back with an update count. Default is false.

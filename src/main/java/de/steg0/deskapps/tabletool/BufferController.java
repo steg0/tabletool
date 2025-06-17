@@ -84,12 +84,15 @@ class BufferController
     boolean isUnsaved() { return documentListener.unsaved; }
     private final Border unfocusedBorder;
     private final Color unfocusedBorderColor;
+    private Border focusedBorder;
+    Color focusedBorderColor;
     private JLabel connectionLabel = new JLabel();
 
     void setSaved()
     {
         documentListener.unsaved = false;
-        if(!editor.hasFocus()) {
+        if(!editor.hasFocus())
+        {
             editor.setBorder(unfocusedBorder);
             connectionLabel.setForeground(unfocusedBorderColor);
         }
@@ -130,11 +133,11 @@ class BufferController
         this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
         unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
-        Color focusedBorderColor = configSource.getFocusedEditorBorderColor();
+        focusedBorderColor = configSource.getFocusedEditorBorderColor();
         Color unsavedBorderColor = configSource.getUnsavedEditorBorderColor();
         unfocusedBorder = BorderFactory.createDashedBorder(
                 unfocusedBorderColor);
-        Border focusedBorder = BorderFactory.createDashedBorder(
+        focusedBorder = BorderFactory.createDashedBorder(
                 focusedBorderColor);
         Border unsavedBorder = BorderFactory.createDashedBorder(
                 unsavedBorderColor);
@@ -214,12 +217,35 @@ class BufferController
         am.put("Redo",actions.redoAction);
         am.put("Go To Line",actions.goToLineAction);
     }
-    
-    void setBranding(Color background,String text)
+
+    /**
+     * Updates color and labeling for the buffer, to be called on connection
+     * change. These properties are not maintained as part of the
+     * {@link BufferConfigSource}.
+     */
+    void setBranding(Color background,Color focusedBorderColor,String text)
     {
         Objects.requireNonNull(text);
+        Objects.requireNonNull(background);
+
         editor.setBackground(background);
         panel.setBackground(background);
+        if(focusedBorderColor != null)
+        {
+            this.focusedBorderColor = focusedBorderColor;
+        }
+        else
+        {
+            this.focusedBorderColor =
+                    configSource.getFocusedEditorBorderColor();
+        }
+        focusedBorder = BorderFactory.createDashedBorder(
+                focusedBorderColor);
+        if(editor.isFocusOwner())
+        {
+            editor.setBorder(focusedBorder);
+            connectionLabel.setForeground(focusedBorderColor);
+        }
         if(text.isBlank()) connectionLabel.setText(text);
         else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
                 CONNECTION_LABEL_SUFFIX);

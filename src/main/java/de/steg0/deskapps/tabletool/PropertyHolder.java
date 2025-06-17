@@ -237,7 +237,7 @@ class PropertyHolder
         final String completionTemplate,infoTemplate,initSql;
         String name,url,username,password;
         final Map<String,String> snippetTemplates;
-        final Color background,logBackground;
+        final Color background,logBackground,focusedBorderColor;
         final boolean confirmations;
         final boolean updatableResultSets;
         
@@ -273,10 +273,14 @@ class PropertyHolder
 
             background = properties.containsKey(prefix+".bg")?
                     Color.decode(String.valueOf(properties.get(
-                        prefix+".bg"))) : null;            
+                            prefix+".bg"))) : null;            
             logBackground = properties.containsKey(prefix+".logBg")?
                     Color.decode(String.valueOf(properties.get(
-                        prefix+".logBg"))) : null;
+                            prefix+".logBg"))) : null;
+            focusedBorderColor = properties.containsKey(prefix+
+                    ".focusedBorderColor")? Color.decode(
+                            String.valueOf(properties.get(
+                                    prefix+".focusedBorderColor"))) : null;
 
             confirmations = properties.containsKey(prefix+".confirmations")?
                     Boolean.valueOf(String.valueOf(properties.get(

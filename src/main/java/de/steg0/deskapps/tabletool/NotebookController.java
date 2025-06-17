@@ -301,7 +301,7 @@ class NotebookController
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
         
-        setBranding(null,null,"");
+        setBranding(null,null,null,"");
     }
 
     private BufferController newBufferController()
@@ -311,14 +311,16 @@ class NotebookController
                 bufferListener);
     }
 
-    private void setBranding(Color bg,Color logBg,String label)
+    private void setBranding(Color bg,Color logBg,Color focusedBorderColor,
+            String label)
     {
         if(bg==null) bg=propertyHolder.getDefaultBackground(); 
         if(bg==null) bg=first().defaultBackground;
         if(logBg==null) logBg=bg;
         bufferPanel.setBackground(bg);
         log.setBackground(logBg);
-        for(BufferController buffer : buffers) buffer.setBranding(bg,label);
+        for(BufferController buffer : buffers) buffer.setBranding(bg,
+                focusedBorderColor,label);
     }
     
     void zoom(double factor)
@@ -474,7 +476,7 @@ class NotebookController
                 var newBufferController = newBufferController();
                 newBufferController.connection = source.connection;
                 newBufferController.setBranding(source.getBrandingBackground(),
-                        source.getBrandingText());
+                        source.focusedBorderColor,source.getBrandingText());
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
                 newBufferController.append(e.removedText);
@@ -605,8 +607,8 @@ class NotebookController
         {
             var newBufferController = newBufferController();
             newBufferController.connection = source.connection;
-            newBufferController.setBranding(
-                    source.getBrandingBackground(),source.getBrandingText());
+            newBufferController.setBranding(source.getBrandingBackground(),
+                    source.focusedBorderColor,source.getBrandingText());
             add(i+1,newBufferController);
             bufferPanel.revalidate();
         }
@@ -785,7 +787,7 @@ class NotebookController
                 var newBufferController = newBufferController();
                 var fb = first();
                 newBufferController.setBranding(fb.getBrandingBackground(),
-                        fb.getBrandingText());
+                        fb.focusedBorderColor,fb.getBrandingText());
                 linesRead = newBufferController.load(r);
                 if(linesRead > 0) add(buffers.size(),newBufferController);
             }
@@ -942,7 +944,7 @@ class NotebookController
                 buffer.connection = connection;
             }
             setBranding(item.info().background,item.info().logBackground,
-                    item.info().name);
+                    item.info().focusedBorderColor,item.info().name);
             updatableCb.setSelected(item.info().updatableResultSets);
             restoreFocus();
         }
@@ -976,7 +978,7 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBranding(null,null,"");
+        setBranding(null,null,null,"");
         updatableCb.setSelected(false);
     }
     
