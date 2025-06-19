@@ -207,5 +207,23 @@ class BufferActions
                         JOptionPane.ERROR_MESSAGE);
                 }
             }
+        },
+        deleteLineAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                int caret = b.editor.getCaretPosition();
+                try
+                {
+                    int line = b.editor.getLineOfOffset(caret);
+                    int start = b.editor.getLineStartOffset(line);
+                    int end = b.editor.getLineEndOffset(line);
+                    b.editor.replaceRange("",start,end);
+                }
+                catch(BadLocationException e)
+                {
+                    assert false;
+                }
+            }
         };
 }

@@ -179,6 +179,7 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
         im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
+        im.put(getKeyStroke(KeyEvent.VK_D,CTRL_MASK),"Delete Line");
         var am = editor.getActionMap();
         am.put("Execute",actions.executeAction);
         am.put("JDBC Parameters",actions.showJdbcParametersAction);
@@ -190,6 +191,7 @@ class BufferController
         am.put("Undo",actions.undoAction);
         am.put("Redo",actions.redoAction);
         am.put("Go To Line",actions.goToLineAction);
+        am.put("Delete Line",actions.deleteLineAction);
     }
 
     /**
