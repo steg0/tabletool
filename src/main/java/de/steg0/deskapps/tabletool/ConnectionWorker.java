@@ -68,6 +68,7 @@ class ConnectionWorker
     )
     {
         logger.info(sql);
+        logger.log(Level.FINE,"Using {0}",info.url);
         var sqlRunnable = new SqlRunnable();
         sqlRunnable.parametersController = parametersController;
         sqlRunnable.resultConsumer = resultConsumer;
@@ -120,6 +121,7 @@ class ConnectionWorker
                 catch(SQLException e)
                 {
                     report(log,SQLExceptionPrinter.toString(sql,e));
+                    logger.log(Level.INFO,"SQLException on {0}",info.url);
                 }
                 catch(Exception e)
                 {
