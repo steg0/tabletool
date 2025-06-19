@@ -80,7 +80,6 @@ class NotebookController
     
     private final JFrame parent,cellDisplay,infoDisplay;
     private final JdbcParametersInputController parametersController;
-    private final PropertyHolder propertyHolder;
     private BufferConfigSource bufferConfigSource;
     
     File file;
@@ -109,6 +108,7 @@ class NotebookController
     private final int scrollIncrement;
     
     private final JTextArea log = new JTextArea();
+    private final Color defaultLogFg = log.getForeground();
     private final JSplitPane logBufferPane;
 
     private void resize()
@@ -176,7 +176,6 @@ class NotebookController
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
         this.parametersController = parametersController;
-        this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         this.listener = listener;
         this.bufferConfigSource = new BufferConfigSource(propertyHolder,
@@ -311,16 +310,14 @@ class NotebookController
                 bufferListener);
     }
 
-    private void setBranding(Color bg,Color logBg,Color focusedBorderColor,
-            String label)
+    private void setBranding(Color bg,Color logBg,Color logFg,String label)
     {
-        if(bg==null) bg=propertyHolder.getDefaultBackground(); 
-        if(bg==null) bg=first().defaultBackground;
         if(logBg==null) logBg=bg;
+        if(logFg==null) logFg=defaultLogFg;
         bufferPanel.setBackground(bg);
         log.setBackground(logBg);
-        for(BufferController buffer : buffers) buffer.setBranding(bg,
-                focusedBorderColor,label);
+        log.setForeground(logFg);
+        for(BufferController buffer : buffers) buffer.setBranding(label);
     }
     
     void zoom(double factor)
@@ -475,8 +472,7 @@ class NotebookController
                 logger.log(Level.FINE,"Split requested by #{0}",i);
                 var newBufferController = newBufferController();
                 newBufferController.connection = source.connection;
-                newBufferController.setBranding(source.getBrandingBackground(),
-                        source.focusedBorderColor,source.getBrandingText());
+                newBufferController.setBranding(source.getBrandingText());
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
                 newBufferController.append(e.removedText);
@@ -607,8 +603,7 @@ class NotebookController
         {
             var newBufferController = newBufferController();
             newBufferController.connection = source.connection;
-            newBufferController.setBranding(source.getBrandingBackground(),
-                    source.focusedBorderColor,source.getBrandingText());
+            newBufferController.setBranding(source.getBrandingText());
             add(i+1,newBufferController);
             bufferPanel.revalidate();
         }
@@ -786,8 +781,7 @@ class NotebookController
             {
                 var newBufferController = newBufferController();
                 var fb = first();
-                newBufferController.setBranding(fb.getBrandingBackground(),
-                        fb.focusedBorderColor,fb.getBrandingText());
+                newBufferController.setBranding(fb.getBrandingText());
                 linesRead = newBufferController.load(r);
                 if(linesRead > 0) add(buffers.size(),newBufferController);
             }
@@ -944,7 +938,7 @@ class NotebookController
                 buffer.connection = connection;
             }
             setBranding(item.info().background,item.info().logBackground,
-                    item.info().focusedBorderColor,item.info().name);
+                    item.info().logForeground,item.info().name);
             updatableCb.setSelected(item.info().updatableResultSets);
             restoreFocus();
         }

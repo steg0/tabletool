@@ -12,8 +12,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -82,10 +80,9 @@ class BufferController
     private BufferDocumentListener documentListener = 
             new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
-    private final Border unfocusedBorder;
-    private final Color unfocusedBorderColor;
+
+    private final Border unfocusedBorder,unsavedBorder;
     private Border focusedBorder;
-    Color focusedBorderColor;
     private JLabel connectionLabel = new JLabel();
 
     void setSaved()
@@ -94,7 +91,8 @@ class BufferController
         if(!editor.hasFocus())
         {
             editor.setBorder(unfocusedBorder);
-            connectionLabel.setForeground(unfocusedBorderColor);
+            connectionLabel.setForeground(
+                    configSource.getNonFocusedEditorBorderColor());
         }
     }
     
@@ -132,39 +130,15 @@ class BufferController
         this.log = updateLog;
         this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
-        unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
-        focusedBorderColor = configSource.getFocusedEditorBorderColor();
-        Color unsavedBorderColor = configSource.getUnsavedEditorBorderColor();
         unfocusedBorder = BorderFactory.createDashedBorder(
-                unfocusedBorderColor);
+                configSource.getNonFocusedEditorBorderColor());
         focusedBorder = BorderFactory.createDashedBorder(
-                focusedBorderColor);
-        Border unsavedBorder = BorderFactory.createDashedBorder(
-                unsavedBorderColor);
-        editor.setBorder(unfocusedBorder);
-        connectionLabel.setForeground(unfocusedBorderColor);
-        editor.addFocusListener(new FocusListener()
-        {
-            @Override public void focusGained(FocusEvent e)
-            {
-                editor.setBorder(focusedBorder);
-                connectionLabel.setForeground(focusedBorderColor);
-            }
-            @Override public void focusLost(FocusEvent e)
-            {
-                if(isUnsaved())
-                {
-                    editor.setBorder(isUnsaved()?
-                            unsavedBorder:unfocusedBorder);
-                    connectionLabel.setForeground(unsavedBorderColor);
-                }
-                else
-                {
-                    editor.setBorder(unfocusedBorder);
-                    connectionLabel.setForeground(unfocusedBorderColor);
-                }
-            }
-        });
+                configSource.getFocusedEditorBorderColor());
+        unsavedBorder = BorderFactory.createDashedBorder(
+                configSource.getUnsavedEditorBorderColor());
+        setBrandingColors();
+
+        editor.addFocusListener(new BufferEditorFocusListener(this));
         
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
@@ -220,41 +194,51 @@ class BufferController
 
     /**
      * Updates color and labeling for the buffer, to be called on connection
-     * change. These properties are not maintained as part of the
-     * {@link BufferConfigSource}.
+     * and focus change.
      */
-    void setBranding(Color background,Color focusedBorderColor,String text)
+    void setBranding(String text)
     {
         Objects.requireNonNull(text);
-        Objects.requireNonNull(background);
 
-        editor.setBackground(background);
-        panel.setBackground(background);
-        if(focusedBorderColor != null)
-        {
-            this.focusedBorderColor = focusedBorderColor;
-        }
-        else
-        {
-            this.focusedBorderColor =
-                    configSource.getFocusedEditorBorderColor();
-        }
-        focusedBorder = BorderFactory.createDashedBorder(
-                focusedBorderColor);
-        if(editor.isFocusOwner())
-        {
-            editor.setBorder(focusedBorder);
-            connectionLabel.setForeground(focusedBorderColor);
-        }
+        setBrandingColors();
+
         if(text.isBlank()) connectionLabel.setText(text);
         else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
                 CONNECTION_LABEL_SUFFIX);
-        TableColorizer.colorize(resultview,getBrandingBackground());
     }
 
-    Color getBrandingBackground()
+    void setBrandingColors()
     {
-        return editor.getBackground();
+        Color bg = configSource.getEditorBackgroundColor();
+        if(bg==null) bg = defaultBackground;
+        editor.setBackground(bg);
+        panel.setBackground(bg);
+        focusedBorder = BorderFactory.createDashedBorder(
+                configSource.getFocusedEditorBorderColor());
+
+        if(editor.isFocusOwner())
+        {
+            editor.setBorder(focusedBorder);
+            connectionLabel.setForeground(
+                    configSource.getFocusedEditorBorderColor());
+        }
+        else
+        {
+            if(isUnsaved())
+            {
+                editor.setBorder(unsavedBorder);
+                connectionLabel.setForeground(
+                        configSource.getUnsavedEditorBorderColor());
+            }
+            else
+            {
+                editor.setBorder(unfocusedBorder);
+                connectionLabel.setForeground(
+                        configSource.getNonFocusedEditorBorderColor());
+            }
+        }
+
+        TableColorizer.colorize(resultview,bg);
     }
 
     String getBrandingText()
@@ -760,7 +744,7 @@ class BufferController
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         resultscrollpane.setComponentOrientation(
                 ComponentOrientation.RIGHT_TO_LEFT);
-        TableColorizer.colorize(resultview,getBrandingBackground());
+        TableColorizer.colorize(resultview,editor.getBackground());
 
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;

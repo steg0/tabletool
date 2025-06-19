@@ -123,14 +123,12 @@ class PropertyHolder
     
     Color getDefaultBackground()
     {
-        if(!properties.containsKey("default.bg")) return null;
-        return Color.decode(properties.getProperty("default.bg").toString());
+        return getColorProperty("default.bg",null);
     }
 
     Color getFrameBackground()
     {
-        if(!properties.containsKey("frame.bg")) return null;
-        return Color.decode(properties.getProperty("frame.bg").toString());
+        return getColorProperty("frame.bg",null);
     }
 
     Color getNonFocusedEditorBorderColor()
@@ -237,7 +235,7 @@ class PropertyHolder
         final String completionTemplate,infoTemplate,initSql;
         String name,url,username,password;
         final Map<String,String> snippetTemplates;
-        final Color background,logBackground,focusedBorderColor;
+        final Color background,logBackground,logForeground,focusedBorderColor;
         final boolean confirmations;
         final boolean updatableResultSets;
         
@@ -256,7 +254,7 @@ class PropertyHolder
 
             completionTemplate = getForConnection(nameKey,
                     ".completionTemplate").getOrDefault("",getForDriver(
-                                driverSpec,".completionTemplate").get(""));
+                            driverSpec,".completionTemplate").get(""));
             
             infoTemplate = getForConnection(nameKey,".infoTemplate")
                     .getOrDefault("",getForDriver(driverSpec,".infoTemplate")
@@ -271,16 +269,11 @@ class PropertyHolder
             tmap.putAll(getForConnection(nameKey,".snippets."));
             snippetTemplates = Collections.unmodifiableMap(tmap);
 
-            background = properties.containsKey(prefix+".bg")?
-                    Color.decode(String.valueOf(properties.get(
-                            prefix+".bg"))) : null;            
-            logBackground = properties.containsKey(prefix+".logBg")?
-                    Color.decode(String.valueOf(properties.get(
-                            prefix+".logBg"))) : null;
-            focusedBorderColor = properties.containsKey(prefix+
-                    ".focusedBorderColor")? Color.decode(
-                            String.valueOf(properties.get(
-                                    prefix+".focusedBorderColor"))) : null;
+            background = getColorProperty(prefix+".bg",null);
+            logBackground = getColorProperty(prefix+".logBg",null);
+            logForeground = getColorProperty(prefix+".logFg",null);
+            focusedBorderColor = getColorProperty(prefix+".focusedBorderColor",
+                    null);
 
             confirmations = properties.containsKey(prefix+".confirmations")?
                     Boolean.valueOf(String.valueOf(properties.get(
