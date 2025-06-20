@@ -18,7 +18,7 @@
     <entry key="frame.x">50</entry>
     <entry key="frame.y">10</entry>
     -->
-    <entry key="frame.w">700</entry>
+    <entry key="frame.w">800</entry>
     <entry key="frame.h">450</entry>
 
     <!--
@@ -85,6 +85,9 @@
     <entry key="connections.derby.password">PROMPT</entry>
     -->
     <entry key="connections.derby.bg">#f0f0d7</entry>
+    <entry key="connections.derby.logBg">#c1c193</entry>
+    <entry key="connections.derby.logFg">#ffffff</entry>
+    <entry key="connections.derby.focusedBorderColor">#ee3838</entry>
     <!--
         confirmations means that the tool gives a note when an operation
         has come back with an update count. Default is false.

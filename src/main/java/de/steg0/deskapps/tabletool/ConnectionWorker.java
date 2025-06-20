@@ -63,10 +63,12 @@ class ConnectionWorker
             BiConsumer<ResultSetTableModel,Long> resultConsumer,
             Consumer<UpdateCountEvent> updateCountConsumer,
             Consumer<String> log,
-            boolean skipEmptyColumns
+            boolean skipEmptyColumns,
+            boolean updatable
     )
     {
         logger.info(sql);
+        logger.log(Level.FINE,"Using {0}",info.url);
         var sqlRunnable = new SqlRunnable();
         sqlRunnable.parametersController = parametersController;
         sqlRunnable.resultConsumer = resultConsumer;
@@ -75,6 +77,7 @@ class ConnectionWorker
         sqlRunnable.log = log;
         sqlRunnable.sql = sql;
         sqlRunnable.skipEmptyColumns = skipEmptyColumns;
+        sqlRunnable.updatable = updatable;
         sqlRunnable.placeholderlog = placeholderlog;
         sqlRunnable.ts = System.currentTimeMillis();
         executor.execute(sqlRunnable);
@@ -86,7 +89,7 @@ class ConnectionWorker
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
         private Consumer<UpdateCountEvent> updateCountConsumer;
         private Consumer<String> log;
-        private boolean skipEmptyColumns;
+        private boolean skipEmptyColumns,updatable;
         private String sql;
         private String placeholderlog;
         private int fetchsize;
@@ -118,6 +121,7 @@ class ConnectionWorker
                 catch(SQLException e)
                 {
                     report(log,SQLExceptionPrinter.toString(sql,e));
+                    logger.log(Level.INFO,"SQLException on {0}",info.url);
                 }
                 catch(Exception e)
                 {
@@ -151,14 +155,14 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
-                    boolean update = st.execute();
+                    boolean result = st.execute();
 
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
 
-                    if(update)
+                    if(result)
                     {
-                        reportResult(st,inlog,outlog);
+                        reportResult(st,inlog,outlog,false);
                     }
                     else
                     {
@@ -169,7 +173,7 @@ class ConnectionWorker
                 else
                 {
                     if(sql.endsWith(";")) sql = sql.substring(0,sql.length()-1);
-                    PreparedStatement st = info.updatableResultSets?
+                    PreparedStatement st = updatable?
                             connection.prepareStatement(
                                     sql,
                                     ResultSet.TYPE_FORWARD_ONLY,
@@ -182,14 +186,14 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
-                    boolean update = st.execute();
+                    boolean result = st.execute();
 
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
 
-                    if(update)
+                    if(result)
                     {
-                        reportResult(st,inlog,outlog);
+                        reportResult(st,inlog,outlog,updatable);
                     }
                     else
                     {
@@ -258,12 +262,12 @@ class ConnectionWorker
         }
 
         private void reportResult(Statement statement,String inlog,
-                String outlog)
+                String outlog,boolean updatable)
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
             lastReportedResult.update(info.name,statement,fetchsize,inlog,
-                    outlog,placeholderlog,skipEmptyColumns);
+                    outlog,placeholderlog,skipEmptyColumns,updatable);
             long now = System.currentTimeMillis();
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));

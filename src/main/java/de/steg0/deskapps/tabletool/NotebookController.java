@@ -54,6 +54,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
@@ -79,8 +80,7 @@ class NotebookController
     
     private final JFrame parent,cellDisplay,infoDisplay;
     private final JdbcParametersInputController parametersController;
-    private final PropertyHolder propertyHolder;
-    private final BufferConfigSource bufferConfigSource;
+    private BufferConfigSource bufferConfigSource;
     
     File file;
     
@@ -102,11 +102,13 @@ class NotebookController
     private final JButton disconnectButton = new JButton("Disconnect");
     private final JCheckBox autocommitCb = new JCheckBox("Autocommit",
             Connections.AUTOCOMMIT_DEFAULT);
+    private final JCheckBox updatableCb = new JCheckBox("Updatable",false);
     
     private final JScrollPane bufferPane;
     private final int scrollIncrement;
     
     private final JTextArea log = new JTextArea();
+    private final Color defaultLogFg = log.getForeground();
     private final JSplitPane logBufferPane;
 
     private void resize()
@@ -174,7 +176,6 @@ class NotebookController
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
         this.parametersController = parametersController;
-        this.propertyHolder = propertyHolder;
         this.connections = new ConnectionListModel(connections);
         this.listener = listener;
         this.bufferConfigSource = new BufferConfigSource(propertyHolder,
@@ -235,6 +236,7 @@ class NotebookController
         connectionPanel.add(commitButton);
         
         disconnectButton.addActionListener((e) -> disconnect());
+        disconnectButton.setMnemonic(KeyEvent.VK_D);
         im = disconnectButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = disconnectButton.getActionMap();
@@ -248,9 +250,16 @@ class NotebookController
         numberFormatter.setMinimum(1);
         fetchsizeField = new JFormattedTextField(numberFormatter);
         fetchsizeField.setColumns(5);
-        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         fetchsizeField.addPropertyChangeListener("value",fetchSizeListener);
+        fetchsizeField.setValue(DEFAULT_FETCH_SIZE);
         connectionPanel.add(fetchsizeField);
+
+        updatableCb.addChangeListener(updatableResultSetsListener);
+        im = updatableCb.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
+        am = updatableCb.getActionMap();
+        am.put("Focus Buffer",focusBufferAction);
+        connectionPanel.add(updatableCb);
         
         rollbackButton.addActionListener((e) -> rollback());
         im = rollbackButton.getInputMap();
@@ -291,7 +300,7 @@ class NotebookController
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
         
-        setBranding(null,"");
+        setBranding(null,null,null,"");
     }
 
     private BufferController newBufferController()
@@ -301,13 +310,14 @@ class NotebookController
                 bufferListener);
     }
 
-    private void setBranding(Color bg,String label)
+    private void setBranding(Color bg,Color logBg,Color logFg,String label)
     {
-        if(bg==null) bg=propertyHolder.getDefaultBackground(); 
-        if(bg==null) bg=first().defaultBackground;
+        if(logBg==null) logBg=bg;
+        if(logFg==null) logFg=defaultLogFg;
         bufferPanel.setBackground(bg);
-        log.setBackground(bg);
-        for(BufferController buffer : buffers) buffer.setBranding(bg,label);
+        log.setBackground(logBg);
+        log.setForeground(logFg);
+        for(BufferController buffer : buffers) buffer.setBranding(label);
     }
     
     void zoom(double factor)
@@ -462,8 +472,7 @@ class NotebookController
                 logger.log(Level.FINE,"Split requested by #{0}",i);
                 var newBufferController = newBufferController();
                 newBufferController.connection = source.connection;
-                newBufferController.setBranding(source.getBrandingBackground(),
-                        source.getBrandingText());
+                newBufferController.setBranding(source.getBrandingText());
                 add(i+1,newBufferController);
                 bufferPanel.revalidate();
                 newBufferController.append(e.removedText);
@@ -550,7 +559,6 @@ class NotebookController
                 lastFocusedBuffer = buffers.indexOf(c);
             }
         });
-        c.fetchsize = ((Number)fetchsizeField.getValue()).intValue();
         if(buffers.size()>0)
         {
             c.editor.setFont(first().editor.getFont());
@@ -595,8 +603,7 @@ class NotebookController
         {
             var newBufferController = newBufferController();
             newBufferController.connection = source.connection;
-            newBufferController.setBranding(
-                    source.getBrandingBackground(),source.getBrandingText());
+            newBufferController.setBranding(source.getBrandingText());
             add(i+1,newBufferController);
             bufferPanel.revalidate();
         }
@@ -774,8 +781,7 @@ class NotebookController
             {
                 var newBufferController = newBufferController();
                 var fb = first();
-                newBufferController.setBranding(fb.getBrandingBackground(),
-                        fb.getBrandingText());
+                newBufferController.setBranding(fb.getBrandingText());
                 linesRead = newBufferController.load(r);
                 if(linesRead > 0) add(buffers.size(),newBufferController);
             }
@@ -886,13 +892,17 @@ class NotebookController
         return true;
     }
     
-    private final PropertyChangeListener fetchSizeListener = (e) ->
+    private final PropertyChangeListener fetchSizeListener = e ->
     {
         int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
-        for(BufferController buffer : buffers)
-        {
-            buffer.fetchsize = fetchsize;
-        }
+        bufferConfigSource.fetchsize = fetchsize;
+    };
+
+    private final ChangeListener updatableResultSetsListener = e ->
+    {
+        bufferConfigSource.updatableResultSets = updatableCb.isSelected();
+        logger.log(Level.FINE,"bufferConfigSource.updatableResultSets={0}",
+                bufferConfigSource.updatableResultSets);
     };
 
     private void onConnection(Consumer<ConnectionWorker> c)
@@ -927,7 +937,9 @@ class NotebookController
             {
                 buffer.connection = connection;
             }
-            setBranding(item.info().background,item.info().name);
+            setBranding(item.info().background,item.info().logBackground,
+                    item.info().logForeground,item.info().name);
+            updatableCb.setSelected(item.info().updatableResultSets);
             restoreFocus();
         }
         catch(PasswordPromptCanceledException e)
@@ -960,7 +972,8 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBranding(null,"");
+        setBranding(null,null,null,"");
+        updatableCb.setSelected(false);
     }
     
     void reportAutocommitChanged(ConnectionWorker connection,boolean enabled)

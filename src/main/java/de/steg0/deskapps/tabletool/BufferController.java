@@ -12,8 +12,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -82,16 +80,19 @@ class BufferController
     private BufferDocumentListener documentListener = 
             new BufferDocumentListener(this);
     boolean isUnsaved() { return documentListener.unsaved; }
-    private final Border unfocusedBorder;
-    private final Color unfocusedBorderColor;
+
+    private final Border unfocusedBorder,unsavedBorder;
+    private Border focusedBorder;
     private JLabel connectionLabel = new JLabel();
 
     void setSaved()
     {
         documentListener.unsaved = false;
-        if(!editor.hasFocus()) {
+        if(!editor.hasFocus())
+        {
             editor.setBorder(unfocusedBorder);
-            connectionLabel.setForeground(unfocusedBorderColor);
+            connectionLabel.setForeground(
+                    configSource.getNonFocusedEditorBorderColor());
         }
     }
     
@@ -129,39 +130,15 @@ class BufferController
         this.log = updateLog;
         this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
-        unfocusedBorderColor = configSource.getNonFocusedEditorBorderColor();
-        Color focusedBorderColor = configSource.getFocusedEditorBorderColor();
-        Color unsavedBorderColor = configSource.getUnsavedEditorBorderColor();
         unfocusedBorder = BorderFactory.createDashedBorder(
-                unfocusedBorderColor);
-        Border focusedBorder = BorderFactory.createDashedBorder(
-                focusedBorderColor);
-        Border unsavedBorder = BorderFactory.createDashedBorder(
-                unsavedBorderColor);
-        editor.setBorder(unfocusedBorder);
-        connectionLabel.setForeground(unfocusedBorderColor);
-        editor.addFocusListener(new FocusListener()
-        {
-            @Override public void focusGained(FocusEvent e)
-            {
-                editor.setBorder(focusedBorder);
-                connectionLabel.setForeground(focusedBorderColor);
-            }
-            @Override public void focusLost(FocusEvent e)
-            {
-                if(isUnsaved())
-                {
-                    editor.setBorder(isUnsaved()?
-                            unsavedBorder:unfocusedBorder);
-                    connectionLabel.setForeground(unsavedBorderColor);
-                }
-                else
-                {
-                    editor.setBorder(unfocusedBorder);
-                    connectionLabel.setForeground(unfocusedBorderColor);
-                }
-            }
-        });
+                configSource.getNonFocusedEditorBorderColor());
+        focusedBorder = BorderFactory.createDashedBorder(
+                configSource.getFocusedEditorBorderColor());
+        unsavedBorder = BorderFactory.createDashedBorder(
+                configSource.getUnsavedEditorBorderColor());
+        setBrandingColors();
+
+        editor.addFocusListener(new BufferEditorFocusListener(this));
         
         var editorConstraints = new GridBagConstraints();
         editorConstraints.anchor = GridBagConstraints.WEST;
@@ -202,6 +179,7 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
         im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
+        im.put(getKeyStroke(KeyEvent.VK_D,CTRL_MASK),"Delete Line");
         var am = editor.getActionMap();
         am.put("Execute",actions.executeAction);
         am.put("JDBC Parameters",actions.showJdbcParametersAction);
@@ -213,22 +191,56 @@ class BufferController
         am.put("Undo",actions.undoAction);
         am.put("Redo",actions.redoAction);
         am.put("Go To Line",actions.goToLineAction);
+        am.put("Delete Line",actions.deleteLineAction);
     }
-    
-    void setBranding(Color background,String text)
+
+    /**
+     * Updates color and labeling for the buffer, to be called on connection
+     * and focus change.
+     */
+    void setBranding(String text)
     {
         Objects.requireNonNull(text);
-        editor.setBackground(background);
-        panel.setBackground(background);
+
+        setBrandingColors();
+
         if(text.isBlank()) connectionLabel.setText(text);
         else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
                 CONNECTION_LABEL_SUFFIX);
-        TableColorizer.colorize(resultview,getBrandingBackground());
     }
 
-    Color getBrandingBackground()
+    void setBrandingColors()
     {
-        return editor.getBackground();
+        Color bg = configSource.getEditorBackgroundColor();
+        if(bg==null) bg = defaultBackground;
+        editor.setBackground(bg);
+        panel.setBackground(bg);
+        focusedBorder = BorderFactory.createDashedBorder(
+                configSource.getFocusedEditorBorderColor());
+
+        if(editor.isFocusOwner())
+        {
+            editor.setBorder(focusedBorder);
+            connectionLabel.setForeground(
+                    configSource.getFocusedEditorBorderColor());
+        }
+        else
+        {
+            if(isUnsaved())
+            {
+                editor.setBorder(unsavedBorder);
+                connectionLabel.setForeground(
+                        configSource.getUnsavedEditorBorderColor());
+            }
+            else
+            {
+                editor.setBorder(unfocusedBorder);
+                connectionLabel.setForeground(
+                        configSource.getNonFocusedEditorBorderColor());
+            }
+        }
+
+        TableColorizer.colorize(resultview,bg);
     }
 
     String getBrandingText()
@@ -538,7 +550,6 @@ class BufferController
     private int savedCaretPosition,savedSelectionStart,savedSelectionEnd;
 
     ConnectionWorker connection;
-    int fetchsize;
     
     void fetch(boolean split)
     {
@@ -602,8 +613,9 @@ class BufferController
             assert false : e.getMessage();
         }
 
-        connection.submit(text,fetchsize,parametersController,placeholderlog,
-                resultConsumer,updateCountConsumer,log,false);
+        connection.submit(text,configSource.fetchsize,parametersController,
+                placeholderlog,resultConsumer,updateCountConsumer,log,false,
+                configSource.updatableResultSets);
     }
 
     void closeCurrentResultSet()
@@ -734,7 +746,7 @@ class BufferController
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         resultscrollpane.setComponentOrientation(
                 ComponentOrientation.RIGHT_TO_LEFT);
-        TableColorizer.colorize(resultview,getBrandingBackground());
+        TableColorizer.colorize(resultview,editor.getBackground());
 
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;

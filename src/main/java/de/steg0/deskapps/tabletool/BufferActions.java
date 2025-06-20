@@ -80,7 +80,7 @@ class BufferActions
                 logger.fine("Info using SQL: "+sql);
                 b.connection.submit(sql,maxresults,null,null,
                         b.infoResultConsumer,b.updateCountConsumer,b.log,
-                        true);
+                        true,false);
             }
         },
         showSnippetsPopupAction = new AbstractAction()
@@ -164,8 +164,8 @@ class BufferActions
                     String sql = placeholderSupport.quotedReplaceInString(
                             completionTemplate,text);
                     logger.fine("Completion using SQL: "+sql);
-                    b.connection.submit(sql,maxresults,null,null,
-                            resultConsumer,b.updateCountConsumer,b.log,false);
+                    b.connection.submit(sql,maxresults,null,null,resultConsumer,
+                            b.updateCountConsumer,b.log,false,false);
                 }
                 catch(BadLocationException e)
                 {
@@ -205,6 +205,24 @@ class BufferActions
                         "Error navigating: "+e.getMessage(),
                         "Error navigating",
                         JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        },
+        deleteLineAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                int caret = b.editor.getCaretPosition();
+                try
+                {
+                    int line = b.editor.getLineOfOffset(caret);
+                    int start = b.editor.getLineStartOffset(line);
+                    int end = b.editor.getLineEndOffset(line);
+                    b.editor.replaceRange("",start,end);
+                }
+                catch(BadLocationException e)
+                {
+                    assert false;
                 }
             }
         };

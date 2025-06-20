@@ -84,8 +84,9 @@ class JdbcParametersInputController implements ActionListener
         var layout = new BorderLayout(5,5);
         dialog.getContentPane().setLayout(layout);
 
-        var explanation = new JTextArea("Please configure " +
-                "JDBC parameters to set in the query.\n" +
+        var explanation = new JTextArea("JDBC parameters entered here will " +
+                "be applied to the query\n" +
+                "while this window is open.\n" +
                 "Either varchar or number values are supported.\n" +
                 "Use Enter to accept a value in a cell.");
         explanation.setEditable(false);
