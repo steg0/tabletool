@@ -24,8 +24,6 @@ class GrowingCsvBuffer
         for(int i=0;i<row0.length;i++)
         {
             header[i] = (String)row0[i];
-            if(header[i].length()==0) throw new IllegalStateException(
-                    "header field cannot have zero length");
         }
         return header;
     }
