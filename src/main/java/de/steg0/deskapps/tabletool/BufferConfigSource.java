@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.io.File;
 import java.util.Map;
 
+import de.steg0.deskapps.tabletool.Connections.ConnectionState;
+
 class BufferConfigSource
 {
     final File pwd;
@@ -48,8 +50,7 @@ class BufferConfigSource
 
     Color getFocusedEditorBorderColor()
     {
-        Connections.ConnectionState connectionState = 
-            (Connections.ConnectionState)connectionListModel.getSelectedItem();
+        ConnectionState connectionState = connectionListModel.getSelectedItem();
         if(connectionState == null)
         {
             return propertyHolder.getFocusedEditorBorderColor();
@@ -68,8 +69,7 @@ class BufferConfigSource
     }
     Color getEditorBackgroundColor()
     {
-        Connections.ConnectionState connectionState = 
-            (Connections.ConnectionState)connectionListModel.getSelectedItem();
+        ConnectionState connectionState = connectionListModel.getSelectedItem();
         if(connectionState == null)
         {
             return propertyHolder.getDefaultBackground();
@@ -84,22 +84,19 @@ class BufferConfigSource
 
     String getCompletionTemplate()
     {
-        Connections.ConnectionState connectionState = 
-            (Connections.ConnectionState)connectionListModel.getSelectedItem();
+        ConnectionState connectionState = connectionListModel.getSelectedItem();
         return connectionState.info().completionTemplate;
     }
 
     String getInfoTemplate()
     {
-        Connections.ConnectionState connectionState = 
-            (Connections.ConnectionState)connectionListModel.getSelectedItem();
+        ConnectionState connectionState = connectionListModel.getSelectedItem();
         return connectionState.info().infoTemplate;
     }
 
     Map<String,String> getSnippetTemplates()
     {
-        Connections.ConnectionState connectionState = 
-            (Connections.ConnectionState)connectionListModel.getSelectedItem();
+        ConnectionState connectionState = connectionListModel.getSelectedItem();
         return connectionState.info().snippetTemplates;
     }
 

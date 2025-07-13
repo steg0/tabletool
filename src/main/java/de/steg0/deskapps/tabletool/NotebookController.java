@@ -199,11 +199,13 @@ class NotebookController
             public void keyTyped(KeyEvent e)
             {
                 char c = e.getKeyChar();
+                if(e.getModifiersEx() != 0) return;
                 if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
                 {
                     e.consume();
                     var connectionDialog = new OpenConnectionDialogController(
                             NotebookController.this,parent);
+                    logger.log(Level.FINE,"Picking connection for letter {0}",c);
                     connectionDialog.pick(String.valueOf(c));
                 }
             }    

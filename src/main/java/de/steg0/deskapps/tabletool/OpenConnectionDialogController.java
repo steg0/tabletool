@@ -3,6 +3,8 @@ package de.steg0.deskapps.tabletool;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -14,8 +16,12 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.table.TableCellEditor;
 
+import de.steg0.deskapps.tabletool.Connections.ConnectionState;
+
 class OpenConnectionDialogController
 {
+    Logger logger = Logger.getLogger("tabtype");
+
     private NotebookController notebook;
     private JFrame parent;
     private Integer index;
@@ -65,10 +71,11 @@ class OpenConnectionDialogController
         f.setLocationRelativeTo(parent);
         
         table.setRowSelectionInterval(0,0);
+        logger.log(Level.FINE,"Looking for connection name \"{0}...\"",hint);
         for(int i=0;i<notebook.connections.getRowCount();i++)
         {
-            Object val = notebook.connections.getValueAt(i,0);
-            if(val != null && val.toString().contains(hint))
+            ConnectionState val = notebook.connections.getElementAt(i);
+            if(val.info().name.startsWith(hint))
             {
                 table.setRowSelectionInterval(i,i);
                 break;

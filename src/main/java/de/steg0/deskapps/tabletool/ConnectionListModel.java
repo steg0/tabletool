@@ -24,6 +24,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import de.steg0.deskapps.tabletool.Connections.ConnectionState;
 import de.steg0.deskapps.tabletool.PropertyHolder.ConnectionInfo;
 
 /**
@@ -32,8 +33,7 @@ import de.steg0.deskapps.tabletool.PropertyHolder.ConnectionInfo;
  * dialog if a connection is configured for prompted passwords.
  */
 class ConnectionListModel
-implements ComboBoxModel<Connections.ConnectionState>,
-        TableModel
+implements ComboBoxModel<ConnectionState>,TableModel
 {
     private static final String PROMPT = "PROMPT";
 
@@ -66,7 +66,7 @@ implements ComboBoxModel<Connections.ConnectionState>,
      * the user for a password and sets it in the connection info. This
      * remains there until the next property refresh.
      */
-    ConnectionWorker getConnection(Connections.ConnectionState connection,
+    ConnectionWorker getConnection(ConnectionState connection,
             Consumer<String> log,JFrame parent)
     throws SQLException,PasswordPromptCanceledException
     {
@@ -100,7 +100,7 @@ implements ComboBoxModel<Connections.ConnectionState>,
     }
 
     @Override
-    public Connections.ConnectionState getElementAt(int index)
+    public ConnectionState getElementAt(int index)
     {
         return connections.getElementAt(index);
     }
@@ -124,9 +124,9 @@ implements ComboBoxModel<Connections.ConnectionState>,
     }
 
     @Override
-    public Object getSelectedItem()
+    public ConnectionState getSelectedItem()
     {
-        return selected;
+        return (ConnectionState)selected;
     }
     
     private void promptForPassword(JFrame parent,ConnectionInfo info)
@@ -224,7 +224,7 @@ implements ComboBoxModel<Connections.ConnectionState>,
     @Override
     public Object getValueAt(int rowIndex,int columnIndex)
     {
-        Connections.ConnectionState state = getElementAt(rowIndex);
+        ConnectionState state = getElementAt(rowIndex);
         ConnectionInfo info = state.info();
         return switch(columnIndex)
         {
@@ -238,7 +238,7 @@ implements ComboBoxModel<Connections.ConnectionState>,
     @Override
     public void setValueAt(Object value,int rowIndex,int columnIndex)
     {
-        Connections.ConnectionState state = getElementAt(rowIndex);
+        ConnectionState state = getElementAt(rowIndex);
         ConnectionInfo info = state.info();
         switch(columnIndex)
         {
