@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.InputEvent.SHIFT_DOWN_MASK;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
@@ -24,7 +26,7 @@ class NotebookConnectionsSelectorKeyListener extends KeyAdapter
     public void keyTyped(KeyEvent e)
     {
         char c = e.getKeyChar();
-        if(e.getModifiersEx() != 0) return;
+        if(e.getModifiersEx() != 0 && e.getModifiersEx() != SHIFT_DOWN_MASK) return;
         if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
         {
             e.consume();
