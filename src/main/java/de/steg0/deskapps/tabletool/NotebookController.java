@@ -3,7 +3,6 @@ package de.steg0.deskapps.tabletool;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -13,10 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -55,8 +51,6 @@ import javax.swing.JTextArea;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.NumberFormatter;
 
 import de.steg0.deskapps.tabletool.ConnectionListModel.PasswordPromptCanceledException;
@@ -86,14 +80,6 @@ class NotebookController
     
     final ConnectionListModel connections;
     private JComboBox<Connections.ConnectionState> connectionsSelector;
-    Action
-        focusBufferAction = new AbstractAction("Focus Buffer")
-        {
-            @Override public void actionPerformed(ActionEvent e)
-            {
-                restoreFocus();
-            }
-        };
 
     private JFormattedTextField fetchsizeField;
     
@@ -104,62 +90,20 @@ class NotebookController
             Connections.AUTOCOMMIT_DEFAULT);
     private final JCheckBox updatableCb = new JCheckBox("Updatable",false);
     
-    private final JScrollPane bufferPane;
+    final JScrollPane bufferPane;
     private final int scrollIncrement;
     
-    private final JTextArea log = new JTextArea();
+    final JTextArea log = new JTextArea();
     private final Color defaultLogFg = log.getForeground();
-    private final JSplitPane logBufferPane;
-
-    private void resize()
-    {
-        logger.fine("Autoresizing log area to accommodate text");
-        int lines = Math.min(10,log.getLineCount());
-        int lineheight = log.getFontMetrics(log.getFont()).getHeight();
-        int logheight = lineheight * lines;
-        logger.log(Level.FINE,"logheight={0}",logheight);
-        int dividerSize = logBufferPane.getDividerSize();
-        logger.log(Level.FINE,"dividerSize={0}",dividerSize);
-        int logBufferHeight = logBufferPane.getHeight();
-        logger.log(Level.FINE,"logBufferHeight={0}",logBufferHeight);
-        logBufferPane.setDividerLocation(logBufferHeight - logheight - 
-                dividerSize - (int)(lineheight * .4));
-    }
-
-    {
-        log.setEditable(false);
-        log.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { resize(); }
-            @Override public void removeUpdate(DocumentEvent e) { resize(); }
-            @Override public void changedUpdate(DocumentEvent e) { resize(); }
-        });
-        log.addKeyListener(new KeyAdapter()
-        {
-            /**
-             * Overrides normal F6 behavior in the split pane which would
-             * just focus the top-most buffer. It's a bit more convenient
-             * that way.
-             */
-            public void keyPressed(KeyEvent e)
-            {
-                if(e.getKeyCode() == KeyEvent.VK_F6 && hasSavedFocusPosition)
-                {
-                    logger.fine("F6 pressed in log, restoring buffer focus");
-                    restoreFocus();
-                    e.consume();
-                }
-            }
-        });
-    }
-    
+    final JSplitPane logBufferPane;    
     private final Consumer<String> logConsumer;
     
-    private final List<BufferController> buffers = new ArrayList<>();
+    final List<BufferController> buffers = new ArrayList<>();
     private BufferController first() { return buffers.get(0); }
     private int lastFocusedBuffer;
     BufferController lastFocused() { return buffers.get(lastFocusedBuffer); }
     boolean hasSavedFocusPosition;
-    private final JPanel bufferPanel = new JPanel(new GridBagLayout());
+    final JPanel bufferPanel = new JPanel(new GridBagLayout());
     final JPanel notebookPanel = new JPanel(new GridBagLayout());
     
     NotebookController(
@@ -194,34 +138,17 @@ class NotebookController
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         var am = connectionsSelector.getActionMap();
         am.put("Focus Buffer",focusBufferAction);
-        connectionsSelector.addKeyListener(new KeyAdapter()
-        {
-            public void keyTyped(KeyEvent e)
-            {
-                char c = e.getKeyChar();
-                if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
-                {
-                    e.consume();
-                    var connectionDialog = new OpenConnectionDialogController(
-                            NotebookController.this,parent);
-                    connectionDialog.pick(String.valueOf(c));
-                }
-            }    
-        });
+        connectionsSelector.addKeyListener(
+                new NotebookConnectionsSelectorKeyListener(this,parent));
         connectionPanel.add(connectionsSelector);
         
+        log.setEditable(false);
+        var l = new NotebookLogListener(this);
+        log.getDocument().addDocumentListener(l);
+        log.addKeyListener(l);
         logConsumer = new NotebookLogConsumer(log);
         
-        autocommitCb.addActionListener((e) -> 
-        {
-            onConnection((c) -> 
-            {
-                c.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
-                {
-                    listener.autocommitChanged(c,autocommitCb.isSelected());
-                });
-            });
-        });
+        autocommitCb.addActionListener(e -> applyAutocommit());
         im = autocommitCb.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = autocommitCb.getActionMap();
@@ -286,7 +213,7 @@ class NotebookController
         bufferPane.setBorder(null);
         bufferPane.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
         bufferPane.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
-        var ml = new BufferPaneMouseListener();
+        var ml = new NotebookBufferPaneMouseListener(this);
         bufferPane.addMouseListener(ml);
         bufferPane.addMouseMotionListener(ml);
         logBufferPane.add(bufferPane);
@@ -335,87 +262,6 @@ class NotebookController
     }
     
     private final Listener listener;
-    
-    private class BufferPaneMouseListener extends MouseAdapter
-    {
-        int clickVpY;
-        Component clickBuffer;
-        
-        @Override
-        public void mouseClicked(MouseEvent e)
-        {
-            int vpY = e.getY() + (int)bufferPane.getViewport()
-                    .getViewPosition().getY();
-            logger.log(Level.FINE,"mouseClicked,vpY={0}",vpY);
-            var component = bufferPanel.getComponentAt(new Point(0,vpY));
-            for(var buffer : buffers)
-            {
-                if(buffer.panel == component)
-                {
-                    int bufferY = (int)buffer.panel.getLocation().getY();
-                    int y = vpY - bufferY;
-                    if(e.getClickCount() == 3)
-                    {
-                        buffer.dragLineSelection(y,y);
-                    }
-                    else if(e.isShiftDown() && buffer.editor.hasFocus())
-                    {
-                        buffer.dragLineSelection(-1,y);
-                    }
-                    else if(!e.isShiftDown())
-                    {
-                        buffer.focusEditor(null,y);
-                        buffer.startLineSelection(y);
-                    }
-                    return;
-                }
-            }
-            BufferController lastBuffer = buffers.get(buffers.size() - 1);
-            if(lastBuffer.resultview != null)
-            {
-                exitedSouth(buffers.get(buffers.size() - 1));
-            }
-            else
-            {
-                int bufferY = (int)lastBuffer.panel.getLocation().getY();
-                lastBuffer.focusEditor(null,vpY - bufferY);
-            }
-        }
-        
-        @Override
-        public void mousePressed(MouseEvent e)
-        {
-            if(e.isShiftDown()) return;
-            int bufY = (int)bufferPane.getViewport().getViewPosition().getY();
-            clickVpY = bufY + e.getY();
-            logger.log(Level.FINE,"mousePressed,clickVpY={0}",clickVpY);
-            clickBuffer = bufferPanel.getComponentAt(new Point(0,clickVpY));
-            if(!buffers.stream().anyMatch((b) -> b.panel==clickBuffer))
-            {
-                logger.fine("Click beyond last buffer");
-                clickBuffer=buffers.get(buffers.size() - 1).panel;
-            }
-        }
-        
-        @Override
-        public void mouseDragged(MouseEvent e)
-        {
-            int vpY = e.getY() + (int)bufferPane.getViewport()
-                    .getViewPosition().getY();
-            logger.log(Level.FINE,"mouseDragged,vpY={0}",vpY);
-            var component = bufferPanel.getComponentAt(new Point(0,vpY));
-            if(component != clickBuffer) return;
-            for(var buffer : buffers)
-            {
-                if(buffer.panel == component)
-                {
-                    int bufferY = (int)buffer.panel.getLocation().getY();
-                    buffer.dragLineSelection(clickVpY - bufferY,vpY - bufferY);
-                    return;
-                }
-            }
-        }
-    }
     
     private final BufferController.Listener bufferListener = 
             new BufferController.Listener()
@@ -596,7 +442,7 @@ class NotebookController
         bufferPanel.add(buffers.get(buffers.size()-1).panel,panelConstraints);
     }
     
-    private void exitedSouth(BufferController source)
+    void exitedSouth(BufferController source)
     {
         int i=buffers.indexOf(source);
         if(buffers.size() <= i+1)
@@ -790,6 +636,17 @@ class NotebookController
         first().focusEditor(0,0);
     }
 
+    private void applyAutocommit()
+    {
+        onConnection(c -> 
+        {
+            c.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
+            {
+                listener.autocommitChanged(c,autocommitCb.isSelected());
+            });
+        });
+    }
+
     void commit()
     {
         onConnection((c) -> c.commit(logConsumer));
@@ -892,6 +749,14 @@ class NotebookController
         return true;
     }
     
+    private final Action focusBufferAction = new AbstractAction("Focus Buffer")
+    {
+        @Override public void actionPerformed(ActionEvent e)
+        {
+            restoreFocus();
+        }
+    };
+
     private final PropertyChangeListener fetchSizeListener = e ->
     {
         int fetchsize = ((Number)fetchsizeField.getValue()).intValue();
