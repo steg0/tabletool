@@ -27,6 +27,6 @@ An example command line is:
     -config $APPDATA/tabtype/tabtype.properties \
     $HOME/Documents/workspace.tabtype
 
-This example uses the serial GC, which is a recommendation for desktop applications, sets a default encoding for text files, and uses the Windows L&F.
+This example uses the serial GC, which is a recommendation for desktop applications, and uses the Windows L&F.
 
 There is also an example of a launcher program for Windows in the repository. Using a wrapper such as this, many of the above arguments don't need to be repeated when running the program, which makes it easier to configure it for file type associations.
