@@ -706,8 +706,8 @@ class BufferController
                 rsm.connectionDescription
         };
         String paramlog = (rsm.inlog + rsm.outlog).trim();
-        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
-        if(!rsm.placeholderlog.isEmpty()) paramlog += " - " +
+        if(!paramlog.isEmpty()) paramlog = " & " + paramlog;
+        if(!rsm.placeholderlog.isEmpty()) paramlog += " & " +
                 rsm.placeholderlog;
 
         if(rsm.getRowCount() < rsm.fetchsize)
