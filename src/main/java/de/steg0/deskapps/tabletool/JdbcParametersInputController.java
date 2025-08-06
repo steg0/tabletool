@@ -190,9 +190,16 @@ class JdbcParametersInputController implements ActionListener
                 Object value = table.getModel().getValueAt(i,2);
                 boolean setNull = value == null;
                 if(inNumeric)
-                {        
-                    stmt.setBigDecimal(i+1,setNull?null:new BigDecimal(
-                            value.toString()));
+                {
+                    try
+                    {
+                        stmt.setBigDecimal(i+1,setNull?null:new BigDecimal(
+                                value.toString()));
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        stmt.setString(i+1,setNull?null:value.toString());
+                    }
                 }
                 else
                 {
