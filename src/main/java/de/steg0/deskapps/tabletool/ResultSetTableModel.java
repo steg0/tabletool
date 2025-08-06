@@ -141,8 +141,8 @@ implements TableModel,AutoCloseable
             resultMessage = FETCH_INFO_FORMAT.format(logargs);
         }
         String paramlog = (inlog + outlog).trim();
-        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
-        if(!placeholderlog.isEmpty()) paramlog += " - " +
+        if(!paramlog.isEmpty()) paramlog = " & " + paramlog;
+        if(!placeholderlog.isEmpty()) paramlog += " & " +
                 placeholderlog;
         resultMessage += paramlog;
     }

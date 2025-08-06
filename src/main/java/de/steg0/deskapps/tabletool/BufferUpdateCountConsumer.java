@@ -41,8 +41,8 @@ implements Consumer<UpdateCountEvent>
 
         }
         String paramlog = (e.inlog + e.outlog);
-        if(!paramlog.isEmpty()) paramlog = " - " + paramlog;
-        if(!e.placeholderlog.isEmpty()) paramlog += " - " +
+        if(!paramlog.isEmpty()) paramlog = " & " + paramlog;
+        if(!e.placeholderlog.isEmpty()) paramlog += " & " +
                 e.placeholderlog;
 
         buffer.log.accept(msg + paramlog);

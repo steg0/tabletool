@@ -84,10 +84,8 @@ class JdbcParametersInputController implements ActionListener
         var layout = new BorderLayout(5,5);
         dialog.getContentPane().setLayout(layout);
 
-        var explanation = new JTextArea("JDBC parameters entered here will " +
-                "be applied to the query\n" +
-                "while this window is open.\n" +
-                "Either varchar or number values are supported.\n" +
+        var explanation = new JTextArea(
+                "Either VARCHAR or DECIMAL values are supported.\n" +
                 "Use Enter to accept a value in a cell.");
         explanation.setEditable(false);
         dialog.getContentPane().add(explanation,BorderLayout.NORTH);
@@ -178,9 +176,10 @@ class JdbcParametersInputController implements ActionListener
     String applyToStatement(PreparedStatement stmt)
     throws SQLException
     {
-        if(table==null) initGrid();
         if(!dialog.isVisible()) return "";
-        for(int i=0;i<table.getRowCount();i++)
+        if(table==null) initGrid();
+        int paramcount = stmt.getParameterMetaData().getParameterCount();
+        for(int i=0;i<table.getRowCount() && i<paramcount;i++)
         {
             boolean in = TRUE.equals(table.getModel().getValueAt(i,0));
             boolean inNumeric = TRUE.equals(table.getModel().getValueAt(i,1));
@@ -191,9 +190,16 @@ class JdbcParametersInputController implements ActionListener
                 Object value = table.getModel().getValueAt(i,2);
                 boolean setNull = value == null;
                 if(inNumeric)
-                {        
-                    stmt.setBigDecimal(i+1,setNull?null:new BigDecimal(
-                            value.toString()));
+                {
+                    try
+                    {
+                        stmt.setBigDecimal(i+1,setNull?null:new BigDecimal(
+                                value.toString()));
+                    }
+                    catch(NumberFormatException e)
+                    {
+                        stmt.setString(i+1,setNull?null:value.toString());
+                    }
                 }
                 else
                 {

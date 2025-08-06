@@ -231,14 +231,13 @@
         where lower(table_name) = lower(&amp;param)
     </entry>
     <entry key="drivers.sqlserver.completionTemplate">
-        select tablename
+        select name
         from sys.tables
-        where lower(tablename) like lower(&amp;param || '%')
+        where lower(name) like lower(concat(&amp;param,'%'))
         union
         select column_name
         from information_schema.columns
-        where table_schema not in('information_schema','pg_catalog')
-        and lower(column_name) like lower(&amp;param || '%')
+        where lower(column_name) like lower(concat(&amp;param,'%'))
     </entry>
 
     <entry key="drivers.oracle.infoTemplate">
