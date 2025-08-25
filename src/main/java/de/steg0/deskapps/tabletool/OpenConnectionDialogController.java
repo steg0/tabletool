@@ -3,6 +3,8 @@ package de.steg0.deskapps.tabletool;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -67,6 +69,14 @@ class OpenConnectionDialogController
         table.registerKeyboardAction(closeButtonListener,
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER,0),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        table.addMouseListener(new MouseAdapter()
+        {
+            @Override public void mouseClicked(MouseEvent e)
+            {
+                if(e.getClickCount() == 2)
+                    closeButtonListener.actionPerformed(null);
+            }
+        });
         f.pack();
         f.setLocationRelativeTo(parent);
         
