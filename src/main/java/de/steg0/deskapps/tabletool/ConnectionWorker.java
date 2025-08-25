@@ -237,7 +237,7 @@ class ConnectionWorker
                         this.e = e;
                     }
                 }
-            };
+            }
             var r = new SwingRunnable();
             invokeAndWait(r);
             if(r.e != null) throw r.e;
