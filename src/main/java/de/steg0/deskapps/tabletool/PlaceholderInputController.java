@@ -168,7 +168,7 @@ class PlaceholderInputController
             if(i>0) b.append(", ");
             b.append(lastValues[i][0]);
             String s = lastValues[i][1];
-            b.append(":");
+            b.append("=");
             if(s!=null) b.append("\"")
                     .append(s.replace("\n","\\n").replace("\"","\\\""))
                     .append("\"");
