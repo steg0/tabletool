@@ -181,6 +181,10 @@
         print $b->beautify;
     ]]></entry>
 
+    <entry key="externalTools.cat-to-emacs.command.1">bash</entry>
+    <entry key="externalTools.cat-to-emacs.command.2">-c</entry>
+    <entry key="externalTools.cat-to-emacs.command.3">~/config/desktop-helpers/cat-to-emacs -f tabtype-snippet.sql</entry>
+
     <!--
         Example SQLs
     -->
@@ -290,7 +294,7 @@
     </entry>
 
     <entry key="drivers.as400.infoTemplate">
-        select
+        select distinct
             table_schema,
             table_name,
             c.ordinal_position,
@@ -326,6 +330,7 @@
         from qsys2.syscolumns c
         join qsys2.library_list_info i
             on i.schema_name=c.table_schema
+            or current_schema=c.table_schema
         where lower(table_name) like lower(&amp;param || '%')
     </entry>
     <entry key="drivers.as400.completionTemplate">
@@ -333,12 +338,14 @@
         from qsys2.systables t
         join qsys2.library_list_info i
             on i.schema_name=t.table_schema
+            or current_schema=t.table_schema
         where lower(table_name) like lower(&amp;param || '%')
         union
         select column_name
         from qsys2.syscolumns c
         join qsys2.library_list_info i
             on i.schema_name=c.table_schema
+            or current_schema=t*c.table_schema
         where lower(column_name) like lower(&amp;param || '%')
     </entry>
 
