@@ -71,7 +71,7 @@ class ExternalToolAction extends AbstractAction implements Runnable
 
         new Thread(this).start();
 
-        blockingDialog = new JDialog(parent,"Tool Operation",
+        blockingDialog = new JDialog(parent,"Tool operation",
                 JDialog.ModalityType.APPLICATION_MODAL);
         blockingDialog.getContentPane().setLayout(new BorderLayout(10,10));
         blockingDialog.getContentPane().add(new JLabel(),BorderLayout.NORTH);
