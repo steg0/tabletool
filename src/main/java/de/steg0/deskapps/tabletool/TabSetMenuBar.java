@@ -169,7 +169,7 @@ class TabSetMenuBar
         for(int i=0;i<externalToolDefinitions.length;i++)
         {
             actions.add(new ExternalToolAction(tabset,
-                    externalToolDefinitions[i],i));
+                    externalToolDefinitions[i],i,parent));
         }
         return actions;
     }
