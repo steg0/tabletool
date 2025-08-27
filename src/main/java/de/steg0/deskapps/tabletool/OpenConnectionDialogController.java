@@ -48,6 +48,7 @@ class OpenConnectionDialogController
         f.getContentPane().add(explanation,BorderLayout.NORTH);
         
         var table = new JTable(notebook.connections);
+        table.setColumnSelectionAllowed(true);
         TableSizer.sizeColumns(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         var tablepane = new JScrollPane(table);
