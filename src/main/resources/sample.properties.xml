@@ -185,6 +185,16 @@
     <entry key="externalTools.cat-to-emacs.command.2">-c</entry>
     <entry key="externalTools.cat-to-emacs.command.3">~/config/desktop-helpers/cat-to-emacs -f tabtype-snippet.sql</entry>
 
+    <entry key="externalTools.interactive-sqlexport.command.1">bash</entry>
+    <entry key="externalTools.interactive-sqlexport.command.2">-c</entry>
+    <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
+        set -e
+        cd ~/Documents
+        stmt=`cat`
+        echo -n "$stmt"
+        cmd /c start bash interactive-sqlexport ""$stmt""
+    ]]></entry>
+
     <!--
         Example SQLs
     -->
