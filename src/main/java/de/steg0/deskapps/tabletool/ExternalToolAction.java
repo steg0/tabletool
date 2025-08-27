@@ -69,7 +69,9 @@ class ExternalToolAction extends AbstractAction implements Runnable
             return;
         }
 
-        new Thread(this).start();
+        var t = new Thread(this);
+        t.setDaemon(false);
+        t.start();
 
         blockingDialog = new JDialog(parent,"Tool operation",
                 JDialog.ModalityType.APPLICATION_MODAL);
@@ -77,7 +79,9 @@ class ExternalToolAction extends AbstractAction implements Runnable
         blockingDialog.getContentPane().add(new JLabel(),BorderLayout.NORTH);
         blockingDialog.getContentPane().add(new JLabel(),BorderLayout.WEST);
         blockingDialog.getContentPane().add(new JLabel(
-                "Waiting for external tool invocation..."),BorderLayout.CENTER);
+                "Waiting for external tool. " +
+                "You can close this dialog if you are not interested " +
+                "in the result."),BorderLayout.CENTER);
         blockingDialog.getContentPane().add(new JLabel(),BorderLayout.SOUTH);
         blockingDialog.getContentPane().add(new JLabel(),BorderLayout.EAST);
         blockingDialog.pack();
@@ -92,6 +96,7 @@ class ExternalToolAction extends AbstractAction implements Runnable
         try
         {
             Process p = new ProcessBuilder(def.command()).start();
+            logger.log(Level.FINE,"Started process {0}", p.pid());
             os = p.getOutputStream();
             os.write(text.getBytes(StandardCharsets.UTF_8));
             os.close();
@@ -124,9 +129,12 @@ class ExternalToolAction extends AbstractAction implements Runnable
             var errStr = new String(err,StandardCharsets.UTF_8);
             SwingUtilities.invokeLater(() ->
             {
-                if(errStr.length()>0) b.log.accept("Process STDERR at " +
-                        new Date() + ":\n" + errStr);
-                if(exitcode==0) b.editor.replaceSelection(outStr);
+                if(blockingDialog.isVisible())
+                {
+                    if(errStr.length()>0) b.log.accept("Process STDERR at " +
+                            new Date() + ":\n" + errStr);
+                    if(exitcode==0) b.editor.replaceSelection(outStr);
+                }
                 blockingDialog.dispose();
                 blockingDialog = null;
                 b = null;

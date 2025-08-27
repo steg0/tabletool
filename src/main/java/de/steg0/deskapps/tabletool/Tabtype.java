@@ -20,6 +20,7 @@ import java.util.logging.LogManager;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
@@ -30,9 +31,10 @@ import javax.swing.UIManager;
  */
 public class Tabtype
 extends WindowAdapter
+implements Runnable
 {
 
-    private JFrame frame,cellDisplay=new JFrame(),infoDisplay=new JFrame();
+    private JFrame frame,cellDisplay,infoDisplay;
     private JdbcParametersInputController parametersController;
     private File properties[],workspace,sqlFiles[];
     private TabSetController controller;
@@ -65,6 +67,8 @@ extends WindowAdapter
     private void showBuffer()
     {
         frame = new JFrame();
+        cellDisplay = new JFrame();
+        infoDisplay = new JFrame();
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -189,12 +193,6 @@ extends WindowAdapter
         }
     }
     
-    @Override
-    public void windowClosed(WindowEvent e)
-    {
-        System.exit(0);
-    }
-
     public static void main(String[] args)
     {
         Collection<String> propertiesfiles=new ArrayList<>();
@@ -247,7 +245,12 @@ extends WindowAdapter
         {
             m = new Tabtype(propertiesfiles,(String)null);
         }
-        m.showBuffer();
+        SwingUtilities.invokeLater(m);
+    }
+
+    @Override public void run()
+    {
+        showBuffer();
     }
     
 }
