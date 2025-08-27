@@ -190,6 +190,7 @@ implements Runnable
         if(proceed)
         {
             frame.dispose();
+            controller.shutdownExecutor();
         }
     }
     

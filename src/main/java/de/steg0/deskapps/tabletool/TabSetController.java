@@ -28,7 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +57,7 @@ implements KeyListener
     private final PropertyHolder propertyHolder;
     
     private Connections connections;
-    private final Executor executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -986,5 +986,10 @@ implements KeyListener
     {
         String title = tabbedPane.getTitleAt(index);
         if(!title.startsWith("*")) tabbedPane.setTitleAt(index,"*"+title);
+    }
+
+    void shutdownExecutor()
+    {
+        executor.shutdown();
     }
 }
