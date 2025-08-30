@@ -192,7 +192,7 @@
         cd ~/Documents
         stmt=`cat`
         echo -n "$stmt"
-        cmd /c start bash interactive-sqlexport ""$stmt""
+        cmd /c start bash interactive-sqlexport ""$stmt"" > /dev/null 2>&1
     ]]></entry>
 
     <!--
