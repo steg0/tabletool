@@ -195,6 +195,10 @@
         cmd /c start bash interactive-sqlexport ""$stmt"" > /dev/null 2>&1
     ]]></entry>
 
+    <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.1">tr</entry>
+    <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.2">[[:upper:]]</entry>
+    <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.3">[[:lower:]]</entry>
+
     <!--
         Example SQLs
     -->
