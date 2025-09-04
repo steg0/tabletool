@@ -192,11 +192,6 @@ implements Runnable
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
-            logger.fine("Disposing frames");
-            frame.dispose();
-            cellDisplay.dispose();
-            infoDisplay.dispose();
-            parametersController.dispose();
             try
             {
                 if(!controller.shutdownExecutor())
@@ -207,7 +202,17 @@ implements Runnable
             catch(InterruptedException e)
             {
                 logger.log(Level.WARNING,"Exception shutting down threads",e);
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Error closing connection threads: "+e.getMessage(),
+                        "Error closing",
+                        JOptionPane.ERROR_MESSAGE);
             }
+            logger.fine("Disposing frames");
+            frame.dispose();
+            cellDisplay.dispose();
+            infoDisplay.dispose();
+            parametersController.dispose();
         }
     }
     
