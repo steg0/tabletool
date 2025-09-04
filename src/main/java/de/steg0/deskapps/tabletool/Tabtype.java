@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -33,6 +35,7 @@ public class Tabtype
 extends WindowAdapter
 implements Runnable
 {
+    Logger logger = Logger.getLogger("tabtype");
 
     private JFrame frame,cellDisplay,infoDisplay;
     private JdbcParametersInputController parametersController;
@@ -189,8 +192,22 @@ implements Runnable
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
+            logger.fine("Disposing frames");
             frame.dispose();
-            controller.shutdownExecutor();
+            cellDisplay.dispose();
+            infoDisplay.dispose();
+            parametersController.dispose();
+            try
+            {
+                if(!controller.shutdownExecutor())
+                {
+                    throw new InterruptedException("Executor shutdown timeout");
+                }
+            }
+            catch(InterruptedException e)
+            {
+                logger.log(Level.WARNING,"Exception shutting down threads",e);
+            }
         }
     }
     

@@ -288,4 +288,9 @@ class JdbcParametersInputController implements ActionListener
         if(b.length()>0) return " -> " + b.toString();
         return "";
     }
+
+    void dispose()
+    {
+        dialog.dispose();
+    }
 }

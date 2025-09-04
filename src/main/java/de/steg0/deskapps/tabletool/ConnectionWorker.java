@@ -127,7 +127,7 @@ class ConnectionWorker
                 {
                     report(log,"Internal error: " + e.getMessage() + " at " + 
                             new Date());
-                    logger.log(Level.SEVERE, "Internal error",e);
+                    logger.log(Level.SEVERE,"Internal error",e);
                 }
             }
         }
@@ -155,6 +155,7 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
+                    logger.fine("Executing (callable statement)");
                     boolean result = st.execute();
 
                     outlog = parameterTransfer(st,
@@ -186,6 +187,7 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
+                    logger.fine("Executing (statement)");
                     boolean result = st.execute();
 
                     outlog = parameterTransfer(st,
