@@ -114,6 +114,9 @@ class TabSetMenuBar
         item.setMnemonic(KeyEvent.VK_O);
         menu.add(item);
 
+        item = new JMenuItem(tabset.cancelAction);
+        menu.add(item);
+
         item = new JMenuItem(tabset.disconnectAction);
         item.setMnemonic(KeyEvent.VK_D);
         menu.add(item);

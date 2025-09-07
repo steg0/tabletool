@@ -53,6 +53,7 @@ class ConnectionWorker
     }
 
     ResultSetTableModel lastReportedResult;
+    volatile Statement lastStatement;
     
     /**
      * @param resultConsumer where a Statement will be pushed to right after
@@ -144,8 +145,10 @@ class ConnectionWorker
                     logger.fine("Executing (callable statement)");
                     boolean result = st.execute();
 
+                    lastStatement = st;
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
+                    lastStatement = null;
 
                     if(result)
                     {
@@ -174,7 +177,9 @@ class ConnectionWorker
                             JdbcParametersInputController::applyToStatement);
 
                     logger.fine("Executing (statement)");
+                    lastStatement = st;
                     boolean result = st.execute();
+                    lastStatement = null;
 
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
@@ -278,6 +283,16 @@ class ConnectionWorker
             }
             return null;
         },log);
+    }
+
+    void cancel()
+    throws SQLException
+    {
+        Statement st = lastStatement;
+        if(st!=null)
+        {
+            st.cancel();
+        }
     }
     
     void commit(Consumer<String> log)

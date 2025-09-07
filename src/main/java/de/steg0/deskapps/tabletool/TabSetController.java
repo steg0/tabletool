@@ -438,6 +438,13 @@ implements KeyListener
                 getSelected().rollback();
             }
         },
+        cancelAction = new AbstractAction("Cancel")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                getSelected().cancel();
+            }
+        },
         openAction = new AbstractAction("Open")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -999,5 +1006,10 @@ implements KeyListener
         boolean success = executor.awaitTermination(99,TimeUnit.DAYS);
         logger.fine("Executor terminated");
         return success;
+    }
+
+    List<Exception> cancelAll()
+    {
+        return connections.cancelAll();
     }
 }

@@ -1,5 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.util.stream.Collectors.joining;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -192,6 +194,7 @@ implements Runnable
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
+            List<Exception> cancelResult = controller.cancelAll();
             try
             {
                 if(!controller.shutdownExecutor())
@@ -201,11 +204,17 @@ implements Runnable
             }
             catch(InterruptedException e)
             {
-                logger.log(Level.WARNING,"Exception shutting down threads",e);
+                cancelResult.add(e);
+            }
+            if(!cancelResult.isEmpty())
+            {
+                logger.log(Level.WARNING,"Exception shutting down: {}",
+                        cancelResult);
                 JOptionPane.showMessageDialog(
                         frame,
-                        "Error closing connection threads: "+e.getMessage(),
-                        "Error closing",
+                        cancelResult.stream().map(Exception::getMessage)
+                                .collect(joining("\n")),
+                        "Graceful shutdown failed",
                         JOptionPane.ERROR_MESSAGE);
             }
             logger.fine("Disposing frames");

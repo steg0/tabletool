@@ -141,4 +141,18 @@ class Connections
     {
         return connectionStates[index];
     }
+
+    List<Exception> cancelAll()
+    {
+        List<Exception> errors = new ArrayList<>();
+        for(var worker : workers) try
+        {
+            worker.cancel();
+        }
+        catch(Exception e)
+        {
+            errors.add(e);
+        }
+        return errors;
+    }
 }
