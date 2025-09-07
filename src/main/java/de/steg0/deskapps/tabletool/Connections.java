@@ -147,7 +147,7 @@ class Connections
         List<Exception> errors = new ArrayList<>();
         for(var worker : workers) try
         {
-            worker.cancel();
+            if(worker!=null) worker.cancel();
         }
         catch(Exception e)
         {
