@@ -14,7 +14,7 @@ import javax.swing.border.Border;
 
 class NotebookLogConsumer implements Consumer<String>,ActionListener
 {
-    Logger resultlog = Logger.getLogger("tabtype");
+    Logger logger = Logger.getLogger("tabtype");
 
     private Border 
         regularBorder = BorderFactory.createDashedBorder(Color.WHITE),
@@ -31,7 +31,7 @@ class NotebookLogConsumer implements Consumer<String>,ActionListener
 
     public synchronized void accept(String t)
     {
-        resultlog.fine(t);
+        logger.fine(t);
         SwingUtilities.invokeLater(() ->
         {
             log.setBorder(hilightedBorder);

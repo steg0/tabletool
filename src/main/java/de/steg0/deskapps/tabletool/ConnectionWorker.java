@@ -1,7 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
-import static javax.swing.SwingUtilities.invokeLater;
 import static javax.swing.SwingUtilities.invokeAndWait;
+import static javax.swing.SwingUtilities.invokeLater;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -10,7 +10,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.concurrent.Executor;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -29,13 +31,20 @@ class ConnectionWorker
     final ConnectionInfo info;
 
     private final Connection connection;
-    private final Executor executor;
+    private final ThreadPoolExecutor executor;
     
-    ConnectionWorker(ConnectionInfo info,Connection connection,Executor executor)
+    ConnectionWorker(ConnectionInfo info,Connection connection,
+            ThreadPoolExecutor executor)
     {
         this.info=info;
         this.connection=connection;
         this.executor=executor;
+    }
+
+    private List<Operation> getCurrentlyExecutingOperations()
+    {
+        return executor.getQueue().stream().map(Operation.class::cast)
+                .filter(o -> o.connectionInfo() == info).toList();
     }
     
     private void report(Consumer<String> log,String str)
@@ -69,21 +78,21 @@ class ConnectionWorker
     {
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
-        var sqlRunnable = new SqlRunnable();
-        sqlRunnable.parametersController = parametersController;
-        sqlRunnable.resultConsumer = resultConsumer;
-        sqlRunnable.updateCountConsumer = updateCountConsumer;
-        sqlRunnable.fetchsize = fetchsize;
-        sqlRunnable.log = log;
-        sqlRunnable.sql = sql;
-        sqlRunnable.skipEmptyColumns = skipEmptyColumns;
-        sqlRunnable.updatable = updatable;
-        sqlRunnable.placeholderlog = placeholderlog;
-        sqlRunnable.ts = System.currentTimeMillis();
-        executor.execute(sqlRunnable);
+        var sqlwrapper = new SqlOperationWrapper();
+        sqlwrapper.parametersController = parametersController;
+        sqlwrapper.resultConsumer = resultConsumer;
+        sqlwrapper.updateCountConsumer = updateCountConsumer;
+        sqlwrapper.fetchsize = fetchsize;
+        sqlwrapper.log = log;
+        sqlwrapper.sql = sql;
+        sqlwrapper.skipEmptyColumns = skipEmptyColumns;
+        sqlwrapper.updatable = updatable;
+        sqlwrapper.placeholderlog = placeholderlog;
+        sqlwrapper.ts = System.currentTimeMillis();
+        sqlwrapper.start();
     }
     
-    private class SqlRunnable implements Runnable
+    private class SqlOperationWrapper
     {
         private JdbcParametersInputController parametersController;
         private BiConsumer<ResultSetTableModel,Long> resultConsumer;
@@ -95,41 +104,18 @@ class ConnectionWorker
         private int fetchsize;
         private long ts;
 
-        public void run()
+        public void start()
         {
-            synchronized(ConnectionWorker.this)
+            executeOnConnection("SQL",sql,() ->
             {
-                try
+                if(lastReportedResult!=null && !lastReportedResult.isClosed())
                 {
-                    if(lastReportedResult!=null && 
-                       !lastReportedResult.isClosed()) try
-                    {
-                        lastReportedResult.close();
-                        report(log,"Closed prior ResultSet and accepted query "+
-                                "at "+new Date());
-                    }
-                    catch(SQLException e)
-                    {
-                        report(log,SQLExceptionPrinter.toString(e));
-                    }
-                    else
-                    {
-                        report(log,"Query accepted at "+new Date());
-                    }
-                    getResult();
+                    lastReportedResult.close();
+                    logger.fine("Closed prior ResultSet");
                 }
-                catch(SQLException e)
-                {
-                    report(log,SQLExceptionPrinter.toString(sql,e));
-                    logger.log(Level.INFO,"SQLException on {0}",info.url);
-                }
-                catch(Exception e)
-                {
-                    report(log,"Internal error: " + e.getMessage() + " at " + 
-                            new Date());
-                    logger.log(Level.SEVERE,"Internal error",e);
-                }
-            }
+                getResult();
+                return null;
+            },log);
         }
 
         private void getResult()
@@ -282,100 +268,123 @@ class ConnectionWorker
      */
     void closeResultSet(Consumer<String> log)
     {
-        executor.execute(() ->
+        executeOnConnection("Close ResultSet",null,() -> 
         {
-            synchronized(ConnectionWorker.this)
+            if(lastReportedResult!=null)
             {
-                if(lastReportedResult!=null) try
-                {
-                    lastReportedResult.close();
-                    lastReportedResult = null;
-                    report(log,"Closed ResultSet at "+new Date());
-                }
-                catch(SQLException e)
-                {
-                    report(log,SQLExceptionPrinter.toString(e));
-                }
+                lastReportedResult.close();
+                lastReportedResult = null;
+                return "Closed ResultSet";
             }
-        });
+            return null;
+        },log);
     }
     
     void commit(Consumer<String> log)
     {
-        executor.execute(() ->
+        executeOnConnection("Commit",null,() ->
         {
-            synchronized(ConnectionWorker.this)
-            {
-                try
-                {
-                    connection.commit();
-                    report(log,"Commit complete at "+new Date());
-                }
-                catch(SQLException e)
-                {
-                    report(log,SQLExceptionPrinter.toString(e));
-                }
-            }
-        });
+            connection.commit();
+            return "Commit complete";
+        },log);
     }
     
     void rollback(Consumer<String> log)
     {
-        executor.execute(() ->
+        executeOnConnection("Rollback",null,() ->
         {
-            synchronized(ConnectionWorker.this)
-            {
-                try
-                {
-                    connection.rollback();
-                    report(log,"Rollback complete at "+new Date());
-                }
-                catch(SQLException e)
-                {
-                    report(log,SQLExceptionPrinter.toString(e));
-                }
-            }
-        });
+            connection.rollback();
+            return "Rollback complete";
+        },log);
     }
     
     void disconnect(Consumer<String> log,Runnable cb)
     {
-        executor.execute(() ->
+        executeOnConnection("Disconnect",null,() ->
         {
-            synchronized(ConnectionWorker.this)
-            {
-                try
-                {
-                    connection.close();
-                    report(log,"Disconnected at "+new Date());
-                    invokeLater(cb);
-                }
-                catch(SQLException e)
-                {
-                    report(log,SQLExceptionPrinter.toString(e));
-                }
-            }
-        });
+            connection.close();
+            invokeLater(cb);
+            return "Disconnected";
+        },log);
     }
     
     void setAutoCommit(boolean enabled,Consumer<String> log,Runnable cb)
     {
-        executor.execute(() ->
+        executeOnConnection("Enable autocommit",null,() ->
+        {
+            connection.setAutoCommit(enabled);
+            invokeLater(cb);
+            return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
+                    "Ctrl+R, or F5 to execute statements";
+        },log);
+    }
+
+    private void executeOnConnection(String operationName,String statement,
+            Callable<String> runnable,Consumer<String> log)
+    {
+        executor.execute(new Operation(operationName,statement,runnable,log));
+    }
+
+    class Operation implements Runnable
+    {
+        private Consumer<String> log;
+        private String name,sql;
+        private Callable<String> callable;
+        private Date start=new Date();
+
+        Operation(String name,String sql,Callable<String> callable,
+                Consumer<String> log)
+        {
+            this.name=name;
+            this.callable=callable;
+            this.log=log;
+            this.sql=sql;
+        }
+
+        ConnectionInfo connectionInfo()
+        {
+            return info;
+        }
+
+        @Override public void run()
         {
             synchronized(ConnectionWorker.this)
             {
                 try
                 {
-                    connection.setAutoCommit(enabled);
-                    report(log,"Autocommit set to "+enabled+" at "+new Date()+
-                            ". Use Ctrl+ENTER to execute statements.");
-                    invokeLater(cb);
+                    List<Operation> ops = getCurrentlyExecutingOperations();
+                    String reportmsg = "Accepted: "+name+" at "+start;
+                    if(ops.size() > 0)
+                    {
+                        reportmsg = "With pending operations:\n" + ops + "\n\n";
+                    }
+                    report(log,reportmsg);
+                    String resultMessage = callable.call();
+                    if(resultMessage != null)
+                    {
+                        report(log,resultMessage + " at " + new Date() + ".");
+                    }
+                    logger.fine("Done: "+name);
                 }
                 catch(SQLException e)
                 {
-                    report(log,SQLExceptionPrinter.toString(e));
+                    if(sql!=null) report(log,SQLExceptionPrinter.toString(sql,
+                            e));
+                    else report(log,SQLExceptionPrinter.toString(e));
+                    logger.log(Level.INFO,"SQLException on {0}",info.url);
+                }
+                catch(Exception e)
+                {
+                    report(log,"Internal error: " + e.getMessage() + " at " + 
+                            new Date());
+                    logger.log(Level.SEVERE,"Internal error",e);
                 }
             }
-        });
+        }
+
+        @Override public String toString()
+        {
+            return name + " at " + start + " on " + info.name;
+        }
     }
 }

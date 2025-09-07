@@ -28,8 +28,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,7 +58,8 @@ implements KeyListener
     private final PropertyHolder propertyHolder;
     
     private Connections connections;
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ThreadPoolExecutor executor =
+            (ThreadPoolExecutor)Executors.newCachedThreadPool();
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
