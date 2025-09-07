@@ -85,7 +85,7 @@
     <entry key="connections.derby.password">PROMPT</entry>
     -->
     <entry key="connections.derby.bg">#f0f0d7</entry>
-    <entry key="connections.derby.logBg">#c1c193</entry>
+    <entry key="connections.derby.logBg">#a1a150</entry>
     <entry key="connections.derby.logFg">#ffffff</entry>
     <entry key="connections.derby.focusedBorderColor">#ee3838</entry>
     <!--
