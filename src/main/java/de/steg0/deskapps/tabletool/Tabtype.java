@@ -213,7 +213,7 @@ implements Runnable
                 JOptionPane.showMessageDialog(
                         frame,
                         cancelResult.stream().map(Exception::getMessage)
-                                .collect(joining("\n")),
+                                .limit(10).collect(joining("\n")),
                         "Graceful shutdown failed",
                         JOptionPane.ERROR_MESSAGE);
             }
