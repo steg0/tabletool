@@ -70,7 +70,8 @@ class ExternalToolAction extends AbstractAction implements Runnable
         }
 
         var t = new Thread(this);
-        t.setDaemon(false);
+        /* Exiting with the tool still running is acceptable: */
+        t.setDaemon(true);
         t.start();
 
         blockingDialog = new JDialog(parent,"Tool operation",
