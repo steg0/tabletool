@@ -195,17 +195,7 @@ implements Runnable
         if(proceed)
         {
             List<Exception> cancelResult = controller.cancelAll();
-            try
-            {
-                if(!controller.shutdownExecutor())
-                {
-                    throw new InterruptedException("Executor shutdown timeout");
-                }
-            }
-            catch(InterruptedException e)
-            {
-                cancelResult.add(e);
-            }
+            controller.shutdownExecutor();
             if(!cancelResult.isEmpty())
             {
                 logger.log(Level.WARNING,"Exception shutting down: {}",
