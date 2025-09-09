@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import static java.util.stream.Collectors.joining;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -22,8 +23,12 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -200,12 +205,21 @@ implements Runnable
             {
                 logger.log(Level.WARNING,"Exception shutting down: {}",
                         cancelResult);
-                JOptionPane.showMessageDialog(
-                        frame,
-                        cancelResult.stream().map(Exception::getMessage)
-                                .limit(10).collect(joining("\n")),
-                        "Graceful shutdown failed",
-                        JOptionPane.ERROR_MESSAGE);
+                var dialog = new JDialog(frame,"Graceful shutdown failed",true);
+                dialog.getContentPane().setLayout(new BorderLayout(0,5));
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                var text = new JTextArea(cancelResult.stream()
+                        .map(Exception::getMessage).collect(joining("\n")));
+                text.setEditable(false);
+                var scrollpane = new JScrollPane(text);
+                dialog.getContentPane().add(scrollpane,BorderLayout.CENTER);
+                var okButton = new JButton("OK");
+                okButton.addActionListener(e -> dialog.dispose());
+                dialog.getContentPane().add(okButton,BorderLayout.SOUTH);
+                dialog.getRootPane().setDefaultButton(okButton);
+                dialog.pack();
+                dialog.setLocationRelativeTo(frame);
+                dialog.setVisible(true);
             }
             logger.fine("Disposing frames");
             frame.dispose();
