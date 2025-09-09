@@ -10,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiConsumer;
@@ -41,12 +40,6 @@ class ConnectionWorker
         this.executor=executor;
     }
 
-    private List<Operation> getCurrentlyExecutingOperations()
-    {
-        return executor.getQueue().stream().map(Operation.class::cast)
-                .filter(o -> o.connectionInfo() == info).toList();
-    }
-    
     private void report(Consumer<String> log,String str)
     {
         log.accept(str);
@@ -77,6 +70,12 @@ class ConnectionWorker
             boolean updatable
     )
     {
+        if(lastStatement!=null)
+        {
+            report(log,"Currently executing:\n"+lastStatement+
+                    "\nNot enqueueing new statement at "+new Date());
+            return;
+        }
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
         var sqlwrapper = new SqlOperationWrapper();
@@ -148,7 +147,6 @@ class ConnectionWorker
                     lastStatement = st;
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
-                    lastStatement = null;
 
                     if(result)
                     {
@@ -179,7 +177,6 @@ class ConnectionWorker
                     logger.fine("Executing (statement)");
                     lastStatement = st;
                     boolean result = st.execute();
-                    lastStatement = null;
 
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
@@ -199,6 +196,10 @@ class ConnectionWorker
             {
                 reportNullResult();
                 throw e;
+            }
+            finally
+            {
+                lastStatement = null;
             }
         }
 
@@ -367,12 +368,7 @@ class ConnectionWorker
             {
                 try
                 {
-                    List<Operation> ops = getCurrentlyExecutingOperations();
                     String reportmsg = "Accepted: "+name+" at "+start;
-                    if(ops.size() > 0)
-                    {
-                        reportmsg = "With pending operations:\n" + ops + "\n\n";
-                    }
                     report(log,reportmsg);
                     String resultMessage = callable.call();
                     if(resultMessage != null)
