@@ -21,7 +21,7 @@ class BufferEvent extends EventObject
         CHANGED
     }
     
-    Type type;
+    final Type type;
     String removedText;
     ResultSetTableModel removedRsm;
     Rectangle selectedRect;

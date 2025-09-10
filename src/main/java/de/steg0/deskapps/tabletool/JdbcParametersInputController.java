@@ -252,7 +252,7 @@ class JdbcParametersInputController implements ActionListener
                 if(i>0) b.append(", ");
                 b.append("?");
                 b.append(Integer.toString(i+1));
-                b.append(":");
+                b.append("=");
                 boolean numeric = TRUE.equals(data.getValueAt(i,1));
                 Object val = data.getValueAt(i,2);
                 if(!numeric&&val!=null) b.append("\"");
@@ -276,7 +276,7 @@ class JdbcParametersInputController implements ActionListener
                 if(i>0) b.append(", ");
                 b.append("?");
                 b.append(Integer.toString(i+1));
-                b.append(":");
+                b.append("=");
                 boolean numeric = TRUE.equals(data.getValueAt(i,4));
                 Object val = data.getValueAt(i,5);
                 if(!numeric&&val!=null) b.append("\"");
@@ -287,5 +287,10 @@ class JdbcParametersInputController implements ActionListener
         }
         if(b.length()>0) return " -> " + b.toString();
         return "";
+    }
+
+    void dispose()
+    {
+        dialog.dispose();
     }
 }

@@ -1,5 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -12,20 +13,30 @@ import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 
-class ExternalToolAction extends AbstractAction
+class ExternalToolAction extends AbstractAction implements Runnable
 {
     Logger logger = Logger.getLogger("tabtype");
     
     private final TabSetController tabset;
     private final ExternalToolDefinition def;
+    private final JFrame parent;
+
+    private JDialog blockingDialog;
+    private BufferController b;
+    String text;
 
     ExternalToolAction(TabSetController tabset,ExternalToolDefinition def,
-            int number)
+            int number,JFrame parent)
     {
         super((number + 1) + ". " + def.name());
         this.tabset = tabset;
         this.def = def;
+        this.parent = parent;
 
         int keyevent = switch(number)
         {
@@ -47,9 +58,9 @@ class ExternalToolAction extends AbstractAction
     @Override public void actionPerformed(ActionEvent event)
     {
         NotebookController notebook = tabset.getSelected();
-        BufferController b = notebook.lastFocused();
+        b = notebook.lastFocused();
 
-        String text = b.editor.getSelectedText() != null?
+        text = b.editor.getSelectedText() != null?
                 b.editor.getSelectedText() :
                 b.selectCurrentQuery();
         if(text==null)
@@ -57,11 +68,36 @@ class ExternalToolAction extends AbstractAction
             b.log.accept("No query found at " + new Date());
             return;
         }
+
+        var t = new Thread(this);
+        /* Exiting with the tool still running is acceptable: */
+        t.setDaemon(true);
+        t.start();
+
+        blockingDialog = new JDialog(parent,"Tool operation",
+                JDialog.ModalityType.APPLICATION_MODAL);
+        blockingDialog.getContentPane().setLayout(new BorderLayout(10,10));
+        blockingDialog.getContentPane().add(new JLabel(),BorderLayout.NORTH);
+        blockingDialog.getContentPane().add(new JLabel(),BorderLayout.WEST);
+        blockingDialog.getContentPane().add(new JLabel(
+                "Waiting for external tool. " +
+                "You can close this dialog if you are not interested " +
+                "in the result."),BorderLayout.CENTER);
+        blockingDialog.getContentPane().add(new JLabel(),BorderLayout.SOUTH);
+        blockingDialog.getContentPane().add(new JLabel(),BorderLayout.EAST);
+        blockingDialog.pack();
+        blockingDialog.setLocationRelativeTo(parent);
+        blockingDialog.setVisible(true);
+    }
+
+    @Override public void run()
+    {
         InputStream is=null,es=null;
         OutputStream os=null;
         try
         {
             Process p = new ProcessBuilder(def.command()).start();
+            logger.log(Level.FINE,"Started process {0}", p.pid());
             os = p.getOutputStream();
             os.write(text.getBytes(StandardCharsets.UTF_8));
             os.close();
@@ -92,14 +128,27 @@ class ExternalToolAction extends AbstractAction
             int exitcode = p.waitFor();
             var outStr = new String(out,StandardCharsets.UTF_8);
             var errStr = new String(err,StandardCharsets.UTF_8);
-            if(errStr.length()>0) b.log.accept("Process STDERR at " +
-                    new Date() + ":\n" + errStr);
-            if(exitcode==0) b.editor.replaceSelection(outStr);
+            SwingUtilities.invokeLater(() ->
+            {
+                if(blockingDialog.isVisible())
+                {
+                    if(errStr.length()>0) b.log.accept("Process STDERR at " +
+                            new Date() + ":\n" + errStr);
+                    if(exitcode==0) b.editor.replaceSelection(outStr);
+                }
+                blockingDialog.dispose();
+                blockingDialog = null;
+                b = null;
+                text = null;
+            });
         }
         catch(Exception e)
         {
-            b.log.accept("Error executing external command at " +
-                    new Date() + ": " + e.getMessage());
+            SwingUtilities.invokeLater(() ->
+            {
+                b.log.accept("Error executing external command at " +
+                        new Date() + ": " + e.getMessage());
+            });
             logger.log(Level.WARNING,"Error in process",e);
         }
         finally

@@ -28,8 +28,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,7 +57,8 @@ implements KeyListener
     private final PropertyHolder propertyHolder;
     
     private Connections connections;
-    private final Executor executor = Executors.newCachedThreadPool();
+    private final ThreadPoolExecutor executor =
+            (ThreadPoolExecutor)Executors.newCachedThreadPool();
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -434,6 +435,13 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 getSelected().rollback();
+            }
+        },
+        cancelAction = new AbstractAction("Cancel")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                getSelected().cancel();
             }
         },
         openAction = new AbstractAction("Open")
@@ -986,5 +994,16 @@ implements KeyListener
     {
         String title = tabbedPane.getTitleAt(index);
         if(!title.startsWith("*")) tabbedPane.setTitleAt(index,"*"+title);
+    }
+
+    void shutdownExecutor()
+    {
+        logger.fine("Shutting down executor");
+        executor.shutdown();
+    }
+
+    List<Exception> cancelAll()
+    {
+        return connections.cancelAll();
     }
 }

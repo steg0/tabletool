@@ -85,7 +85,7 @@
     <entry key="connections.derby.password">PROMPT</entry>
     -->
     <entry key="connections.derby.bg">#f0f0d7</entry>
-    <entry key="connections.derby.logBg">#c1c193</entry>
+    <entry key="connections.derby.logBg">#a1a150</entry>
     <entry key="connections.derby.logFg">#ffffff</entry>
     <entry key="connections.derby.focusedBorderColor">#ee3838</entry>
     <!--
@@ -180,6 +180,24 @@
         $b->add($_) while(<STDIN>);
         print $b->beautify;
     ]]></entry>
+
+    <entry key="externalTools.cat-to-emacs.command.1">bash</entry>
+    <entry key="externalTools.cat-to-emacs.command.2">-c</entry>
+    <entry key="externalTools.cat-to-emacs.command.3">~/config/desktop-helpers/cat-to-emacs -f tabtype-snippet.sql</entry>
+
+    <entry key="externalTools.interactive-sqlexport.command.1">bash</entry>
+    <entry key="externalTools.interactive-sqlexport.command.2">-c</entry>
+    <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
+        set -e
+        cd ~/Documents
+        stmt=`cat`
+        echo -n "$stmt"
+        cmd /c start bash interactive-sqlexport ""$stmt"" > /dev/null 2>&1
+    ]]></entry>
+
+    <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.1">tr</entry>
+    <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.2">[[:upper:]]</entry>
+    <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.3">[[:lower:]]</entry>
 
     <!--
         Example SQLs
@@ -290,7 +308,7 @@
     </entry>
 
     <entry key="drivers.as400.infoTemplate">
-        select
+        select distinct
             table_schema,
             table_name,
             c.ordinal_position,
@@ -326,6 +344,7 @@
         from qsys2.syscolumns c
         join qsys2.library_list_info i
             on i.schema_name=c.table_schema
+            or current_schema=c.table_schema
         where lower(table_name) like lower(&amp;param || '%')
     </entry>
     <entry key="drivers.as400.completionTemplate">
@@ -333,12 +352,14 @@
         from qsys2.systables t
         join qsys2.library_list_info i
             on i.schema_name=t.table_schema
+            or current_schema=t.table_schema
         where lower(table_name) like lower(&amp;param || '%')
         union
         select column_name
         from qsys2.syscolumns c
         join qsys2.library_list_info i
             on i.schema_name=c.table_schema
+            or current_schema=t*c.table_schema
         where lower(column_name) like lower(&amp;param || '%')
     </entry>
 

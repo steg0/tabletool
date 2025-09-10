@@ -576,7 +576,7 @@ class BufferController
             return;
         }
 
-        String placeholderlog=null;
+        String placeholderlog;
         try
         {
             text=placeholderInputController.fill(text);

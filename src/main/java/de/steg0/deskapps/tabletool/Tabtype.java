@@ -1,5 +1,8 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.util.stream.Collectors.joining;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -15,11 +18,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
@@ -30,9 +40,11 @@ import javax.swing.UIManager;
  */
 public class Tabtype
 extends WindowAdapter
+implements Runnable
 {
+    Logger logger = Logger.getLogger("tabtype");
 
-    private JFrame frame,cellDisplay=new JFrame(),infoDisplay=new JFrame();
+    private JFrame frame,cellDisplay,infoDisplay;
     private JdbcParametersInputController parametersController;
     private File properties[],workspace,sqlFiles[];
     private TabSetController controller;
@@ -65,6 +77,8 @@ extends WindowAdapter
     private void showBuffer()
     {
         frame = new JFrame();
+        cellDisplay = new JFrame();
+        infoDisplay = new JFrame();
         frame.setIconImages(getIcons());
         frame.getContentPane().setLayout(new GridBagLayout());
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -185,16 +199,36 @@ extends WindowAdapter
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
+            List<Exception> cancelResult = controller.cancelAll();
+            controller.shutdownExecutor();
+            if(!cancelResult.isEmpty())
+            {
+                logger.log(Level.WARNING,"Exception shutting down: {}",
+                        cancelResult);
+                var dialog = new JDialog(frame,"Graceful shutdown failed",true);
+                dialog.getContentPane().setLayout(new BorderLayout(0,5));
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                var text = new JTextArea(cancelResult.stream()
+                        .map(Exception::getMessage).collect(joining("\n")));
+                text.setEditable(false);
+                var scrollpane = new JScrollPane(text);
+                dialog.getContentPane().add(scrollpane,BorderLayout.CENTER);
+                var okButton = new JButton("OK");
+                okButton.addActionListener(e -> dialog.dispose());
+                dialog.getContentPane().add(okButton,BorderLayout.SOUTH);
+                dialog.getRootPane().setDefaultButton(okButton);
+                dialog.pack();
+                dialog.setLocationRelativeTo(frame);
+                dialog.setVisible(true);
+            }
+            logger.fine("Disposing frames");
             frame.dispose();
+            cellDisplay.dispose();
+            infoDisplay.dispose();
+            parametersController.dispose();
         }
     }
     
-    @Override
-    public void windowClosed(WindowEvent e)
-    {
-        System.exit(0);
-    }
-
     public static void main(String[] args)
     {
         Collection<String> propertiesfiles=new ArrayList<>();
@@ -217,7 +251,7 @@ extends WindowAdapter
                 {
                     JOptionPane.showMessageDialog(
                             null,
-                            "Error loading logger configuration: "+e.getMessage(),
+                            "Error loading logger configuration:\n"+e,
                             "Error loading logger configuration",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -247,7 +281,12 @@ extends WindowAdapter
         {
             m = new Tabtype(propertiesfiles,(String)null);
         }
-        m.showBuffer();
+        SwingUtilities.invokeLater(m);
+    }
+
+    @Override public void run()
+    {
+        showBuffer();
     }
     
 }

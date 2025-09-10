@@ -4,7 +4,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
 
 /**
@@ -37,9 +37,9 @@ class Connections
     private ConnectionState[] connectionStates;
     private PropertyHolder.ConnectionInfo[] connectionInfo;
     private ConnectionWorker[] workers;
-    private final Executor executor;
+    private final ThreadPoolExecutor executor;
     
-    Connections(PropertyHolder propertyHolder,Executor executor)
+    Connections(PropertyHolder propertyHolder,ThreadPoolExecutor executor)
     {
         connectionInfo = propertyHolder.getConnections();
         this.executor = executor;
@@ -140,5 +140,19 @@ class Connections
     ConnectionState getElementAt(int index)
     {
         return connectionStates[index];
+    }
+
+    List<Exception> cancelAll()
+    {
+        List<Exception> errors = new ArrayList<>();
+        for(var worker : workers) try
+        {
+            if(worker!=null) worker.cancel();
+        }
+        catch(Exception e)
+        {
+            errors.add(e);
+        }
+        return errors;
     }
 }

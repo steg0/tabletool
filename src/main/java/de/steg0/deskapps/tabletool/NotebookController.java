@@ -657,6 +657,21 @@ class NotebookController
         onConnection((c) -> c.rollback(logConsumer));
     }
 
+    void cancel()
+    {
+        onConnection((c) -> 
+        {
+            try
+            {
+                c.cancel();
+            }
+            catch(SQLException e)
+            {
+                logConsumer.accept(SQLExceptionPrinter.toString(e));
+            }
+        });
+    }
+
     void openConnection()
     {
         logger.log(Level.FINE,"lastFocusedBuffer={0}",lastFocusedBuffer);

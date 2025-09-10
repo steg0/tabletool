@@ -114,6 +114,9 @@ class TabSetMenuBar
         item.setMnemonic(KeyEvent.VK_O);
         menu.add(item);
 
+        item = new JMenuItem(tabset.cancelAction);
+        menu.add(item);
+
         item = new JMenuItem(tabset.disconnectAction);
         item.setMnemonic(KeyEvent.VK_D);
         menu.add(item);
@@ -169,7 +172,7 @@ class TabSetMenuBar
         for(int i=0;i<externalToolDefinitions.length;i++)
         {
             actions.add(new ExternalToolAction(tabset,
-                    externalToolDefinitions[i],i));
+                    externalToolDefinitions[i],i,parent));
         }
         return actions;
     }
