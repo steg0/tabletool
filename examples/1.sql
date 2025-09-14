@@ -1,4 +1,9 @@
 select &param1,&param2,&param1 from sysibm.sysdummy1;
+select '9999-99-99' x from sysibm.sysdummy1;
+--CSV Result The only row fetched from derby at Sun Sep 14 21:35:13 CEST 2025
+--X
+--9999-99-99
+
 
 --CSV Result "The only row fetched from derby at Sun Mar 17 12:54:26 CET 2024
 --"

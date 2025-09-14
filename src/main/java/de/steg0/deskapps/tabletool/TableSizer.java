@@ -2,6 +2,8 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.Component;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
@@ -9,6 +11,8 @@ import javax.swing.table.TableColumn;
 
 class TableSizer
 {
+    static Logger logger = Logger.getLogger("tabtype");
+    
     /**
      * Sets preferred width for all columns in the table according to
      * their renderer preferences. This is taken from mergetool; comments
@@ -41,7 +45,11 @@ class TableSizer
             {
                 colMinWidth = colMaxWidth;
             }
-            col.setPreferredWidth((int)(colMinWidth * 1.05));
+            double bpadd=500;
+            double factor = (double)colMinWidth / 300;
+            if(factor < 1) bpadd += (1500 * (1-factor));
+            logger.log(Level.FINE,"bpadd={0}",bpadd);
+            col.setPreferredWidth((int)(colMinWidth * (10000 + bpadd) / 10000));
         }
     }
 }
