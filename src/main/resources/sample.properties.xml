@@ -56,13 +56,14 @@
 
     <entry key="uiDefaults.color.Button.background">#eeeeee</entry>
     <entry key="uiDefaults.color.ComboBox.background">#f9f9f9</entry>
+    <entry key="uiDefaults.gradient.CheckBox.gradient">1,0,#eeeeee,#eeeeee,#eeeeee</entry>
     <entry key="uiDefaults.color.ScrollBar.highlight">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.shadow">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.darkShadow">#b8b8b8</entry>
     <entry key="uiDefaults.color.ScrollBar.thumbShadow">#b8b8b8</entry>
     <entry key="uiDefaults.color.ScrollBar.thumbDarkShadow">#b8b8b8</entry>
     <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#eeeeee</entry>
-    <entry key="uiDefaults.gradient.ScrollBar.gradient">0.3,0.0,#bfc8d8,#bfc8d8,#bfc8d8</entry>
+    <entry key="uiDefaults.gradient.ScrollBar.gradient">.3,0,#d8d8d8,#e5e5e5,#d8d8d8</entry>
     <entry key="uiDefaults.color.Table.gridColor">#b8cfe5</entry>
     <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.MenuBar.background">#f9f9f9</entry>
