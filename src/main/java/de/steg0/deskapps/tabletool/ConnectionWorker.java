@@ -40,11 +40,6 @@ class ConnectionWorker
         this.executor=executor;
     }
 
-    private void report(Consumer<String> log,String str)
-    {
-        log.accept(str);
-    }
-
     ResultSetTableModel lastReportedResult;
     volatile Statement lastStatement;
     
@@ -72,7 +67,7 @@ class ConnectionWorker
     {
         if(lastStatement!=null)
         {
-            report(log,"Currently executing:\n"+lastStatement+
+            log.accept("Currently executing:\n"+lastStatement+
                     "\nNot enqueueing new statement at "+new Date());
             return;
         }
@@ -369,24 +364,24 @@ class ConnectionWorker
                 try
                 {
                     String reportmsg = "Accepted: "+name+" at "+start;
-                    report(log,reportmsg);
+                    log.accept(reportmsg);
                     String resultMessage = callable.call();
                     if(resultMessage != null)
                     {
-                        report(log,resultMessage + " at " + new Date() + ".");
+                        log.accept(resultMessage + " at " + new Date() + ".");
                     }
                     logger.fine("Done: "+name);
                 }
                 catch(SQLException e)
                 {
-                    if(sql!=null) report(log,SQLExceptionPrinter.toString(sql,
+                    if(sql!=null) log.accept(SQLExceptionPrinter.toString(sql,
                             e));
-                    else report(log,SQLExceptionPrinter.toString(e));
+                    else log.accept(SQLExceptionPrinter.toString(e));
                     logger.log(Level.INFO,"SQLException on {0}",info.url);
                 }
                 catch(Exception e)
                 {
-                    report(log,"Internal error: " + e.getMessage() + " at " + 
+                    log.accept("Internal error: " + e.getMessage() + " at " + 
                             new Date());
                     logger.log(Level.SEVERE,"Internal error",e);
                 }
