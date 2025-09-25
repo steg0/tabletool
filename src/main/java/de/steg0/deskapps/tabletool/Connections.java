@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Represents the list of connections available to the runtime.
@@ -147,7 +148,7 @@ class Connections
         List<Exception> errors = new ArrayList<>();
         for(var worker : workers) try
         {
-            if(worker!=null) worker.cancel();
+            if(worker!=null) worker.cancel(l -> {});
         }
         catch(Exception e)
         {

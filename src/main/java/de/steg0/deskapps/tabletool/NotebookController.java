@@ -663,7 +663,7 @@ class NotebookController
         {
             try
             {
-                c.cancel();
+                c.cancel(logConsumer);
             }
             catch(SQLException e)
             {

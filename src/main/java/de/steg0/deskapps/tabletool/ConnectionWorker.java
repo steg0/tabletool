@@ -41,7 +41,8 @@ class ConnectionWorker
     }
 
     ResultSetTableModel lastReportedResult;
-    volatile Statement lastStatement;
+    private volatile String lastSql;
+    private volatile Statement lastStatement;
     
     /**
      * @param resultConsumer where a Statement will be pushed to right after
@@ -65,12 +66,13 @@ class ConnectionWorker
             boolean updatable
     )
     {
-        if(lastStatement!=null)
+        if(lastSql!=null)
         {
-            log.accept("Currently executing:\n"+lastStatement+
+            log.accept("Currently executing:\n"+lastSql+
                     "\nNot enqueueing new statement at "+new Date());
             return;
         }
+        lastSql=sql;
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
         var sqlwrapper = new SqlOperationWrapper();
@@ -195,6 +197,7 @@ class ConnectionWorker
             finally
             {
                 lastStatement = null;
+                lastSql = null;
             }
         }
 
@@ -281,13 +284,18 @@ class ConnectionWorker
         },log);
     }
 
-    void cancel()
+    void cancel(Consumer<String> log)
     throws SQLException
     {
         Statement st = lastStatement;
         if(st!=null)
         {
             st.cancel();
+            log.accept("Invoked cancel operation at "+new Date());
+        }
+        else
+        {
+            log.accept("No statement is currently executing at "+new Date());
         }
     }
     
