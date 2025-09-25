@@ -222,7 +222,7 @@ class ConnectionWorker
                     try
                     {
                         if(parametersController!=null) report = f.apply(
-                            parametersController,st);
+                                parametersController,st);
                     }
                     catch(SQLException e)
                     {
