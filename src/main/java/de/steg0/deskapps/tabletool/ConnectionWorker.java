@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -41,7 +42,7 @@ class ConnectionWorker
     }
 
     ResultSetTableModel lastReportedResult;
-    private volatile String lastSql;
+    private AtomicReference<Operation> lastOp = new AtomicReference<>();
     private volatile Statement lastStatement;
     
     /**
@@ -66,13 +67,6 @@ class ConnectionWorker
             boolean updatable
     )
     {
-        if(lastSql!=null)
-        {
-            log.accept("Currently executing:\n"+lastSql+
-                    "\nNot enqueueing new statement at "+new Date());
-            return;
-        }
-        lastSql=sql;
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
         var sqlwrapper = new SqlOperationWrapper();
@@ -197,7 +191,6 @@ class ConnectionWorker
             finally
             {
                 lastStatement = null;
-                lastSql = null;
             }
         }
 
@@ -341,7 +334,15 @@ class ConnectionWorker
     private void executeOnConnection(String operationName,String statement,
             Callable<String> runnable,Consumer<String> log)
     {
-        executor.execute(new Operation(operationName,statement,runnable,log));
+        Operation op = new Operation(operationName,statement,runnable,log);
+        Operation checkval = lastOp.compareAndExchange(null,op);
+        if(checkval != null)
+        {
+            log.accept("Currently executing:\n"+checkval+
+                    "\nNot enqueueing new operation at "+new Date());
+            return;
+        }
+        executor.execute(op);
     }
 
     class Operation implements Runnable
@@ -367,32 +368,33 @@ class ConnectionWorker
 
         @Override public void run()
         {
-            synchronized(ConnectionWorker.this)
+            try
             {
-                try
+                String reportmsg = "Accepted: "+name+" at "+start;
+                log.accept(reportmsg);
+                String resultMessage = callable.call();
+                if(resultMessage != null)
                 {
-                    String reportmsg = "Accepted: "+name+" at "+start;
-                    log.accept(reportmsg);
-                    String resultMessage = callable.call();
-                    if(resultMessage != null)
-                    {
-                        log.accept(resultMessage + " at " + new Date() + ".");
-                    }
-                    logger.fine("Done: "+name);
+                    log.accept(resultMessage + " at " + new Date() + ".");
                 }
-                catch(SQLException e)
-                {
-                    if(sql!=null) log.accept(SQLExceptionPrinter.toString(sql,
-                            e));
-                    else log.accept(SQLExceptionPrinter.toString(e));
-                    logger.log(Level.INFO,"SQLException on {0}",info.url);
-                }
-                catch(Exception e)
-                {
-                    log.accept("Internal error: " + e.getMessage() + " at " + 
-                            new Date());
-                    logger.log(Level.SEVERE,"Internal error",e);
-                }
+                logger.fine("Done: "+name);
+            }
+            catch(SQLException e)
+            {
+                if(sql!=null) log.accept(SQLExceptionPrinter.toString(sql,
+                        e));
+                else log.accept(SQLExceptionPrinter.toString(e));
+                logger.log(Level.INFO,"SQLException on {0}",info.url);
+            }
+            catch(Exception e)
+            {
+                log.accept("Internal error: " + e.getMessage() + " at " + 
+                        new Date());
+                logger.log(Level.SEVERE,"Internal error",e);
+            }
+            finally
+            {
+                ConnectionWorker.this.lastOp.set(null);
             }
         }
 
