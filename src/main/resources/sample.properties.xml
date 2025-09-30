@@ -115,8 +115,9 @@
     
     <!--
         initSql is a statement which will be executed whenever a matching
-        connection is opened. There will be no output possibility for such
-        statements.
+        connection is opened. It is not possible to specify an Autocommit
+        mode other than the driver's default and there will be no output
+        possibility for such statements.
         It is possible to assign them to drivers as well as connections
         (with "connections.SOME_NAME_REGEX.initSql."). Multiple matches
         are resolved by giving connection assignments higher precedence.
