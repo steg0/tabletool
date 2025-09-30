@@ -106,7 +106,7 @@ class ConnectionWorker
                 }
                 getResult();
                 return null;
-            },log);
+            },log,false);
         }
 
         private void getResult()
@@ -274,7 +274,7 @@ class ConnectionWorker
                 return "Closed ResultSet";
             }
             return null;
-        },log);
+        },log,true);
     }
 
     void cancel(Consumer<String> log)
@@ -298,7 +298,7 @@ class ConnectionWorker
         {
             connection.commit();
             return "Commit complete";
-        },log);
+        },log,false);
     }
     
     void rollback(Consumer<String> log)
@@ -307,7 +307,7 @@ class ConnectionWorker
         {
             connection.rollback();
             return "Rollback complete";
-        },log);
+        },log,false);
     }
     
     void disconnect(Consumer<String> log,Runnable cb)
@@ -317,7 +317,7 @@ class ConnectionWorker
             connection.close();
             invokeLater(cb);
             return "Disconnected";
-        },log);
+        },log,false);
     }
     
     void setAutoCommit(boolean enabled,Consumer<String> log,Runnable cb)
@@ -328,19 +328,27 @@ class ConnectionWorker
             invokeLater(cb);
             return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
                     "Ctrl+R, or F5 to execute statements";
-        },log);
+        },log,true);
     }
 
+    /**
+     * @param queue If <code>true</code>, will wait on the object's monitor
+     * if another statement is currently executing. If <code>false</code>,
+     * it will report an error and return in such cases.
+     */
     private void executeOnConnection(String operationName,String statement,
-            Callable<String> runnable,Consumer<String> log)
+            Callable<String> runnable,Consumer<String> log,boolean queue)
     {
         Operation op = new Operation(operationName,statement,runnable,log);
-        Operation checkval = lastOp.compareAndExchange(null,op);
-        if(checkval != null)
+        if(!queue)
         {
-            log.accept("Currently executing:\n"+checkval+
-                    "\nNot enqueueing new operation at "+new Date());
-            return;
+            Operation checkval = lastOp.compareAndExchange(null,op);
+            if(checkval != null)
+            {
+                log.accept("Currently executing:\n"+checkval+
+                        "\nNot enqueueing new operation at "+new Date());
+                return;
+            }
         }
         executor.execute(op);
     }
@@ -368,39 +376,43 @@ class ConnectionWorker
 
         @Override public void run()
         {
-            try
+            synchronized(ConnectionWorker.this)
             {
-                String reportmsg = "Accepted: "+name+" at "+start;
-                log.accept(reportmsg);
-                String resultMessage = callable.call();
-                if(resultMessage != null)
+                try
                 {
-                    log.accept(resultMessage + " at " + new Date() + ".");
+                    String reportmsg = "Accepted: "+name+" at "+start;
+                    log.accept(reportmsg);
+                    String resultMessage = callable.call();
+                    if(resultMessage != null)
+                    {
+                        log.accept(resultMessage + " at " + new Date() + ".");
+                    }
+                    logger.fine("Done: "+name);
                 }
-                logger.fine("Done: "+name);
-            }
-            catch(SQLException e)
-            {
-                if(sql!=null) log.accept(SQLExceptionPrinter.toString(sql,
-                        e));
-                else log.accept(SQLExceptionPrinter.toString(e));
-                logger.log(Level.INFO,"SQLException on {0}",info.url);
-            }
-            catch(Exception e)
-            {
-                log.accept("Internal error: " + e.getMessage() + " at " + 
-                        new Date());
-                logger.log(Level.SEVERE,"Internal error",e);
-            }
-            finally
-            {
-                ConnectionWorker.this.lastOp.set(null);
+                catch(SQLException e)
+                {
+                    if(sql!=null) log.accept(SQLExceptionPrinter.toString(sql,
+                            e));
+                    else log.accept(SQLExceptionPrinter.toString(e));
+                    logger.log(Level.INFO,"SQLException on {0}",info.url);
+                }
+                catch(Exception e)
+                {
+                    log.accept("Internal error: " + e.getMessage() + " at " + 
+                            new Date());
+                    logger.log(Level.SEVERE,"Internal error",e);
+                }
+                finally
+                {
+                    ConnectionWorker.this.lastOp.set(null);
+                }
             }
         }
 
         @Override public String toString()
         {
-            return name + " at " + start + " on " + info.name;
+            return name + (sql != null? ": " + sql : "") + " at " + start +
+                    " on " + info.name;
         }
     }
 }
