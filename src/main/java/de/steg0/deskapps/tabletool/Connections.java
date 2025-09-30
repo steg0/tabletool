@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Represents the list of connections available to the runtime.
@@ -104,7 +103,6 @@ class Connections
                     connectionInfo[i].username,
                     connectionInfo[i].password
             );
-            jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
             workers[i] = new ConnectionWorker(
                     connectionInfo[i],
                     jdbcConnection,
