@@ -63,6 +63,7 @@
     <entry key="uiDefaults.color.TextField.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.Table.background">#e7e7e7</entry>
 
     <!--Property configuration examples for Ocean theme:-->
     <!--

@@ -251,8 +251,14 @@ implements KeyListener
                 boolean proceed = closeWorkspace(false);
                 if(!proceed) return;
                 workspaceFile = filechooser.getSelectedFile();
-                if(workspaceFile.exists()) restoreWorkspace();
-                else add(-1);
+                if(workspaceFile.exists())
+                {
+                    if(!restoreWorkspace()) add(-1);
+                }
+                else
+                {
+                    add(-1);
+                }
                 parent.setTitle(Tabtype.getFrameTitle(workspaceFile));
             }
         },
@@ -587,22 +593,34 @@ implements KeyListener
      */
     NotebookController add(int index)
     {
-        var notebook = new NotebookController(
-                parent,
-                cellDisplay,
-                infoDisplay,
-                parametersController,
-                propertyHolder,
-                connections,
-                getPwd(),
-                notebookListener
-        );
-        int newIndex = index<0?tabbedPane.getTabCount():index;
-        notebooks.add(newIndex,notebook);
-        tabbedPane.add(notebook.notebookPanel,newIndex);
-        retitle();
-        tabbedPane.setSelectedIndex(newIndex);
-        return notebook;
+        try
+        {
+            var notebook = new NotebookController(
+                    parent,
+                    cellDisplay,
+                    infoDisplay,
+                    parametersController,
+                    propertyHolder,
+                    connections,
+                    getPwd(),
+                    notebookListener
+            );
+            int newIndex = index<0?tabbedPane.getTabCount():index;
+            notebooks.add(newIndex,notebook);
+            tabbedPane.add(notebook.notebookPanel,newIndex);
+            retitle();
+            tabbedPane.setSelectedIndex(newIndex);
+            return notebook;
+        }
+        catch(Exception e)
+        {
+            JOptionPane.showMessageDialog(
+                    parent,
+                    "Error adding buffer: "+e.getMessage(),
+                    "Error adding buffer",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return null;
     }
 
     NotebookController getSelected()
@@ -777,7 +795,6 @@ implements KeyListener
         return !notebooks.stream().noneMatch((n) -> n.isUnsaved()); 
     }
     
-
     boolean restoreWorkspace()
     {
         Objects.requireNonNull(workspaceFile);
@@ -864,7 +881,6 @@ implements KeyListener
                         JOptionPane.ERROR_MESSAGE);
             }
         }
-        closeWorkspace(true);
         return false;
     }
     
