@@ -54,7 +54,7 @@
         They can be used to modify LAF appearance.
     -->
 
-    <entry key="uiDefaults.color.TabbedPane.background">#b0b0b0</entry>
+    <entry key="uiDefaults.color.TabbedPane.background">#dddddd</entry>
     <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
     <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#eeeeee</entry>
     <entry key="uiDefaults.color.List.background">#e7e7e7</entry>
