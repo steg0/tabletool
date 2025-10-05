@@ -43,17 +43,27 @@
     <entry key="resultview.height">150</entry>
     -->
 
-    <entry key="default.bg">#eeeeee</entry>
+    <entry key="default.bg">#dddddd</entry>
     <entry key="editor.nonFocusedBorder">#ffffff</entry>
     <entry key="editor.focusedBorder">#0000ff</entry>
     <entry key="editor.unsavedBorder">#aaaaaa</entry>
-    <entry key="frame.bg">#dddddd</entry>
+    <entry key="frame.bg">#bbbbbb</entry>
 
     <!--
         UI defaults can be specified for colors and gradients like below.
         They can be used to modify LAF appearance.
     -->
 
+    <entry key="uiDefaults.color.TabbedPane.background">#b0b0b0</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#eeeeee</entry>
+    <entry key="uiDefaults.color.List.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.TextField.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
+
+    <!--Property configuration examples for Ocean theme:-->
+    <!--
     <entry key="uiDefaults.color.Button.background">#eeeeee</entry>
     <entry key="uiDefaults.color.ComboBox.background">#f9f9f9</entry>
     <entry key="uiDefaults.gradient.CheckBox.gradient">1,0,#eeeeee,#eeeeee,#eeeeee</entry>
@@ -70,6 +80,7 @@
     <entry key="uiDefaults.color.TextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.FormattedTextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.TextArea.background">#f9f9f9</entry>
+    -->
 
     <!--
         For connections, the part after the first dot is the name

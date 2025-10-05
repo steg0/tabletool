@@ -27,8 +27,8 @@ namespace Tabtype
             string procargs=Environment.ExpandEnvironmentVariables(
                     "-XX:+UseSerialGC " +
                     "-Dderby.system.home=%USERPROFILE% " +
-                    "-Dfile.encoding=UTF-8 " +
                     "-Dswing.plaf.metal.controlFont=\"Segoe UI\" " +
+                    "-Dswing.metalTheme=steel " +
                     //"-Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel " +
                     "-p " +
                     "\"" + String.Join(";",deps).Replace("\"","\"\"") + "\" " +

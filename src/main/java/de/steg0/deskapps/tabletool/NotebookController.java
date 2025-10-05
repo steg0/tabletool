@@ -227,7 +227,7 @@ class NotebookController
         bufferPaneConstraints.gridy = 1;
         notebookPanel.add(logBufferPane,bufferPaneConstraints);
         
-        setBranding(null,null,null,"");
+        setBranding(first().defaultBackground,null,null,"");
     }
 
     private BufferController newBufferController()
@@ -852,7 +852,7 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBranding(null,null,null,"");
+        setBranding(first().defaultBackground,null,null,"");
         updatableCb.setSelected(false);
     }
     
