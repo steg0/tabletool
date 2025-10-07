@@ -60,8 +60,8 @@
     <entry key="uiDefaults.color.TabbedPane.background">#dddddd</entry>
     <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
     <entry key="uiDefaults.color.ScrollBar.shadow">#cccccc</entry>
-    <entry key="uiDefaults.color.ScrollBar.darkShadow">#cccccc</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#aaaaaa</entry>
+    <entry key="uiDefaults.color.ScrollBar.darkShadow">#bbbbbb</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#cccccc</entry>
     <entry key="uiDefaults.color.ScrollBar.thumbShadow">#aaaaaa</entry>
     <entry key="uiDefaults.color.List.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.TextField.background">#e7e7e7</entry>
