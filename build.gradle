@@ -22,7 +22,7 @@ dependencies {
     testImplementation libs.junit.junit
 }
 
-version = '0.57-SNAPSHOT'
+version = '0.57'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
