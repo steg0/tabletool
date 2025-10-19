@@ -67,17 +67,17 @@ class BufferConfigSource
     {
         return propertyHolder.getUnsavedEditorBorderColor();
     }
-    Color getEditorBackgroundColor()
+    Color getEditorBackgroundColor(Color fallback)
     {
         ConnectionState connectionState = connectionListModel.getSelectedItem();
         if(connectionState == null)
         {
-            return propertyHolder.getDefaultBackground();
+            return propertyHolder.getDefaultBackground(fallback);
         }
         Color bg = connectionState.info().background;
         if(bg == null)
         {
-            return propertyHolder.getDefaultBackground();
+            return propertyHolder.getDefaultBackground(fallback);
         }
         return bg;
     }

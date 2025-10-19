@@ -97,7 +97,7 @@ class BufferController
     }
     
     /**The system-default editor background */
-    final Color defaultBackground = editor.getBackground();
+    Color defaultBackground = panel.getBackground();
     
     UndoManager undoManager = new UndoManager();
     
@@ -147,6 +147,8 @@ class BufferController
         connectionLabelConstraints.anchor = GridBagConstraints.NORTHWEST;
         setConnectionLabelFontSize();
         panel.add(connectionLabel,connectionLabelConstraints);
+        defaultBackground = configSource.getEditorBackgroundColor(
+                defaultBackground);
         panel.setBackground(defaultBackground);
         
         editor.addKeyListener(editorKeyListener);
@@ -211,8 +213,7 @@ class BufferController
 
     void setBrandingColors()
     {
-        Color bg = configSource.getEditorBackgroundColor();
-        if(bg==null) bg = defaultBackground;
+        Color bg = configSource.getEditorBackgroundColor(defaultBackground);
         editor.setBackground(bg);
         panel.setBackground(bg);
         focusedBorder = BorderFactory.createDashedBorder(

@@ -121,9 +121,9 @@ class PropertyHolder
                 properties.getOrDefault("tab.placement",JTabbedPane.TOP).toString());
     }
     
-    Color getDefaultBackground()
+    Color getDefaultBackground(Color fallback)
     {
-        return getColorProperty("default.bg",null);
+        return getColorProperty("default.bg",fallback);
     }
 
     Color getFrameBackground()

@@ -218,7 +218,7 @@ class JdbcParametersInputController implements ActionListener
                 }
             }
         }
-        return describeInValues();
+        return describeInValues(paramcount);
     }
 
     String readFromStatement(PreparedStatement stmt)
@@ -240,10 +240,10 @@ class JdbcParametersInputController implements ActionListener
         return describeOutValues();
     }
 
-    private String describeInValues()
+    private String describeInValues(int paramcount)
     {
         var b = new StringBuilder();
-        for(int i=0;i<table.getRowCount();i++)
+        for(int i=0;i<table.getRowCount() && i<paramcount;i++)
         {
             var data = table.getModel();
             boolean in = TRUE.equals(data.getValueAt(i,0));

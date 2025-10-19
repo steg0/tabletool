@@ -43,32 +43,51 @@
     <entry key="resultview.height">150</entry>
     -->
 
-    <entry key="default.bg">#eeeeee</entry>
+    <entry key="default.bg">#dddddd</entry>
     <entry key="editor.nonFocusedBorder">#ffffff</entry>
     <entry key="editor.focusedBorder">#0000ff</entry>
     <entry key="editor.unsavedBorder">#aaaaaa</entry>
-    <entry key="frame.bg">#dddddd</entry>
+    <!--
+    <entry key="frame.bg">#bbbbbb</entry>
+    -->
 
     <!--
         UI defaults can be specified for colors and gradients like below.
         They can be used to modify LAF appearance.
     -->
 
+    <!-- <entry key="uiDefaults.color.TabbedPane.selected">#dddddd</entry> -->
+    <entry key="uiDefaults.color.TabbedPane.background">#dddddd</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
+    <entry key="uiDefaults.color.ScrollBar.shadow">#cccccc</entry>
+    <entry key="uiDefaults.color.ScrollBar.darkShadow">#bbbbbb</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#cccccc</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbShadow">#aaaaaa</entry>
+    <entry key="uiDefaults.color.List.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.TextField.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.Table.background">#e7e7e7</entry>
+
+    <!--Property configuration examples for Ocean theme:-->
+    <!--
     <entry key="uiDefaults.color.Button.background">#eeeeee</entry>
     <entry key="uiDefaults.color.ComboBox.background">#f9f9f9</entry>
+    <entry key="uiDefaults.gradient.CheckBox.gradient">1,0,#eeeeee,#eeeeee,#eeeeee</entry>
     <entry key="uiDefaults.color.ScrollBar.highlight">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.shadow">#f9f9f9</entry>
-    <entry key="uiDefaults.color.ScrollBar.darkShadow">#b8cfe5</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbShadow">#b8cfe5</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbDarkShadow">#b8cfe5</entry>
+    <entry key="uiDefaults.color.ScrollBar.darkShadow">#b8b8b8</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbShadow">#b8b8b8</entry>
+    <entry key="uiDefaults.color.ScrollBar.thumbDarkShadow">#b8b8b8</entry>
     <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#eeeeee</entry>
-    <entry key="uiDefaults.gradient.ScrollBar.gradient">0.3,0.0,#c8ddf2,#c8ddf2,#c8ddf2</entry>
+    <entry key="uiDefaults.gradient.ScrollBar.gradient">.3,0,#d8d8d8,#e5e5e5,#d8d8d8</entry>
     <entry key="uiDefaults.color.Table.gridColor">#b8cfe5</entry>
     <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.MenuBar.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.TextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.FormattedTextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.TextArea.background">#f9f9f9</entry>
+    -->
 
     <!--
         For connections, the part after the first dot is the name
@@ -76,11 +95,13 @@
     -->
     <entry key="connections.derby.url">jdbc:derby:tabtype_user_derby;create=true</entry>
     <entry key="connections.derby.username">tabtype</entry>
-    <!-- A password can have the special value "PROMPT", which means
-         the user will be asked for it once every property refresh. If
-         somebody changes the server password in the meantime, this
-         means a property refresh will need to be executed by the
-         user in the File menu. -->
+    <!--
+        A password can have the special value "PROMPT", which means
+        the user will be asked for it once every property refresh. If
+        somebody changes the server password in the meantime, this
+        means a property refresh will need to be executed by the
+        user in the File menu.
+    -->
     <!--
     <entry key="connections.derby.password">PROMPT</entry>
     -->
@@ -112,8 +133,9 @@
     
     <!--
         initSql is a statement which will be executed whenever a matching
-        connection is opened. There will be no output possibility for such
-        statements.
+        connection is opened. It is not possible to specify an Autocommit
+        mode other than the driver's default and there will be no output
+        possibility for such statements.
         It is possible to assign them to drivers as well as connections
         (with "connections.SOME_NAME_REGEX.initSql."). Multiple matches
         are resolved by giving connection assignments higher precedence.
@@ -165,8 +187,7 @@
         up in the Tools menu. Those operate by getting the query
         under the cursor through STDIN and writing their result to
         STDOUT. Tabtype will replace the selected content with that
-        output. For all this, UTF-8 encoding is used. The operation
-        is blocking, so the execution should not take too long.
+        output. For all this, UTF-8 encoding is used.
     -->
     <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
     <entry key="externalTools.SQL::Beautify.command.2">-I</entry>

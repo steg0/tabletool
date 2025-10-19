@@ -103,7 +103,6 @@ class Connections
                     connectionInfo[i].username,
                     connectionInfo[i].password
             );
-            jdbcConnection.setAutoCommit(AUTOCOMMIT_DEFAULT);
             workers[i] = new ConnectionWorker(
                     connectionInfo[i],
                     jdbcConnection,
@@ -147,7 +146,7 @@ class Connections
         List<Exception> errors = new ArrayList<>();
         for(var worker : workers) try
         {
-            if(worker!=null) worker.cancel();
+            if(worker!=null) worker.cancel(l -> {});
         }
         catch(Exception e)
         {

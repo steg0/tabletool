@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -40,13 +41,9 @@ class ConnectionWorker
         this.executor=executor;
     }
 
-    private void report(Consumer<String> log,String str)
-    {
-        log.accept(str);
-    }
-
     ResultSetTableModel lastReportedResult;
-    volatile Statement lastStatement;
+    private AtomicReference<Operation> lastOp = new AtomicReference<>();
+    private volatile Statement lastStatement;
     
     /**
      * @param resultConsumer where a Statement will be pushed to right after
@@ -70,12 +67,6 @@ class ConnectionWorker
             boolean updatable
     )
     {
-        if(lastStatement!=null)
-        {
-            report(log,"Currently executing:\n"+lastStatement+
-                    "\nNot enqueueing new statement at "+new Date());
-            return;
-        }
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
         var sqlwrapper = new SqlOperationWrapper();
@@ -115,7 +106,7 @@ class ConnectionWorker
                 }
                 getResult();
                 return null;
-            },log);
+            },log,false);
         }
 
         private void getResult()
@@ -224,7 +215,7 @@ class ConnectionWorker
                     try
                     {
                         if(parametersController!=null) report = f.apply(
-                            parametersController,st);
+                                parametersController,st);
                     }
                     catch(SQLException e)
                     {
@@ -283,16 +274,21 @@ class ConnectionWorker
                 return "Closed ResultSet";
             }
             return null;
-        },log);
+        },log,true);
     }
 
-    void cancel()
+    void cancel(Consumer<String> log)
     throws SQLException
     {
         Statement st = lastStatement;
         if(st!=null)
         {
             st.cancel();
+            log.accept("Invoked cancel operation at "+new Date());
+        }
+        else
+        {
+            log.accept("No statement is currently executing at "+new Date());
         }
     }
     
@@ -302,7 +298,7 @@ class ConnectionWorker
         {
             connection.commit();
             return "Commit complete";
-        },log);
+        },log,false);
     }
     
     void rollback(Consumer<String> log)
@@ -311,7 +307,7 @@ class ConnectionWorker
         {
             connection.rollback();
             return "Rollback complete";
-        },log);
+        },log,false);
     }
     
     void disconnect(Consumer<String> log,Runnable cb)
@@ -321,7 +317,7 @@ class ConnectionWorker
             connection.close();
             invokeLater(cb);
             return "Disconnected";
-        },log);
+        },log,false);
     }
     
     void setAutoCommit(boolean enabled,Consumer<String> log,Runnable cb)
@@ -332,13 +328,29 @@ class ConnectionWorker
             invokeLater(cb);
             return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
                     "Ctrl+R, or F5 to execute statements";
-        },log);
+        },log,true);
     }
 
+    /**
+     * @param queue If <code>true</code>, will wait on the object's monitor
+     * if another statement is currently executing. If <code>false</code>,
+     * it will report an error and return in such cases.
+     */
     private void executeOnConnection(String operationName,String statement,
-            Callable<String> runnable,Consumer<String> log)
+            Callable<String> runnable,Consumer<String> log,boolean queue)
     {
-        executor.execute(new Operation(operationName,statement,runnable,log));
+        Operation op = new Operation(operationName,statement,runnable,log);
+        if(!queue)
+        {
+            Operation checkval = lastOp.compareAndExchange(null,op);
+            if(checkval != null)
+            {
+                log.accept("Currently executing:\n"+checkval+
+                        "\nNot enqueueing new operation at "+new Date());
+                return;
+            }
+        }
+        executor.execute(op);
     }
 
     class Operation implements Runnable
@@ -369,33 +381,38 @@ class ConnectionWorker
                 try
                 {
                     String reportmsg = "Accepted: "+name+" at "+start;
-                    report(log,reportmsg);
+                    log.accept(reportmsg);
                     String resultMessage = callable.call();
                     if(resultMessage != null)
                     {
-                        report(log,resultMessage + " at " + new Date() + ".");
+                        log.accept(resultMessage + " at " + new Date() + ".");
                     }
                     logger.fine("Done: "+name);
                 }
                 catch(SQLException e)
                 {
-                    if(sql!=null) report(log,SQLExceptionPrinter.toString(sql,
+                    if(sql!=null) log.accept(SQLExceptionPrinter.toString(sql,
                             e));
-                    else report(log,SQLExceptionPrinter.toString(e));
+                    else log.accept(SQLExceptionPrinter.toString(e));
                     logger.log(Level.INFO,"SQLException on {0}",info.url);
                 }
                 catch(Exception e)
                 {
-                    report(log,"Internal error: " + e.getMessage() + " at " + 
+                    log.accept("Internal error: " + e.getMessage() + " at " + 
                             new Date());
                     logger.log(Level.SEVERE,"Internal error",e);
+                }
+                finally
+                {
+                    ConnectionWorker.this.lastOp.set(null);
                 }
             }
         }
 
         @Override public String toString()
         {
-            return name + " at " + start + " on " + info.name;
+            return name + (sql != null? ": " + sql : "") + " at " + start +
+                    " on " + info.name;
         }
     }
 }
