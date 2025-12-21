@@ -112,7 +112,8 @@ class BufferActions
                 logger.fine("Completing text: "+text);
                 try
                 {
-                    var xy = b.editor.modelToView2D(b.editor.getCaretPosition());
+                    var xy = b.editor.modelToView2D(
+                            b.editor.getCaretPosition());
                     new SnippetPopup(b,
                             (int)xy.getCenterX(),(int)xy.getCenterY())
                             .show(snippetTemplates);
