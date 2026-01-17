@@ -28,6 +28,7 @@ namespace Tabtype
                     "-XX:+UseSerialGC " +
                     "-Dderby.system.home=%USERPROFILE% " +
                     "-Dswing.plaf.metal.controlFont=\"Segoe UI\" " +
+                    "-Dswing.plaf.metal.userFont=\"Roboto Condensed\" " +
                     "-Dswing.metalTheme=steel " +
                     //"-Dswing.defaultlaf=com.sun.java.swing.plaf.windows.WindowsLookAndFeel " +
                     "-p " +

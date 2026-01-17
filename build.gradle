@@ -65,6 +65,7 @@ application {
     applicationDefaultJvmArgs = [
         "-XX:+UseSerialGC",
         "-Dswing.plaf.metal.controlFont=Segoe UI",
+        "-Dswing.plaf.metal.userFont=Roboto Condensed",
 	"-Dswing.metalTheme=steel",
         "-Dderby.system.home=${System.properties['user.home']}"
     ]
