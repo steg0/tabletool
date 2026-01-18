@@ -331,7 +331,13 @@ class NotebookController
                 
             case NULL_FETCH:
                 logger.log(Level.FINE,"No fetch result at #{0}",i);
-                if(next!=null && source.resultview==null)
+                boolean split = source.resultview.getColumnName(0).equals(
+                        BufferController.SPLIT_DUMMY_TITLE);
+                if(split)
+                {
+                    source.removeResultView();
+                }
+                if(next!=null && split)
                 {
                     logger.log(Level.FINE,"Undoing #{0} after split",i);
                     if(next.editor.getText().length() > 0 &&

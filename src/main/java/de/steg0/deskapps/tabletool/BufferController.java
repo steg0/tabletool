@@ -49,6 +49,7 @@ import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCancel
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
+    static final String SPLIT_DUMMY_TITLE = "\u231b";
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -601,8 +602,7 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            resultview=null;  /* this acts as a flag that we're in a split */
-            removeResultView();
+            addResultSetTable(null);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -632,11 +632,9 @@ class BufferController
 
     ResultSetTableModel getResultSetTableModel()
     {
-        if(resultview != null)
-        {
-            return (ResultSetTableModel)resultview.getModel();
-        }
-        return null;
+        return resultview != null &&
+                resultview.getModel() instanceof ResultSetTableModel rsm?
+                        rsm : null;
     }
     
     String selectCurrentQuery()
@@ -729,7 +727,9 @@ class BufferController
     {
         removeResultView();
 
-        resultview = new JTable(rsm);
+        resultview = rsm != null?
+                new JTable(rsm) :
+                new JTable(new Object[][]{},new Object[]{SPLIT_DUMMY_TITLE});
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd,
                 editor.getFont());
@@ -761,7 +761,7 @@ class BufferController
         
         panel.add(resultscrollpane,resultviewConstraints);
 
-        if(rsm.resultMessage!=null && !rsm.resultMessage.isEmpty())
+        if(rsm!=null && rsm.resultMessage!=null && !rsm.resultMessage.isEmpty())
         {
             logger.log(Level.FINE,"resultMessage={0}",rsm.resultMessage);
             resultMessageLabel = new JLabel(rsm.resultMessage);
@@ -820,7 +820,7 @@ class BufferController
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
-    private void removeResultView()
+    void removeResultView()
     {
         while(panel.getComponentCount()>2) panel.remove(2);
     }
