@@ -77,7 +77,11 @@ class BufferConfigSource
         Color bg = connectionState.info().background;
         if(bg == null)
         {
-            return propertyHolder.getDefaultBackground(fallback);
+            bg = propertyHolder.getDefaultConnectedBackground();
+        }
+        if(bg == null)
+        {
+            bg = propertyHolder.getDefaultBackground(fallback);
         }
         return bg;
     }

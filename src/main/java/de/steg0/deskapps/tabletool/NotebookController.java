@@ -241,6 +241,7 @@ class NotebookController
     {
         if(logBg==null) logBg=bg;
         if(logFg==null) logFg=defaultLogFg;
+        if(bg==null) bg=bufferConfigSource.getEditorBackgroundColor(bg);
         bufferPanel.setBackground(bg);
         log.setBackground(logBg);
         log.setForeground(logFg);

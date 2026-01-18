@@ -44,6 +44,7 @@
     -->
 
     <entry key="default.bg">#dddddd</entry>
+    <entry key="default.connectedBg">#eee5de</entry>
     <entry key="editor.nonFocusedBorder">#ffffff</entry>
     <entry key="editor.focusedBorder">#0000ff</entry>
     <entry key="editor.unsavedBorder">#aaaaaa</entry>

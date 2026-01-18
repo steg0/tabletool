@@ -126,6 +126,11 @@ class PropertyHolder
         return getColorProperty("default.bg",fallback);
     }
 
+    Color getDefaultConnectedBackground()
+    {
+        return getColorProperty("default.connectedBg",null);
+    }
+
     Color getFrameBackground()
     {
         return getColorProperty("frame.bg",null);
