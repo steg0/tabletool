@@ -12,10 +12,12 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 class BufferResultSetKeyListener implements KeyListener
 {
     private final BufferController b;
+    private final BufferResultSetPopup popup;
 
-    BufferResultSetKeyListener(BufferController b)
+    BufferResultSetKeyListener(BufferController b,BufferResultSetPopup popup)
     {
         this.b = b;
+        this.popup = popup;
     }
 
     private void scrollToView()
@@ -73,6 +75,16 @@ class BufferResultSetKeyListener implements KeyListener
             break;
         case KeyEvent.VK_BACK_SPACE:
             if(e.isControlDown()) b.closeBuffer();
+            break;
+        case KeyEvent.VK_F10:
+            Rectangle cellRect = b.resultview.getCellRect(
+                    b.resultview.getSelectedRow(),
+                    b.resultview.getSelectedColumn(),
+                    true
+            );
+            if(e.isShiftDown()) popup.showPopup(e.getComponent(),
+                    cellRect.x,cellRect.y);
+            e.consume();
         }
     }
 }

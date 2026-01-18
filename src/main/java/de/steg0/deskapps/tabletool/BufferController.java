@@ -725,9 +725,6 @@ class BufferController
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     };
 
-    private KeyListener resultsetKeyListener = 
-        new BufferResultSetKeyListener(this);
-
     void addResultSetTable(ResultSetTableModel rsm)
     {
         removeResultView();
@@ -736,10 +733,12 @@ class BufferController
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd,
                 editor.getFont());
-        new BufferResultSetPopup(parent,this).attach();
+        var popup = new BufferResultSetPopup(parent,this);
+        popup.attachMouseListener();
         
         resultview.setCellSelectionEnabled(true);
-        
+
+        var resultsetKeyListener = new BufferResultSetKeyListener(this,popup);
         resultview.addKeyListener(resultsetKeyListener);
         
         var resultscrollpane = new JScrollPane(resultview,
