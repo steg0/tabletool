@@ -131,11 +131,11 @@ class BufferController
         this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
         unfocusedBorder = BorderFactory.createDashedBorder(
-                configSource.getNonFocusedEditorBorderColor());
+                configSource.getNonFocusedEditorBorderColor(),2,1,1,false);
         focusedBorder = BorderFactory.createDashedBorder(
-                configSource.getFocusedEditorBorderColor());
+                configSource.getFocusedEditorBorderColor(),2,1,1,false);
         unsavedBorder = BorderFactory.createDashedBorder(
-                configSource.getUnsavedEditorBorderColor());
+                configSource.getUnsavedEditorBorderColor(),2,1,1,false);
         setBrandingColors();
 
         editor.addFocusListener(new BufferEditorFocusListener(this));
@@ -217,7 +217,7 @@ class BufferController
         editor.setBackground(bg);
         panel.setBackground(bg);
         focusedBorder = BorderFactory.createDashedBorder(
-                configSource.getFocusedEditorBorderColor());
+                configSource.getFocusedEditorBorderColor(),2,1,1,false);
 
         if(editor.isFocusOwner())
         {
