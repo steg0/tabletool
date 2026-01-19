@@ -1,4 +1,4 @@
-▶ Invocation
+> Invocation
 
 In addition to options dealing with JVM specifics, the tool supports the following command line arguments:
 
@@ -8,18 +8,20 @@ In addition to options dealing with JVM specifics, the tool supports the followi
 
 Also, an optional single file name argument, ending with .xml or .tabtype, is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially. Other arguments will be understood as SQL files to open.
 
-▶ Property file format
+
+> Property file format
 
 See Help > Show Example Config.
 
-▶ Notebook file format
+
+> Notebook file format
 
 The tool loads and saves text files, which can contain CSV result sections marked up with a special comment syntax. These are shown as table widgets when opening such a file, to provide a way to carry over results in a pretty way from one session to the next. LOB information will not be part of this format, however.
 
 Focused lines that start with the string "-- connect ", followed by one of the connection names from the property file, enable the menu item Connection > Open, or a submit command, to directly select that connection for the notebook.
 
 
-▶ Actions in a notebook
+> Actions in a notebook
 
 While editing SQL in a notebook, in addition to the shortcuts shown in the menu bar, the following keys are supported:
 
@@ -53,23 +55,23 @@ A right click on the result table brings up a popup menu which also allows closi
 
 Closing also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
 
-Ⓐ a subsequent query is submitted over the connection; and, as mentioned,
-Ⓑ the result table is closed (either with the UI action or by closing the tab).
+(A) a subsequent query is submitted over the connection; and, as mentioned,
+(B) the result table is closed (either with the UI action or by closing the tab).
 
 Some JDBC drivers close ResultSets automatically when the cursor moves beyond the last row.
 
 
-▶ Submitting blocks
+> Submitting blocks
 
 If a query begins with "{", "call", "begin", or "declare", CallableStatement is used to submit it. Note that there are differences between database products when it comes to what actually can be submitted this way. Generally, Oracle expects a trailing semicolon after the END that closes the block, while DB2 does not.
 
 
-▶ Update function
+> Update function
 
 The single benefit (right now) of leaving the ResultSet open is that updatable ResultSets can be made available to the user. This is utilized to allow cell value updates. There are a few prerequisites for this to work:
 
-Ⓐ don't fetch beyond the last row. If you did, fetch again but set a manual, small enough fetch size in the 〈Fetch:〉 field before.
-Ⓑ use explicit columns instead of SELECT * in the query.
-Ⓒ use SELECT FOR UPDATE instead of SELECT.
+(A) don't fetch beyond the last row. If you did, fetch again but set a manual, small enough fetch size in the <Fetch:> field before.
+(B) use explicit columns instead of SELECT * in the query.
+(C) use SELECT FOR UPDATE instead of SELECT.
 
-There is some difference between JDBC drivers when it comes to this feature. DB2 drivers will error out if Ⓐ and Ⓑ are not met. Oracle drivers show an error but can still update the value (it might be best not to rely on this particular behavior). DB2 might not need the FOR UPDATE, but Oracle generally will.
+There is some difference between JDBC drivers when it comes to this feature. DB2 drivers will error out if (A) and (B) are not met. Oracle drivers show an error but can still update the value (it might be best not to rely on this particular behavior). DB2 might not need the FOR UPDATE, but Oracle generally will.
