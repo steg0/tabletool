@@ -802,6 +802,8 @@ implements KeyListener
         {
             Workspace w = Workspaces.load(workspaceFile);
             
+            closeWorkspace0(false);
+
             if(w.getRecentFiles() != null)
             {
                 for(var path : w.getRecentFiles()) recents.add(path);
@@ -898,6 +900,12 @@ implements KeyListener
                 return false;
             }
         }
+        closeWorkspace0(addUntitled);
+        return true;
+    }
+
+    private void closeWorkspace0(boolean addUntitled)
+    {
         while(!notebooks.isEmpty())
         {
             NotebookController notebook = notebooks.get(0);
@@ -908,7 +916,6 @@ implements KeyListener
         if(addUntitled) add(-1);
         workspaceFile = null;
         recents.clear();
-        return true;
     }
 
     void saveWorkspace()
