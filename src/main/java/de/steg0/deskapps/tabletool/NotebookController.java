@@ -332,8 +332,9 @@ class NotebookController
                 
             case NULL_FETCH:
                 logger.log(Level.FINE,"No fetch result at #{0}",i);
-                boolean split = source.resultview.getColumnName(0).equals(
-                        BufferController.SPLIT_DUMMY_TITLE);
+                boolean split = source.resultview != null &&
+                        source.resultview.getColumnName(0).equals(
+                                BufferController.SPLIT_DUMMY_TITLE);
                 if(split)
                 {
                     source.removeResultView();

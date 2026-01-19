@@ -49,7 +49,7 @@ import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCancel
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
-    static final String SPLIT_DUMMY_TITLE = "\u231b";
+    static final String SPLIT_DUMMY_TITLE = "Pending...";
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -822,13 +822,13 @@ class BufferController
 
     void removeResultView()
     {
+        resultview=null;
         while(panel.getComponentCount()>2) panel.remove(2);
     }
 
     void closeBuffer()
     {
         closeCurrentResultSet();
-        resultview=null;
         resultMessageLabel=null;
         removeResultView();
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);
