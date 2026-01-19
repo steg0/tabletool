@@ -326,15 +326,13 @@ class NotebookController
                 newBufferController.undoManager.discardAllEdits();
                 if(e.removedRsm != null)
                 {
-                    newBufferController.addResultSetTable(e.removedRsm);
+                    newBufferController.addResultSetTable(e.removedRsm,null);
                 }
                 break;
                 
             case NULL_FETCH:
                 logger.log(Level.FINE,"No fetch result at #{0}",i);
-                boolean split = source.resultview != null &&
-                        source.resultview.getColumnName(0).equals(
-                                BufferController.SPLIT_DUMMY_TITLE);
+                boolean split = source.awaitingSplitResult();
                 if(split)
                 {
                     source.removeResultView();
@@ -349,7 +347,8 @@ class NotebookController
                     }
                     if(next.resultview != null) 
                     {
-                        source.addResultSetTable(next.getResultSetTableModel());
+                        source.addResultSetTable(next.getResultSetTableModel(),
+                                null);
                     }
                     remove(i+1);
                 }
@@ -367,7 +366,8 @@ class NotebookController
                     }
                     if(next.resultview != null) 
                     {
-                        source.addResultSetTable(next.getResultSetTableModel());
+                        source.addResultSetTable(next.getResultSetTableModel(),
+                                null);
                     }
                     remove(i+1);
                 }

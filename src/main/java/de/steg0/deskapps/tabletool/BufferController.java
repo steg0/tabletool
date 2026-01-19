@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import static java.awt.event.ActionEvent.ALT_MASK;
 import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.awt.event.ActionEvent.SHIFT_MASK;
 import static java.lang.Math.max;
 import static javax.swing.KeyStroke.getKeyStroke;
 
@@ -50,6 +51,7 @@ class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
     static final String SPLIT_DUMMY_TITLE = "Pending...";
+    private static final String SEPARATOR_DUMMY_TITLE = "---";
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -175,6 +177,7 @@ class BufferController
         im.put(getKeyStroke(KeyEvent.VK_R,CTRL_MASK),"Execute");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,ALT_MASK),"JDBC Parameters");
         im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK|SHIFT_MASK),"Split");
         im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
         im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
         im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
@@ -187,6 +190,7 @@ class BufferController
         am.put("Execute",actions.executeAction);
         am.put("JDBC Parameters",actions.showJdbcParametersAction);
         am.put("Execute/Split",actions.executeSplitAction);
+        am.put("Split",actions.splitAction);
         am.put("Show Info",actions.showInfoAction);
         am.put("Show Snippets",actions.showSnippetsPopupAction);
         am.put("Show Completions",actions.showCompletionPopupAction);
@@ -528,7 +532,7 @@ class BufferController
                 var rsm = new ResultSetTableModel();
                 rsm.resultMessage = lmr.message;
                 rsm.load(r);
-                addResultSetTable(rsm);
+                addResultSetTable(rsm,null);
                 break;
             }
             else
@@ -553,10 +557,12 @@ class BufferController
 
     ConnectionWorker connection;
     
-    void fetch(boolean split)
+    void fetch(boolean act,boolean split)
     {
+        assert act || split;
+        if(split && !act && terminatedWithSeparator()) return;
         savedCaretPosition = editor.getCaretPosition();
-        if(getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
+        if(act && getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
             logger.log(Level.FINE,"Found connect comment");
             fireBufferEvent(Type.DRY_FETCH);
@@ -571,15 +577,15 @@ class BufferController
             log.accept("No query found at "+new Date());
             return;
         }
-        else if(connection == null)
+        else if(act && connection == null)
         {
             log.accept("No connection available at "+new Date());
             fireBufferEvent(Type.DRY_FETCH);
             return;
         }
 
-        String placeholderlog;
-        try
+        String placeholderlog=null;
+        if(act) try
         {
             text=placeholderInputController.fill(text);
             placeholderlog=placeholderInputController.describeLastValues();
@@ -602,7 +608,8 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            addResultSetTable(null);
+            addResultSetTable(null,act? SPLIT_DUMMY_TITLE :
+                    SEPARATOR_DUMMY_TITLE);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -614,9 +621,10 @@ class BufferController
             assert false : e.getMessage();
         }
 
-        connection.submit(text,configSource.fetchsize,parametersController,
-                placeholderlog,resultConsumer,updateCountConsumer,log,false,
-                configSource.updatableResultSets);
+        if(act) connection.submit(text,configSource.fetchsize,
+                parametersController,placeholderlog,resultConsumer,
+                updateCountConsumer,log,false,configSource.updatableResultSets);
+        else fireBufferEvent(new BufferEvent(this,Type.NULL_FETCH));
     }
 
     void closeCurrentResultSet()
@@ -635,6 +643,18 @@ class BufferController
         return resultview != null &&
                 resultview.getModel() instanceof ResultSetTableModel rsm?
                         rsm : null;
+    }
+
+    boolean awaitingSplitResult()
+    {
+        return resultview != null &&
+                resultview.getColumnName(0).equals(SPLIT_DUMMY_TITLE);
+    }
+
+    boolean terminatedWithSeparator()
+    {
+        return resultview != null &&
+                resultview.getColumnName(0).equals(SEPARATOR_DUMMY_TITLE);
     }
     
     String selectCurrentQuery()
@@ -718,18 +738,18 @@ class BufferController
             log.accept(FETCH_LOG_FORMAT.format(logargs) + paramlog);
         }
         
-        addResultSetTable(rsm);
+        addResultSetTable(rsm,null);
 
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     };
 
-    void addResultSetTable(ResultSetTableModel rsm)
+    void addResultSetTable(ResultSetTableModel rsm,String dummyTitle)
     {
         removeResultView();
 
         resultview = rsm != null?
                 new JTable(rsm) :
-                new JTable(new Object[][]{},new Object[]{SPLIT_DUMMY_TITLE});
+                new JTable(new Object[][]{},new Object[]{dummyTitle});
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd,
                 editor.getFont());

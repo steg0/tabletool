@@ -31,14 +31,21 @@ class BufferActions
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                b.fetch(false);
+                b.fetch(true,false);
             }
         },
         executeSplitAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                b.fetch(true);
+                b.fetch(true,true);
+            }
+        },
+        splitAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                b.fetch(false,true);
             }
         },
         showJdbcParametersAction = new AbstractAction()
