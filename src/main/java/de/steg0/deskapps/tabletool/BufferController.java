@@ -51,6 +51,8 @@ class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
     static final String SPLIT_DUMMY_TITLE = "Pending...";
+    /**Separator symbol a user can place between buffers. This shouldn't
+     * contain characters that throw off the CSV parser. */
     private static final String SEPARATOR_DUMMY_TITLE = "---";
     
     private static final String CONNECTION_LABEL_PREFIX =
@@ -511,6 +513,10 @@ class BufferController
             w.write("\n");
             rsm.store(w,true);
         }
+        else if(terminatedWithSeparator())
+        {
+            w.write("\n--CSV Result\n--" + SEPARATOR_DUMMY_TITLE + "\n");
+        }
     }
     
     /**
@@ -532,7 +538,15 @@ class BufferController
                 var rsm = new ResultSetTableModel();
                 rsm.resultMessage = lmr.message;
                 rsm.load(r);
-                addResultSetTable(rsm,null);
+                if(rsm.getColumnName(0).equals(SEPARATOR_DUMMY_TITLE) &&
+                    rsm.getColumnCount()==0)
+                {
+                    addResultSetTable(null,SEPARATOR_DUMMY_TITLE);
+                }
+                else
+                {
+                    addResultSetTable(rsm,null);
+                }
                 break;
             }
             else

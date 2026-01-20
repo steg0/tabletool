@@ -26,15 +26,18 @@ class BufferResultSetPopup
 
         popup = new JPopupMenu();
         JMenuItem item;
-        item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
-        item.addActionListener((e) -> openResultAsHtml(false));
-        popup.add(item);
-        item = new JMenuItem("Open as HTML (transposed)",KeyEvent.VK_T);
-        item.addActionListener((e) -> openResultAsHtml(true));
-        popup.add(item);
-        item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
-        item.addActionListener((e) -> openResultAsCsv());
-        popup.add(item);
+        if(b.resultview.getModel() instanceof ResultSetTableModel)
+        {
+            item = new JMenuItem("Open as HTML",KeyEvent.VK_H);
+            item.addActionListener((e) -> openResultAsHtml(false));
+            popup.add(item);
+            item = new JMenuItem("Open as HTML (transposed)",KeyEvent.VK_T);
+            item.addActionListener((e) -> openResultAsHtml(true));
+            popup.add(item);
+            item = new JMenuItem("Open as CSV",KeyEvent.VK_V);
+            item.addActionListener((e) -> openResultAsCsv());
+            popup.add(item);
+        }
         item = new JMenuItem("Close",KeyEvent.VK_C);
         item.addActionListener((e) -> b.closeBuffer());
         popup.add(item);
