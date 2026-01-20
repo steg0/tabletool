@@ -239,7 +239,7 @@ class NotebookController
 
     private void setBranding(Color bg,Color logBg,Color logFg,String label)
     {
-        if(logBg==null) logBg=bg;
+        if(logBg==null) logBg=bufferConfigSource.getEditorBackgroundColor(bg);
         if(logFg==null) logFg=defaultLogFg;
         if(bg==null) bg=bufferConfigSource.getEditorBackgroundColor(bg);
         bufferPanel.setBackground(bg);
