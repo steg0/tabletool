@@ -288,7 +288,7 @@ class ConnectionWorker
         }
         else
         {
-            log.accept("No statement is currently executing at "+new Date());
+            log.accept("No statement reference available at "+new Date());
         }
     }
     
