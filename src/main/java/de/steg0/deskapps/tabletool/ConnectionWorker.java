@@ -350,6 +350,10 @@ class ConnectionWorker
                 return;
             }
         }
+        else
+        {
+            log.accept("Enqueued "+op+" at "+new Date());
+        }
         executor.execute(op);
     }
 
