@@ -571,12 +571,12 @@ class BufferController
 
     ConnectionWorker connection;
     
-    void fetch(boolean act,boolean split)
+    void submit(boolean fetch,boolean split)
     {
-        assert act || split;
-        if(split && !act && terminatedWithSeparator()) return;
+        assert fetch || split;
+        if(split && !fetch && terminatedWithSeparator()) return;
         savedCaretPosition = editor.getCaretPosition();
-        if(act && getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
+        if(fetch && getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
             logger.log(Level.FINE,"Found connect comment");
             fireBufferEvent(Type.DRY_FETCH);
@@ -591,7 +591,7 @@ class BufferController
             log.accept("No query found at "+new Date());
             return;
         }
-        else if(act && connection == null)
+        else if(fetch && connection == null)
         {
             log.accept("No connection available at "+new Date());
             fireBufferEvent(Type.DRY_FETCH);
@@ -599,7 +599,7 @@ class BufferController
         }
 
         String placeholderlog=null;
-        if(act) try
+        if(fetch) try
         {
             text=placeholderInputController.fill(text);
             placeholderlog=placeholderInputController.describeLastValues();
@@ -622,7 +622,7 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            addResultSetTable(null,act? SPLIT_DUMMY_TITLE :
+            addResultSetTable(null,fetch? SPLIT_DUMMY_TITLE :
                     SEPARATOR_DUMMY_TITLE);
 
             /* Split now so that the user cannot edit anything inbetween,
@@ -635,7 +635,7 @@ class BufferController
             assert false : e.getMessage();
         }
 
-        if(act) connection.submit(text,configSource.fetchsize,
+        if(fetch) connection.submit(text,configSource.fetchsize,
                 parametersController,placeholderlog,resultConsumer,
                 updateCountConsumer,log,false,configSource.updatableResultSets);
         else fireBufferEvent(new BufferEvent(this,Type.NULL_FETCH));
