@@ -802,7 +802,7 @@ implements KeyListener
         {
             Workspace w = Workspaces.load(workspaceFile);
             
-            closeWorkspace0(false);
+            removeNotebooks();
 
             if(w.getRecentFiles() != null)
             {
@@ -900,11 +900,13 @@ implements KeyListener
                 return false;
             }
         }
-        closeWorkspace0(addUntitled);
+        removeNotebooks();
+        workspaceFile = null;
+        if(addUntitled) add(-1);
         return true;
     }
 
-    private void closeWorkspace0(boolean addUntitled)
+    private void removeNotebooks()
     {
         while(!notebooks.isEmpty())
         {
@@ -913,8 +915,6 @@ implements KeyListener
             notebooks.remove(0);
             tabbedPane.remove(0);
         }
-        if(addUntitled) add(-1);
-        workspaceFile = null;
         recents.clear();
     }
 
