@@ -341,11 +341,11 @@ class NotebookController
                 {
                     logger.log(Level.FINE,"Undoing #{0} after split",i);
                     if(next.editor.getText().length() > 0 &&
-                       source.undoManager.canUndo()) 
+                       source.undoManager.canUndo())
                     {
                         source.undoManager.undo();
                     }
-                    if(next.resultview != null) 
+                    if(next.resultview != null)
                     {
                         source.addResultSetTable(next.getResultSetTableModel(),
                                 null);
