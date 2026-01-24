@@ -207,6 +207,10 @@
     <entry key="externalTools.cat-to-emacs.command.2">-c</entry>
     <entry key="externalTools.cat-to-emacs.command.3">~/config/desktop-helpers/cat-to-emacs -f tabtype-snippet.sql</entry>
 
+    <entry key="externalTools.fmt -p --.command.1">fmt</entry>
+    <entry key="externalTools.fmt -p --.command.2">-p</entry>
+    <entry key="externalTools.fmt -p --.command.3">-- </entry>
+
     <entry key="externalTools.interactive-sqlexport.command.1">bash</entry>
     <entry key="externalTools.interactive-sqlexport.command.2">-c</entry>
     <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
