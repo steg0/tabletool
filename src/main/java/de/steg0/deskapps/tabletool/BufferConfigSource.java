@@ -11,6 +11,7 @@ class BufferConfigSource
     final File pwd;
     int fetchsize;
     boolean updatableResultSets;
+    boolean autocommit;
 
     private final PropertyHolder propertyHolder;
     private final ConnectionListModel connectionListModel;

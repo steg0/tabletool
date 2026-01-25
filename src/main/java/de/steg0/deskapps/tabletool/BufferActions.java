@@ -68,14 +68,14 @@ class BufferActions
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                b.submit(true,false);
+                if(checkAutocommit()) b.submit(true,false);
             }
         },
         executeSplitAction = new AbstractAction()
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                b.submit(true,true);
+                if(checkAutocommit()) b.submit(true,true);
             }
         },
         splitAction = new AbstractAction()
@@ -270,4 +270,20 @@ class BufferActions
                 }
             }
         };
+
+    private boolean checkAutocommit()
+    {
+        if(!b.configSource.autocommit && b.connection.info.confirmations)
+        {
+            return true;
+        }
+        int option = JOptionPane.showConfirmDialog(
+                parent,
+                "Autocommit is active. Continue?\n" +
+                "You are seeing this message because the " +
+                "connection has confirmations enabled.",
+                "Confirm execution with autocommit",
+                JOptionPane.YES_NO_OPTION);
+        return option==JOptionPane.YES_OPTION;
+    }
 }

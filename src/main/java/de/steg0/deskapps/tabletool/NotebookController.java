@@ -646,6 +646,9 @@ class NotebookController
 
     private void applyAutocommit()
     {
+        bufferConfigSource.autocommit = autocommitCb.isSelected();
+        logger.log(Level.FINE,"bufferConfigSource.autocommit={0}",
+                bufferConfigSource.autocommit);
         onConnection(c -> 
         {
             c.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
