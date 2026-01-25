@@ -17,6 +17,7 @@ namespace Tabtype
             string procbin = "javaw.exe";
             string javaConfigPath = Environment.ExpandEnvironmentVariables(
                     "%APPDATA%\\tabtype\\javaw.conf");
+            string javaOpts = Environment.GetEnvironmentVariable("JAVA_OPTS");
             if(File.Exists(javaConfigPath))
                 using(StreamReader sr = new StreamReader(javaConfigPath))
                 {
@@ -25,7 +26,7 @@ namespace Tabtype
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string[] deps = Directory.GetFiles(appDirectory + "dependency");
             string procargs=Environment.ExpandEnvironmentVariables(
-                    "%JAVA_OPTS% " +
+                    (javaOpts == null? "" : javaOpts) +
                     "-XX:+UseSerialGC " +
                     "-Dderby.system.home=%USERPROFILE% " +
                     "-Dswing.plaf.metal.controlFont=\"Segoe UI\" " +
