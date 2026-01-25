@@ -199,17 +199,17 @@ implements Runnable
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
-            List<Exception> cancelResult = controller.cancelAll();
-            controller.shutdownExecutor();
-            if(!cancelResult.isEmpty())
+            boolean terminated = controller.shutdownExecutor();
+            if(!terminated)
             {
-                logger.log(Level.WARNING,"Exception shutting down: {}",
-                        cancelResult);
+                logger.log(Level.WARNING,"Timed out shutting down");
                 var dialog = new JDialog(frame,"Graceful shutdown failed",true);
                 dialog.getContentPane().setLayout(new BorderLayout(0,5));
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                var text = new JTextArea(cancelResult.stream()
-                        .map(Exception::getMessage).collect(joining("\n")));
+                var text = new JTextArea("Operations are still running " +
+                        "in the background.\nExiting the program might expose " +
+                        "database specific behavior\nwhen it comes to open " +
+                        "transactions.");
                 text.setEditable(false);
                 var scrollpane = new JScrollPane(text);
                 dialog.getContentPane().add(scrollpane,BorderLayout.CENTER);
@@ -220,6 +220,8 @@ implements Runnable
                 dialog.pack();
                 dialog.setLocationRelativeTo(frame);
                 dialog.setVisible(true);
+                
+                System.exit(4);
             }
             logger.fine("Disposing frames");
             frame.dispose();

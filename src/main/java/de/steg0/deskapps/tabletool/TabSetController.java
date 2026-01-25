@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -1019,14 +1020,18 @@ implements KeyListener
         if(!title.startsWith("*")) tabbedPane.setTitleAt(index,"*"+title);
     }
 
-    void shutdownExecutor()
+    boolean shutdownExecutor()
     {
         logger.fine("Shutting down executor");
         executor.shutdown();
-    }
-
-    List<Exception> cancelAll()
-    {
-        return connections.cancelAll();
+        try
+        {
+            boolean terminated = executor.awaitTermination(5, TimeUnit.SECONDS);
+            return terminated;
+        }
+        catch(InterruptedException e)
+        {
+            return false;
+        }
     }
 }
