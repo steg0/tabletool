@@ -42,7 +42,13 @@ class ConnectionWorker
     }
 
     ResultSetTableModel lastReportedResult;
+    /**The most recent non-queueable operation (kept to be able
+     * to reject additional operations while it is running) */
     private AtomicReference<Operation> lastOp = new AtomicReference<>();
+    boolean operationRunning() { return lastOp.get() != null; }
+    /**The most recent SQL statement passed to execution. This
+     * is kept as convenience to offer a cancel function to the
+     * user. */
     private volatile Statement lastStatement;
     
     /**
