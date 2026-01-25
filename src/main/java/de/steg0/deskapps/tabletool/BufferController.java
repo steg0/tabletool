@@ -1,10 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
-import static java.awt.event.ActionEvent.ALT_MASK;
-import static java.awt.event.ActionEvent.CTRL_MASK;
-import static java.awt.event.ActionEvent.SHIFT_MASK;
 import static java.lang.Math.max;
-import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -13,7 +9,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -173,34 +168,7 @@ class BufferController
         }
         editor.setTabSize(configSource.getEditorTabsize());
         
-        var actions = new BufferActions(parent,this);
-        var im = editor.getInputMap();
-        im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
-        im.put(getKeyStroke(KeyEvent.VK_R,CTRL_MASK),"Execute");
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,ALT_MASK),"JDBC Parameters");
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
-        im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK|SHIFT_MASK),"Split");
-        im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
-        im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
-        im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
-        im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
-        im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
-        im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
-        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
-        im.put(getKeyStroke(KeyEvent.VK_D,CTRL_MASK),"Delete Line");
-        var am = editor.getActionMap();
-        am.put("Execute",actions.executeAction);
-        am.put("JDBC Parameters",actions.showJdbcParametersAction);
-        am.put("Execute/Split",actions.executeSplitAction);
-        am.put("Split",actions.splitAction);
-        am.put("Show Info",actions.showInfoAction);
-        am.put("Show Snippets",actions.showSnippetsPopupAction);
-        am.put("Show Completions",actions.showCompletionPopupAction);
-        am.put("Toggle Comment",new EditorPrefixToggler(editor,"--"));
-        am.put("Undo",actions.undoAction);
-        am.put("Redo",actions.redoAction);
-        am.put("Go To Line",actions.goToLineAction);
-        am.put("Delete Line",actions.deleteLineAction);
+        new BufferActions(parent,this).attach();
     }
 
     /**

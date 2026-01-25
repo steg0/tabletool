@@ -1,6 +1,12 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.ActionEvent.ALT_MASK;
+import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.awt.event.ActionEvent.SHIFT_MASK;
+import static javax.swing.KeyStroke.getKeyStroke;
+
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -24,6 +30,37 @@ class BufferActions
     {
         this.parent = parent;
         this.b = b;
+    }
+
+    void attach()
+    {
+        var im = b.editor.getInputMap();
+        im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_R,CTRL_MASK),"Execute");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,ALT_MASK),"JDBC Parameters");
+        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
+        im.put(getKeyStroke(KeyEvent.VK_MINUS,CTRL_MASK|SHIFT_MASK),"Split");
+        im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
+        im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
+        im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
+        im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
+        im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
+        im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
+        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
+        im.put(getKeyStroke(KeyEvent.VK_D,CTRL_MASK),"Delete Line");
+        var am = b.editor.getActionMap();
+        am.put("Execute",executeAction);
+        am.put("JDBC Parameters",showJdbcParametersAction);
+        am.put("Execute/Split",executeSplitAction);
+        am.put("Split",splitAction);
+        am.put("Show Info",showInfoAction);
+        am.put("Show Snippets",showSnippetsPopupAction);
+        am.put("Show Completions",showCompletionPopupAction);
+        am.put("Toggle Comment",new EditorPrefixToggler(b.editor,"--"));
+        am.put("Undo",undoAction);
+        am.put("Redo",redoAction);
+        am.put("Go To Line",goToLineAction);
+        am.put("Delete Line",deleteLineAction);
     }
 
     Action
