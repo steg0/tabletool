@@ -273,7 +273,7 @@ class BufferActions
 
     private boolean checkAutocommit()
     {
-        if(!b.configSource.autocommit && b.connection.info.confirmations)
+        if(!(b.configSource.autocommit && b.connection.info.confirmations))
         {
             return true;
         }
