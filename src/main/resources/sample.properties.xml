@@ -191,7 +191,7 @@
         their result to STDOUT. Tabtype will replace the selected
         content with that output. For all this, UTF-8 encoding is used.
         If the editor content should remain unchanged, the "spawn" option
-        may be is set, which causes the STDOUT data to be ignored.
+        may be set, which causes the STDOUT data to be ignored.
         For the execution of the tool, the environment variables
         JDBC_URL, JDBC_USER, and JDBC_PASSWORD will be set to the
         respective connection properties if available in the current
