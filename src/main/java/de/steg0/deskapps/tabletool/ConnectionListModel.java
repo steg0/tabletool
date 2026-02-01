@@ -244,9 +244,11 @@ implements ComboBoxModel<ConnectionState>,TableModel
         {
             case 1:
                 info.url = value == null? "jdbc:" : value.toString();
+                info.name = "Connection " + rowIndex;
                 break;
             case 2:
                 info.username = value == null? "" : value.toString();
+                info.name = "Connection " + rowIndex;
                 break;
             case 3:
                 if(Boolean.TRUE.equals(value)) info.password=PROMPT;
