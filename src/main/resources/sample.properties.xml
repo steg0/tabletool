@@ -186,10 +186,16 @@
 
     <!--
         externalTools allows specifying commands that will show
-        up in the Tools menu. Those operate by getting the query
-        under the cursor through STDIN and writing their result to
-        STDOUT. Tabtype will replace the selected content with that
-        output. For all this, UTF-8 encoding is used.
+        up in the Tools menu. Those are designed to operate by
+        getting the query under the cursor through STDIN and writing
+        their result to STDOUT. Tabtype will replace the selected
+        content with that output. For all this, UTF-8 encoding is used.
+        If the editor content should remain unchanged, the "spawn" option
+        may be is set, which causes the STDOUT data to be ignored.
+        For the execution of the tool, the environment variables
+        JDBC_URL, JDBC_USER, and JDBC_PASSWORD will be set to the
+        respective connection properties if available in the current
+        buffer.
     -->
     <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
     <entry key="externalTools.SQL::Beautify.command.2">-I</entry>
@@ -212,13 +218,13 @@
     <entry key="externalTools.fmt -p --.command.2">-p</entry>
     <entry key="externalTools.fmt -p --.command.3">-- </entry>
 
+    <entry key="externalTools.interactive-sqlexport.spawn">true</entry>
     <entry key="externalTools.interactive-sqlexport.command.1">bash</entry>
     <entry key="externalTools.interactive-sqlexport.command.2">-c</entry>
     <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
         set -e
         cd ~/Documents
         stmt=`cat`
-        echo -n "$stmt"
         cmd /c start bash interactive-sqlexport ""$stmt"" > /dev/null 2>&1
     ]]></entry>
 
