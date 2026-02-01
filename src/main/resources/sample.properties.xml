@@ -195,7 +195,7 @@
         For the execution of the tool, the environment variables
         JDBC_URL, JDBC_USER, and JDBC_PASSWORD will be set to the
         respective connection properties if available in the current
-        buffer.
+        buffer. JDBC_STATEMENT will be set to the statement text.
     -->
     <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
     <entry key="externalTools.SQL::Beautify.command.2">-I</entry>
@@ -224,8 +224,9 @@
     <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
         set -e
         cd ~/Documents
-        stmt=`cat`
-        cmd /c start bash interactive-sqlexport ""$stmt"" > /dev/null 2>&1
+        export MSYS_NO_PATHCONV=1
+        cmd /c start bash interactive-sqlexport > /dev/null 2>&1
+        cat
     ]]></entry>
 
     <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.1">tr</entry>

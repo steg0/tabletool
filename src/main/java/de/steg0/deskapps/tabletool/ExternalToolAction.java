@@ -107,10 +107,11 @@ class ExternalToolAction extends AbstractAction implements Runnable
                 pb.environment().put("JDBC_PASSWORD",
                         b.connection.info.password);
             }
+            if(text.endsWith(";")) text = text.substring(0,text.length()-1);
+            pb.environment().put("JDBC_STATEMENT",text);
             Process p = pb.start();
             logger.log(Level.FINE,"Started process {0}", p.pid());
             os = p.getOutputStream();
-            if(text.endsWith(";")) text = text.substring(0,text.length()-1);
             os.write(text.getBytes(StandardCharsets.UTF_8));
             os.close();
             var out=new byte[0];
