@@ -137,10 +137,10 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
-                    logger.fine("Executing (callable statement)");
+                    logger.fine("Executing callable statement reference");
+                    lastStatement = st;
                     boolean result = st.execute();
 
-                    lastStatement = st;
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
 
@@ -170,7 +170,7 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
-                    logger.fine("Executing (statement)");
+                    logger.fine("Executing statement reference");
                     lastStatement = st;
                     boolean result = st.execute();
 
@@ -195,6 +195,7 @@ class ConnectionWorker
             }
             finally
             {
+                logger.fine("Clearing statement reference");
                 lastStatement = null;
             }
         }
