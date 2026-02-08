@@ -45,7 +45,7 @@ import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCancel
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
-    static final String SPLIT_DUMMY_TITLE = "Pending...";
+    static final String SPLIT_DUMMY_TITLE = "Statement submitted";
     /**Separator symbol a user can place between buffers. This shouldn't
      * contain characters that throw off the CSV parser. */
     private static final String SEPARATOR_DUMMY_TITLE = "---";
