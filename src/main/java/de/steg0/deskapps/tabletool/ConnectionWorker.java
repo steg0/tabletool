@@ -249,9 +249,9 @@ class ConnectionWorker
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(info.name,statement,fetchsize,inlog,
-                    outlog,placeholderlog,skipEmptyColumns,updatable);
             long now = System.currentTimeMillis();
+            lastReportedResult.update(info.name,statement,fetchsize,inlog,
+                    outlog,placeholderlog,skipEmptyColumns,updatable,now-ts);
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));
         }
