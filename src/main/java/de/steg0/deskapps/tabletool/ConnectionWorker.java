@@ -121,17 +121,10 @@ class ConnectionWorker
             {
                 Matcher callableStatementParts = CallableStatementMatchers
                         .prefixMatch(sql);
-                String lc = sql.toLowerCase();
+                sql = CallableStatementMatchers.removeSemicolon(sql);
                 String inlog,outlog;
                 if(callableStatementParts.group(1).length() > 0)
                 {
-                    if(sql.endsWith(";"))
-                    {
-                        String noSemicolon = lc.substring(0,sql.length()-1);
-                        if(!noSemicolon.trim().endsWith("end")) sql = sql
-                                .substring(0,sql.length()-1);
-                    }
-
                     CallableStatement st = connection.prepareCall(sql);
 
                     inlog = parameterTransfer(st,
@@ -156,7 +149,6 @@ class ConnectionWorker
                 }
                 else
                 {
-                    if(sql.endsWith(";")) sql = sql.substring(0,sql.length()-1);
                     PreparedStatement st = updatable?
                             connection.prepareStatement(
                                     sql,
