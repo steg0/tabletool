@@ -31,7 +31,7 @@ class BufferResultSetKeyListener implements KeyListener
         Rectangle headerBounds = 
                 b.resultview.getTableHeader().getBounds();
         Point position = ((JViewport)b.resultview.getParent())
-            .getViewPosition();
+                .getViewPosition();
         var e = new BufferEvent(b,Type.SELECTED_RECT_CHANGED);
         e.selectedRect = new Rectangle(
                 (int)cellRect.getX(),
