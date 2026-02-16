@@ -28,13 +28,14 @@ class BufferResultSetKeyListener implements KeyListener
                 b.resultview.getSelectedColumn(),
                 true
         );
+        int sbwidth = b.resultscrollpane.getVerticalScrollBar().getWidth();
         Rectangle headerBounds = 
                 b.resultview.getTableHeader().getBounds();
         Point position = ((JViewport)b.resultview.getParent())
                 .getViewPosition();
         var e = new BufferEvent(b,Type.SELECTED_RECT_CHANGED);
         e.selectedRect = new Rectangle(
-                (int)cellRect.getX(),
+                (int)cellRect.getX() + sbwidth,
                 (int)(rect.getHeight() + 
                       cellRect.getY() - 
                       position.getY() +

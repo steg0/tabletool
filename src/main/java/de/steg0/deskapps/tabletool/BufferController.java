@@ -106,6 +106,7 @@ class BufferController
     }
     
     JTable resultview;
+    JScrollPane resultscrollpane;
     JLabel resultMessageLabel;
     BufferConfigSource configSource;
     JdbcParametersInputController parametersController;
@@ -743,7 +744,7 @@ class BufferController
         var resultsetKeyListener = new BufferResultSetKeyListener(this,popup);
         resultview.addKeyListener(resultsetKeyListener);
         
-        var resultscrollpane = new JScrollPane(resultview,
+        resultscrollpane = new JScrollPane(resultview,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         resultscrollpane.setComponentOrientation(
@@ -825,6 +826,7 @@ class BufferController
     void removeResultView()
     {
         resultview=null;
+        resultscrollpane=null;
         while(panel.getComponentCount()>2) panel.remove(2);
     }
 
