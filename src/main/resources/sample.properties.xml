@@ -69,6 +69,9 @@
     <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.Table.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.Menu.selectionBackground">#aaaaaa</entry>
+    <entry key="uiDefaults.color.MenuItem.selectionBackground">#aaaaaa</entry>
+    <entry key="uiDefaults.color.ComboBox.selectionBackground">#aaaaaa</entry>
 
     <!--Property configuration examples for Ocean theme:-->
     <!--
