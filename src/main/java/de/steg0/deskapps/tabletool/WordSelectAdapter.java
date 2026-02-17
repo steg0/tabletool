@@ -78,13 +78,13 @@ extends MouseAdapter
         case 2:
             clickCount = e.getClickCount();
             clickPos = textarea.viewToModel2D(e.getPoint());
-            logger.log(Level.FINE,"selectWord,clickPos={0}",clickPos);
+            logger.log(Level.FINER,"selectWord,clickPos={0}",clickPos);
             selectWord();
             break;
         case 3:
             clickCount = e.getClickCount();
             clickPos = textarea.viewToModel2D(e.getPoint());
-            logger.log(Level.FINE,"selectLine,clickPos={0}",clickPos);
+            logger.log(Level.FINER,"selectLine,clickPos={0}",clickPos);
             selectLine();
         }
     }
@@ -107,11 +107,11 @@ extends MouseAdapter
         switch(clickCount)
         {
         case 2:
-            logger.log(Level.FINE,"updateWordSelection,dragPos={0}",dragPos);
+            logger.log(Level.FINER,"updateWordSelection,dragPos={0}",dragPos);
             updateWordSelection();
             break;
         case 3:
-            logger.log(Level.FINE,"updateLineSelection,dragPos={0}",dragPos);
+            logger.log(Level.FINER,"updateLineSelection,dragPos={0}",dragPos);
             updateLineSelection();
         }
     }
@@ -148,7 +148,7 @@ extends MouseAdapter
                 getWordStartPos(text,clickPos),
                 getWordEndPos(text,clickPos)
         };
-        logger.log(Level.FINE,"newstart={0},newend={1}",newSelection);
+        logger.log(Level.FINER,"newstart={0},newend={1}",newSelection);
         textarea.select(newSelection[0],newSelection[1]);
     }
     
@@ -160,12 +160,12 @@ extends MouseAdapter
                 max(min(clickPos,dragPos),textarea.getSelectionStart()),
                 max(clickPos,textarea.getSelectionEnd())
         };
-        logger.log(Level.FINE,"start={0},end={1}",selection);
+        logger.log(Level.FINER,"start={0},end={1}",selection);
         Integer[] newSelection = {
                 getWordStartPos(text,selection[0]),
                 getWordEndPos(text,selection[1])
         };
-        logger.log(Level.FINE,"newstart={0},newend={1}",newSelection);
+        logger.log(Level.FINER,"newstart={0},newend={1}",newSelection);
         textarea.select(newSelection[0],newSelection[1]);
     }
 
@@ -201,7 +201,7 @@ extends MouseAdapter
                 getLineStartPos(text,clickPos),
                 getLineEndPos(text,clickPos)
         };
-        logger.log(Level.FINE,"newstart={0},newend={1}",newSelection);
+        logger.log(Level.FINER,"newstart={0},newend={1}",newSelection);
         textarea.select(newSelection[0],newSelection[1]);
     }
     
@@ -213,12 +213,12 @@ extends MouseAdapter
                 max(min(clickPos,dragPos),textarea.getSelectionStart()),
                 max(clickPos,textarea.getSelectionEnd())
         };
-        logger.log(Level.FINE,"start={0},end={1}",selection);
+        logger.log(Level.FINER,"start={0},end={1}",selection);
         Integer[] newSelection = {
                 getLineStartPos(text,selection[0]),
                 getLineEndPos(text,selection[1])
         };
-        logger.log(Level.FINE,"newstart={0},newend={1}",newSelection);
+        logger.log(Level.FINER,"newstart={0},newend={1}",newSelection);
         textarea.select(newSelection[0],newSelection[1]);
     }
 }

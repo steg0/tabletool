@@ -26,7 +26,7 @@ class NotebookBufferPaneMouseListener extends MouseAdapter
     {
         int vpY = e.getY() + (int)nb.bufferPane.getViewport()
                 .getViewPosition().getY();
-        logger.log(Level.FINE,"mouseClicked,vpY={0}",vpY);
+        logger.log(Level.FINER,"mouseClicked,vpY={0}",vpY);
         var component = nb.bufferPanel.getComponentAt(new Point(0,vpY));
         for(var buffer : nb.buffers)
         {
@@ -68,11 +68,11 @@ class NotebookBufferPaneMouseListener extends MouseAdapter
         if(e.isShiftDown()) return;
         int bufY = (int)nb.bufferPane.getViewport().getViewPosition().getY();
         clickVpY = bufY + e.getY();
-        logger.log(Level.FINE,"mousePressed,clickVpY={0}",clickVpY);
+        logger.log(Level.FINER,"mousePressed,clickVpY={0}",clickVpY);
         clickBuffer = nb.bufferPanel.getComponentAt(new Point(0,clickVpY));
         if(!nb.buffers.stream().anyMatch((b) -> b.panel==clickBuffer))
         {
-            logger.fine("Click beyond last buffer");
+            logger.finer("Click beyond last buffer");
             clickBuffer=nb.buffers.get(nb.buffers.size() - 1).panel;
         }
     }
@@ -82,7 +82,7 @@ class NotebookBufferPaneMouseListener extends MouseAdapter
     {
         int vpY = e.getY() + (int)nb.bufferPane.getViewport()
                 .getViewPosition().getY();
-        logger.log(Level.FINE,"mouseDragged,vpY={0}",vpY);
+        logger.log(Level.FINER,"mouseDragged,vpY={0}",vpY);
         var component = nb.bufferPanel.getComponentAt(new Point(0,vpY));
         if(component != clickBuffer) return;
         for(var buffer : nb.buffers)

@@ -392,15 +392,15 @@ class BufferController
  
     void startLineSelection(int y)
     {
-        logger.log(Level.FINE,"startLineSelection,y1={0}",y);
+        logger.log(Level.FINER,"startLineSelection,y1={0}",y);
         selectListener.clickPos = editor.viewToModel2D(new Point(0,y));
         selectListener.clickCount = 1;
     }
     
     void dragLineSelection(int y1,int y2)
     {
-        logger.log(Level.FINE,"dragLineSelection,y1={0}",y1);
-        logger.log(Level.FINE,"dragLineSelection,y2={0}",y2);
+        logger.log(Level.FINER,"dragLineSelection,y1={0}",y1);
+        logger.log(Level.FINER,"dragLineSelection,y2={0}",y2);
         
         focusEditor(null,null);
         
@@ -414,7 +414,7 @@ class BufferController
         else try
         {
             y1=(int)editor.modelToView2D(selectListener.clickPos).getCenterY();
-            logger.log(Level.FINE,"point Y from selectListener: {0}",y1);
+            logger.log(Level.FINER,"point Y from selectListener: {0}",y1);
             clickPos = editor.viewToModel2D(new Point(0,y1));
         }
         catch(BadLocationException e)
