@@ -61,9 +61,15 @@ implements Runnable
     static String getFrameTitle(File workspace)
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
-                "(.)\\.[^.]+$","$1")+" - " : "");
+                "(.)\\.[^.]+$","$1") : "");
+        return getFrameTitle(wsprefix);
+    }
+
+    static String getFrameTitle(String prefix)
+    {
         String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-        String title = wsprefix + "Tabtype " + jvmName;
+        String title = prefix + (prefix.isEmpty()? "" : " - ") + "Tabtype " +
+                jvmName;
         return title;
     }
 
@@ -77,7 +83,7 @@ implements Runnable
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
         
-        var jdbcParametersDialog = new JFrame("JDBC Parameters Input");
+        var jdbcParametersDialog = new JFrame(getFrameTitle("JDBC Parameters"));
         jdbcParametersDialog.setIconImages(getIcons());
         parametersController = new JdbcParametersInputController(
                 jdbcParametersDialog);
