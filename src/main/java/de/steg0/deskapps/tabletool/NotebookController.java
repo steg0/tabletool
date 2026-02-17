@@ -818,6 +818,7 @@ class NotebookController
         if(event.getStateChange()==ItemEvent.DESELECTED) return;
         try
         {
+            connectionsSelector.setPopupVisible(false);
             var item = (Connections.ConnectionState)event.getItem();
             var connection = connections.getConnection(item,logConsumer,parent);
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
