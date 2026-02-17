@@ -7,6 +7,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.swing.ComboBoxModel;
@@ -238,6 +239,7 @@ implements ComboBoxModel<ConnectionState>,TableModel
     @Override
     public void setValueAt(Object value,int rowIndex,int columnIndex)
     {
+        if(Objects.equals(getValueAt(rowIndex,columnIndex),value)) return;
         ConnectionState state = getElementAt(rowIndex);
         ConnectionInfo info = state.info();
         switch(columnIndex)
