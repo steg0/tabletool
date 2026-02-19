@@ -11,7 +11,7 @@ Also, an optional single file name argument, ending with .xml or .tabtype, is su
 
 > Property file format
 
-See Help > Show Example Config.
+See Help > Show Sample Config.
 
 
 > Notebook file format
