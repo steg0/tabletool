@@ -686,16 +686,25 @@ class NotebookController
     void openConnection()
     {
         logger.log(Level.FINE,"lastFocusedBuffer={0}",lastFocusedBuffer);
-        if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
+        if(openConnection(lastFocused().getTextFromCurrentLine(false),false)
+                == null)
         {
-            logger.fine("No suitable connection definition found");
+            logger.fine("No suitable connection definition found starting "+
+                    "at current line");
+            String hint = openConnection(lastFocused().editor.getText(),true);
+            if(hint==null)
+            {
+                ConnectionWorker current = first().connection;
+                hint = current != null? current.info.name : "";
+            }
+            logger.log(Level.FINE,"hint=<{0}>",hint);
             var connectionDialog = new OpenConnectionDialogController(
                     this,parent);
-            connectionDialog.pick("");
+            connectionDialog.pick(hint);
         }
     }
 
-    private boolean openConnection(String contextline)
+    private String openConnection(String contextline,boolean findOnly)
     {
         logger.log(Level.FINE,"Looking for alias in context: <{0}>",
                 contextline);
@@ -707,11 +716,11 @@ class NotebookController
             if(contextline.startsWith(matchstr))
             {
                 logger.fine("Match");
-                openConnection(i);
-                return true;
+                if(!findOnly) openConnection(i);
+                return connections.getElementAt(i).info().name;
             }
         }
-        return false;
+        return null;
     }
 
     void openConnection(int index)
