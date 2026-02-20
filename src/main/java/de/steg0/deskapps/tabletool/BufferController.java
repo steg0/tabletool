@@ -592,8 +592,7 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            addResultSetTable(null,fetch? SPLIT_MARKER :
-                    SEPARATOR_MARKER);
+            addResultSetTable(null,fetch? SPLIT_MARKER : SEPARATOR_MARKER);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
