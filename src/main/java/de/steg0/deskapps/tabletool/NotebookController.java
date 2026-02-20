@@ -569,7 +569,7 @@ class NotebookController
         }
     }
 
-    public boolean rename()
+    boolean rename()
     {
         if(file == null)
         {
