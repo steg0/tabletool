@@ -3,13 +3,23 @@ package de.steg0.deskapps.tabletool;
 class NotebookSearchState
 {
     String text;
-    int tab;
+    int initialTab;
     int buf;
     int loc;
-    void reset(int tab)
+    void set(int buf,int loc)
     {
-        this.tab=tab;
-        buf=0;
-        loc=-1;
+        this.buf=buf;
+        this.loc=loc;
+    }
+    void resetToPoint(TabSetController tabsetController,boolean forward)
+    {
+        NotebookController currentNotebook = tabsetController.getSelected();
+        BufferController currentBuffer = currentNotebook.lastFocused();
+        int currentBufferIndex = currentNotebook.buffers.indexOf(
+                currentBuffer);
+        this.initialTab=tabsetController.tabbedPane.getSelectedIndex();
+        this.buf=currentBufferIndex;
+        if(forward) this.loc=currentBuffer.editor.getSelectionEnd();
+        else this.loc=currentBuffer.editor.getSelectionStart();
     }
 }

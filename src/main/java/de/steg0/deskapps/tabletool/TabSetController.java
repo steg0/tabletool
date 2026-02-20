@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import static java.awt.event.ActionEvent.ALT_MASK;
 import static java.awt.event.ActionEvent.CTRL_MASK;
+import static java.awt.event.ActionEvent.SHIFT_MASK;
 import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Component;
@@ -471,9 +472,10 @@ implements KeyListener
             {
                 String text = JOptionPane.showInputDialog(parent,"Find text:");
                 if(text==null) return;
-                searchState.reset(tabbedPane.getSelectedIndex());
+
+                searchState.resetToPoint(TabSetController.this,true);
                 searchState.text=text;
-                find();
+                find(true);
             }
         },
         findNextAction = new AbstractAction("Find Next")
@@ -481,26 +483,46 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 if(searchState.text==null) return;
-                tabbedPane.setSelectedIndex(searchState.tab);
-                find();
+                searchState.resetToPoint(TabSetController.this,true);
+                find(true);
+            }
+        },
+        findPreviousAction = new AbstractAction("Find Previous")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                if(searchState.text==null) return;
+                searchState.resetToPoint(TabSetController.this,false);
+                find(false);
             }
         };
 
-    private void find()
+    private void find(boolean forward)
     {
-        NotebookController notebook = notebooks.get(searchState.tab);
+        int selectedIndex = tabbedPane.getSelectedIndex();
+        logger.log(Level.FINER,"Tab index: {0}",selectedIndex);
+        logger.log(Level.FINER,"forward={0}",forward);
         boolean hasMatch = false;
-        while(!(hasMatch=notebook.findAndAdvance(searchState)) && 
-                searchState.tab < notebooks.size() - 1)
+        while(!(hasMatch=getSelected().findAndAdvance(searchState,forward)) && 
+                (forward && selectedIndex < notebooks.size() - 1 ||
+                !forward && selectedIndex > 0))
         {
-            searchState.reset(searchState.tab+1);
-            tabbedPane.setSelectedIndex(searchState.tab);
-            notebook = notebooks.get(searchState.tab);
+            selectedIndex = forward? selectedIndex + 1 : selectedIndex - 1;
+            tabbedPane.setSelectedIndex(selectedIndex);
+            if(forward) searchState.set(0,0);
+            else searchState.set(
+                    getSelected().buffers.size() - 1,
+                    getSelected().buffers.getLast().editor
+                            .getText().length());
         }
-        if(!hasMatch) JOptionPane.showMessageDialog(parent,
-                "No match found in remaining text",
-                "No match found",
-                JOptionPane.INFORMATION_MESSAGE);
+        if(!hasMatch)
+        {
+            tabbedPane.setSelectedIndex(searchState.initialTab);
+            JOptionPane.showMessageDialog(parent,
+                    "No match found in remaining text",
+                    "No match found",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     {
@@ -532,6 +554,7 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_DOWN,ALT_MASK),"Fetchsize-");
         im.put(getKeyStroke(KeyEvent.VK_F,CTRL_MASK),"Find");
         im.put(getKeyStroke(KeyEvent.VK_F3,0),"Find Next");
+        im.put(getKeyStroke(KeyEvent.VK_F3,SHIFT_MASK),"Find Previous");
         var am = tabbedPane.getActionMap();
         am.put("Select Tab 1",new SelectTabAction(0,0));
         am.put("Select Tab 2",new SelectTabAction(1,1));
@@ -554,6 +577,7 @@ implements KeyListener
         am.put("Fetchsize-",decreaseFetchsizeAction);
         am.put("Find",findAction);
         am.put("Find Next",findNextAction);
+        am.put("Find Previous",findPreviousAction);
         
         /* https://stackoverflow.com/questions/811248/how-can-i-use-drag-and-drop-in-swing-to-get-file-path */
         tabbedPane.setDropTarget(new DropTarget()

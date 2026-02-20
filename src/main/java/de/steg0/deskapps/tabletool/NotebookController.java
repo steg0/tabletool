@@ -768,18 +768,30 @@ class NotebookController
         fetchsizeField.setValue(fetchsize);
     }
 
-    boolean findAndAdvance(NotebookSearchState state)
+    boolean findAndAdvance(NotebookSearchState state,boolean forward)
     {
         if(state.buf>=buffers.size()) return false;
+        if(state.buf<0) return false;
         assert state.text != null;
-        logger.log(Level.FINE,"Finding: {0}",state.text);
-        logger.log(Level.FINE,"Buffer index: {0}",state.buf);
-        logger.log(Level.FINE,"Last search location: {0}",state.loc);
-        state.loc=buffers.get(state.buf).searchNext(state.loc+1,state.text);
+        logger.log(Level.FINER,"Finding: {0}",state.text);
+        logger.log(Level.FINER,"Buffer index: {0}",state.buf);
+        logger.log(Level.FINER,"Last search location: {0}",state.loc);
+        logger.log(Level.FINER,"forward={0}",forward);
+        state.loc=buffers.get(state.buf).searchNext(
+                state.loc + (forward? 0 : -1),state.text,forward);
         if(state.loc<0) 
         {
-            state.buf++;
-            return findAndAdvance(state);
+            if(forward)
+            {
+                state.buf++;
+            }
+            else
+            {
+                state.buf--;
+                if(state.buf>=0) state.loc =
+                        buffers.get(state.buf).editor.getText().length();
+            }
+            return findAndAdvance(state,forward);
         }
         return true;
     }

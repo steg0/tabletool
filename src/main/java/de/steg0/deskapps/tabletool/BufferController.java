@@ -45,10 +45,10 @@ import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCancel
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
-    static final String SPLIT_DUMMY_TITLE = "(Statement submitted)";
+    static final String SPLIT_MARKER = "(Statement submitted)";
     /**Separator symbol a user can place between buffers. This shouldn't
      * contain characters that throw off the CSV parser. */
-    private static final String SEPARATOR_DUMMY_TITLE = "---";
+    private static final String SEPARATOR_MARKER = "---";
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -254,16 +254,17 @@ class BufferController
         setConnectionLabelFontSize();
     }
 
-    int searchNext(int loc,String text)
+    int searchNext(int loc,String text,boolean forward)
     {
-        int index = editor.getText().toLowerCase().indexOf(
-                text.toLowerCase(),loc);
+        String lc = editor.getText().toLowerCase();
+        int index = forward? lc.indexOf(text.toLowerCase(),loc) :
+                lc.lastIndexOf(text.toLowerCase(),loc);
         if(index>=0)
         {
-            logger.log(Level.FINE,"Found at location: {0}",index);
+            logger.log(Level.FINER,"Found at location: {0}",index);
             editor.requestFocusInWindow();
             editor.setSelectionStart(index);
-            logger.log(Level.FINE,"Setting selection end to {0}",text.length());
+            logger.log(Level.FINER,"Setting selection end to {0}",text.length());
             editor.setSelectionEnd(index+text.length());
         }
         return index;
@@ -484,7 +485,7 @@ class BufferController
         }
         else if(terminatedWithSeparator())
         {
-            w.write("\n--CSV Result\n--" + SEPARATOR_DUMMY_TITLE + "\n");
+            w.write("\n--CSV Result\n--" + SEPARATOR_MARKER + "\n");
         }
     }
     
@@ -507,10 +508,10 @@ class BufferController
                 var rsm = new ResultSetTableModel();
                 rsm.resultMessage = lmr.message;
                 rsm.load(r);
-                if(rsm.getColumnName(0).equals(SEPARATOR_DUMMY_TITLE) &&
+                if(rsm.getColumnName(0).equals(SEPARATOR_MARKER) &&
                     rsm.getColumnCount()==0)
                 {
-                    addResultSetTable(null,SEPARATOR_DUMMY_TITLE);
+                    addResultSetTable(null,SEPARATOR_MARKER);
                 }
                 else
                 {
@@ -591,8 +592,8 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            addResultSetTable(null,fetch? SPLIT_DUMMY_TITLE :
-                    SEPARATOR_DUMMY_TITLE);
+            addResultSetTable(null,fetch? SPLIT_MARKER :
+                    SEPARATOR_MARKER);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -631,13 +632,13 @@ class BufferController
     boolean awaitingSplitResult()
     {
         return resultview != null &&
-                resultview.getColumnName(0).equals(SPLIT_DUMMY_TITLE);
+                resultview.getColumnName(0).equals(SPLIT_MARKER);
     }
 
     boolean terminatedWithSeparator()
     {
         return resultview != null &&
-                resultview.getColumnName(0).equals(SEPARATOR_DUMMY_TITLE);
+                resultview.getColumnName(0).equals(SEPARATOR_MARKER);
     }
     
     String selectCurrentQuery()
