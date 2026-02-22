@@ -478,6 +478,19 @@ implements KeyListener
                 find(true);
             }
         },
+        findBackwardsAction = new AbstractAction("Find Backwards")
+        {
+            @Override public void actionPerformed(ActionEvent e)
+            {
+                String text = JOptionPane.showInputDialog(parent,
+                        "Find text (backwards):");
+                if(text==null) return;
+
+                searchState.resetToPoint(TabSetController.this,false);
+                searchState.text=text;
+                find(false);
+            }
+        },
         findNextAction = new AbstractAction("Find Next")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -553,6 +566,7 @@ implements KeyListener
         im.put(getKeyStroke(KeyEvent.VK_UP,ALT_MASK),"Fetchsize+");
         im.put(getKeyStroke(KeyEvent.VK_DOWN,ALT_MASK),"Fetchsize-");
         im.put(getKeyStroke(KeyEvent.VK_F,CTRL_MASK),"Find");
+        im.put(getKeyStroke(KeyEvent.VK_B,CTRL_MASK),"Find Backwards");
         im.put(getKeyStroke(KeyEvent.VK_F3,0),"Find Next");
         im.put(getKeyStroke(KeyEvent.VK_F3,SHIFT_MASK),"Find Previous");
         var am = tabbedPane.getActionMap();
@@ -576,6 +590,7 @@ implements KeyListener
         am.put("Fetchsize+",increaseFetchsizeAction);
         am.put("Fetchsize-",decreaseFetchsizeAction);
         am.put("Find",findAction);
+        am.put("Find Backwards",findBackwardsAction);
         am.put("Find Next",findNextAction);
         am.put("Find Previous",findPreviousAction);
         

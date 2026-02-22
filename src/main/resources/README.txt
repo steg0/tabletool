@@ -37,7 +37,7 @@ While editing SQL in a notebook, in addition to the shortcuts shown in the menu 
 • Ctrl+1, Ctrl+2, and so on - select tab by index.
 • Ctrl+` - select last tab.
 • Ctrl+/ - comment/uncomment.
-• Ctrl+F - find text (case-insensitively), starting on currently selected tab.
+• Ctrl+F, Ctrl+B - find text (case-insensitively), starting on currently selected tab (forward, backward).
 • F3, Shift+F3 - find next, find previous.
 • Ctrl+D - delete line.
 • Ctrl+G - go to line.
