@@ -275,14 +275,29 @@ class ConnectionWorker
         },log,true);
     }
 
+    /**
+     * Invokes a cancel operation on the currently executing JDBC statement,
+     * as far as available. This is directly submitted to the instance's
+     * {@link Executor} member, so it's designed to be asynchronous (and not
+     * synchronized with blocking operations on the connection).
+     */
     void cancel(Consumer<String> log)
-    throws SQLException
     {
         Statement st = lastStatement;
         if(st!=null)
         {
-            st.cancel();
-            log.accept("Invoked cancel operation at "+new Date());
+            executor.submit(() ->
+            {
+                try
+                {
+                    st.cancel();
+                    log.accept("Invoked cancel operation at "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    log.accept(SQLExceptionPrinter.toString(e));
+                }
+            });
         }
         else
         {

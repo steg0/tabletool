@@ -672,14 +672,7 @@ class NotebookController
     {
         onConnection((c) -> 
         {
-            try
-            {
-                c.cancel(logConsumer);
-            }
-            catch(SQLException e)
-            {
-                logConsumer.accept(SQLExceptionPrinter.toString(e));
-            }
+            c.cancel(logConsumer);
         });
     }
 
