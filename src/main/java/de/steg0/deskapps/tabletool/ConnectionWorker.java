@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -71,6 +72,7 @@ class ConnectionWorker
             boolean skipEmptyColumns,
             boolean updatable
     )
+    throws OperationRunningException
     {
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
@@ -101,6 +103,7 @@ class ConnectionWorker
         private long ts;
 
         public void start()
+        throws OperationRunningException
         {
             executeOnConnection("SQL",sql,() ->
             {
@@ -263,16 +266,23 @@ class ConnectionWorker
      */
     void closeResultSet(Consumer<String> log)
     {
-        executeOnConnection("Close ResultSet",null,() -> 
+        try
         {
-            if(lastReportedResult!=null)
+            executeOnConnection("Close ResultSet",null,() -> 
             {
-                lastReportedResult.close();
-                lastReportedResult = null;
-                return "Closed ResultSet";
-            }
-            return null;
-        },log,true);
+                if(lastReportedResult!=null)
+                {
+                    lastReportedResult.close();
+                    lastReportedResult = null;
+                    return "Closed ResultSet";
+                }
+                return null;
+            },log,true);
+        }
+        catch(OperationRunningException ignored)
+        {
+            assert false : "this operation is supposed to queue";
+        }
     }
 
     /**
@@ -306,6 +316,7 @@ class ConnectionWorker
     }
     
     void commit(Consumer<String> log)
+    throws OperationRunningException
     {
         executeOnConnection("Commit",null,() ->
         {
@@ -315,6 +326,7 @@ class ConnectionWorker
     }
     
     void rollback(Consumer<String> log)
+    throws OperationRunningException
     {
         executeOnConnection("Rollback",null,() ->
         {
@@ -324,6 +336,7 @@ class ConnectionWorker
     }
     
     void disconnect(Consumer<String> log,Runnable cb)
+    throws OperationRunningException
     {
         executeOnConnection("Disconnect",null,() ->
         {
@@ -335,22 +348,38 @@ class ConnectionWorker
     
     void setAutoCommit(boolean enabled,Consumer<String> log,Runnable cb)
     {
-        executeOnConnection("Enable autocommit",null,() ->
+        try
         {
-            connection.setAutoCommit(enabled);
-            invokeLater(cb);
-            return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
-                    "Ctrl+R, or F5 to execute statements";
-        },log,true);
+            executeOnConnection("Enable autocommit: "+enabled,null,() ->
+            {
+                connection.setAutoCommit(enabled);
+                invokeLater(cb);
+                return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
+                        "Ctrl+R, or F5 to execute statements";
+            },log,true);
+        }
+        catch(OperationRunningException ignored)
+        {
+            assert false : "this operation is supposed to queue";
+        }
+    }
+
+    static class OperationRunningException extends Exception
+    {
+        private OperationRunningException(String description)
+        {
+            super(description);
+        }
     }
 
     /**
      * @param queue If <code>true</code>, will wait on the object's monitor
      * if another statement is currently executing. If <code>false</code>,
-     * it will report an error and return in such cases.
+     * it will throw {@link OperationRunningException} in such cases.
      */
     private void executeOnConnection(String operationName,String statement,
             Callable<String> runnable,Consumer<String> log,boolean queue)
+    throws OperationRunningException
     {
         Operation op = new Operation(operationName,statement,runnable,log);
         if(!queue)
@@ -358,9 +387,8 @@ class ConnectionWorker
             Operation checkval = lastOp.compareAndExchange(null,op);
             if(checkval != null)
             {
-                log.accept("Currently executing:\n"+checkval+
-                        "\nNot enqueueing new operation at "+new Date());
-                return;
+                throw new OperationRunningException("Currently executing:\n"+
+                        checkval+"\nNot enqueueing new operation");
             }
         }
         else

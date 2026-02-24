@@ -54,6 +54,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.NumberFormatter;
 
 import de.steg0.deskapps.tabletool.ConnectionListModel.PasswordPromptCanceledException;
+import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
 
 /**
  * Represents a "notebook", i. e. a series of text field/result table pairs that
@@ -339,17 +340,20 @@ class NotebookController
                 }
                 if(next!=null && split)
                 {
-                    logger.log(Level.FINE,"Undoing #{0} after split",i);
+                    logger.log(Level.FINE,"Checking undo #{0} after split",i);
                     if(next.editor.getText().length() > 0 &&
                        source.undoManager.canUndo())
                     {
+                        logger.log(Level.FINE,"Undoing #{0} after split",i);
                         source.undoManager.undo();
                     }
                     if(next.resultview != null)
                     {
+                        logger.fine("Carrying over next resultview");
                         source.addResultSetTable(next.getResultSetTableModel(),
                                 null);
                     }
+                    logger.log(Level.FINE,"Removing next buffer (#{0})",i+1);
                     remove(i+1);
                 }
                 source.restoreCaretPosition(true);
@@ -810,12 +814,22 @@ class NotebookController
                 bufferConfigSource.updatableResultSets);
     };
 
-    private void onConnection(Consumer<ConnectionWorker> c)
+    private static interface ConnectionWorkerCallback
+    {
+        void invokeWith(ConnectionWorker w)
+        throws OperationRunningException;
+    }
+
+    private void onConnection(ConnectionWorkerCallback c)
     {
         ConnectionWorker selectedConnection = first().connection;
-        if(selectedConnection != null)
+        if(selectedConnection != null) try
         {
-            c.accept(selectedConnection);
+            c.invokeWith(selectedConnection);
+        }
+        catch(OperationRunningException e)
+        {
+            logConsumer.accept(e.getMessage() + " at " + new Date());
         }
         else
         {

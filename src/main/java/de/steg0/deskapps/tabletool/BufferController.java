@@ -40,6 +40,7 @@ import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
 import de.steg0.deskapps.tabletool.BufferEvent.Type;
+import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
 import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCanceledException;
 
 class BufferController
@@ -580,7 +581,21 @@ class BufferController
             return;
         }
         
-        if(split) try
+        if(fetch) try
+        {
+            connection.submit(text,configSource.fetchsize,
+                    parametersController,placeholderlog,resultConsumer,
+                    updateCountConsumer,log,false,
+                    configSource.updatableResultSets);
+        }
+        catch(OperationRunningException e)
+        {
+            log.accept(e.getMessage() + " at " + new Date());
+            return;
+        }
+        else fireBufferEvent(new BufferEvent(this,Type.NULL_FETCH));
+
+        if(split && !awaitingSplitResult()) try
         {
             int end = savedSelectionEnd;
             logger.log(Level.FINE,"Cutting to new buffer at {0}",end);
@@ -603,11 +618,6 @@ class BufferController
         {
             assert false : e.getMessage();
         }
-
-        if(fetch) connection.submit(text,configSource.fetchsize,
-                parametersController,placeholderlog,resultConsumer,
-                updateCountConsumer,log,false,configSource.updatableResultSets);
-        else fireBufferEvent(new BufferEvent(this,Type.NULL_FETCH));
     }
 
     void closeCurrentResultSet()
