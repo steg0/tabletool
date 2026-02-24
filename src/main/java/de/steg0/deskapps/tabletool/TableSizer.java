@@ -48,7 +48,7 @@ class TableSizer
             double bpadd=500;
             double factor = (double)colMinWidth / 300;
             if(factor < 1) bpadd += (1500 * (1-factor));
-            logger.log(Level.FINE,"bpadd={0}",bpadd);
+            logger.log(Level.FINER,"bpadd={0}",bpadd);
             col.setPreferredWidth((int)(colMinWidth * (10000 + bpadd) / 10000));
         }
     }
