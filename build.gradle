@@ -44,7 +44,7 @@ tasks.withType(JavaExec) {
     args '-config'
     args 'src/main/resources/sample.properties.xml'
     args '-config'
-    args 'local.properties'
+    args System.getenv('APPDATA') + '/tabtype/tabtype.properties'
     args '-logconfig'
     args 'test.logging.properties'
     args 'test.tabtype'
