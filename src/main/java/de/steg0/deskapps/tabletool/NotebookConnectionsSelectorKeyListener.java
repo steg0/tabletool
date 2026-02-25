@@ -26,7 +26,8 @@ class NotebookConnectionsSelectorKeyListener extends KeyAdapter
     public void keyTyped(KeyEvent e)
     {
         char c = e.getKeyChar();
-        if(e.getModifiersEx() != 0 && e.getModifiersEx() != SHIFT_DOWN_MASK) return;
+        if(e.getModifiersEx() != 0 && e.getModifiersEx() != SHIFT_DOWN_MASK)
+            return;
         if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
         {
             e.consume();

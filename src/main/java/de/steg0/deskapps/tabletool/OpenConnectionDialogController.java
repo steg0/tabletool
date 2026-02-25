@@ -1,7 +1,10 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.InputEvent.SHIFT_DOWN_MASK;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -78,10 +81,27 @@ class OpenConnectionDialogController
                     closeButtonListener.actionPerformed(null);
             }
         });
+        table.addKeyListener(new OpenConnectionDialogKeyListener(this,hint));
+
         f.pack();
         f.setLocationRelativeTo(parent);
         
         table.setRowSelectionInterval(0,0);
+        moveTo(table,hint);
+
+        index = null;
+        f.setVisible(true);
+
+        if(index != null)
+        {
+            TableCellEditor editor = table.getCellEditor();
+            if(editor!=null) editor.stopCellEditing();
+            notebook.openConnection(index);
+        }
+    }
+
+    void moveTo(JTable table,String hint)
+    {
         logger.log(Level.FINE,"Looking for connection name \"{0}...\"",hint);
         for(int i=0;i<notebook.connections.getRowCount();i++)
         {
@@ -94,15 +114,47 @@ class OpenConnectionDialogController
         }
         table.setColumnSelectionInterval(0,0);
         table.requestFocusInWindow();
+    }
+}
 
-        index = null;
-        f.setVisible(true);
+class OpenConnectionDialogKeyListener extends KeyAdapter
+{
+    private long lastKeyTime = System.currentTimeMillis();
+    private String prefix;
+    private OpenConnectionDialogController controller;
 
-        if(index != null)
+    OpenConnectionDialogKeyListener(OpenConnectionDialogController c,
+            String prefix)
+    {
+        this.prefix = prefix;
+        controller = c;
+    }
+
+    private void computePrefix(long time,char character)
+    {
+        if(time-lastKeyTime < 700)
         {
-            TableCellEditor editor = table.getCellEditor();
-            if(editor!=null) editor.stopCellEditing();
-            notebook.openConnection(index);
+            prefix += character;
+        }
+        else
+        {
+            prefix=String.valueOf(character);
+        }
+
+        lastKeyTime = time;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e)
+    {
+        char c = e.getKeyChar();
+        if(e.getModifiersEx() != 0 && e.getModifiersEx() != SHIFT_DOWN_MASK)
+            return;
+        if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
+        {
+            e.consume();
+            computePrefix(e.getWhen(),c);
+            controller.moveTo((JTable)e.getSource(),prefix);
         }
     }
 }
