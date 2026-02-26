@@ -106,9 +106,11 @@ class OpenConnectionDialogController
         for(int i=0;i<notebook.connections.getRowCount();i++)
         {
             ConnectionState val = notebook.connections.getElementAt(i);
-            if(val.info().name.startsWith(hint))
+            if(val.info().name.startsWith(hint) ||
+               hint.length()>1 && val.info().name.contains(hint))
             {
                 table.setRowSelectionInterval(i,i);
+                table.scrollRectToVisible(table.getCellRect(i,0,true));
                 break;
             }
         }
@@ -120,25 +122,25 @@ class OpenConnectionDialogController
 class OpenConnectionDialogKeyListener extends KeyAdapter
 {
     private long lastKeyTime = System.currentTimeMillis();
-    private String prefix;
+    private String searchstr;
     private OpenConnectionDialogController controller;
 
     OpenConnectionDialogKeyListener(OpenConnectionDialogController c,
-            String prefix)
+            String searchstr)
     {
-        this.prefix = prefix;
+        this.searchstr = searchstr;
         controller = c;
     }
 
-    private void computePrefix(long time,char character)
+    private void updateSearchStr(long time,char character)
     {
         if(time-lastKeyTime < 700)
         {
-            prefix += character;
+            searchstr += character;
         }
         else
         {
-            prefix=String.valueOf(character);
+            searchstr=String.valueOf(character);
         }
 
         lastKeyTime = time;
@@ -153,8 +155,8 @@ class OpenConnectionDialogKeyListener extends KeyAdapter
         if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
         {
             e.consume();
-            computePrefix(e.getWhen(),c);
-            controller.moveTo((JTable)e.getSource(),prefix);
+            updateSearchStr(e.getWhen(),c);
+            controller.moveTo((JTable)e.getSource(),searchstr);
         }
     }
 }
