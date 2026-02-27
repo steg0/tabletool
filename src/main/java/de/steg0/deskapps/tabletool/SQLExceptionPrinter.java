@@ -70,18 +70,42 @@ class SQLExceptionPrinter
 
     static String toString(String sql,SQLException e)
     {
-        StringBuilder b=new StringBuilder();
-        b.append("Given:\n");
-        b.append("1> ");
-        for(int i=0,l=1,j=1;i<sql.length();i++,j++)
+        int maxlinelen=0;
+        int line=1;
+        for(int i=0,j=0;i<sql.length();i++)
         {
-            if(j%10==0) b.append(" <").append(j).append("|").append(i+1)
-                    .append("> ");
-            b.append(sql.charAt(i));
             if(sql.charAt(i)=='\n')
             {
-                b.append(++l).append("> ");
-                j=1;
+                line++;
+                maxlinelen = Math.max(maxlinelen,j);
+                j=0;
+            }
+            else
+            {
+                j++;
+            }
+        }
+
+        String linenumfmt = "%0"+String.valueOf(line).length()+"d> ";
+        String charposfmt = " <%0"+String.valueOf(maxlinelen).length()+
+                "d|"+"%0"+String.valueOf(sql.length()).length()+"d> ";
+
+        StringBuilder b=new StringBuilder();
+        b.append("Given:\n");
+        b.append(linenumfmt.formatted(1));
+
+        for(int i=0,l=1,j=0;i<sql.length();i++)
+        {
+            if(j>0 && j%10==9) b.append(charposfmt.formatted(j+1,i+1));
+            b.append(sql.charAt(i) == '\t'? ' ' : sql.charAt(i));
+            if(sql.charAt(i)=='\n')
+            {
+                b.append(linenumfmt.formatted(++l));
+                j=0;
+            }
+            else
+            {
+                j++;
             }
         }
         b.append("\nGot:\n");

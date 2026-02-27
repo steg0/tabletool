@@ -4,6 +4,7 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -144,6 +145,8 @@ class NotebookController
         connectionPanel.add(connectionsSelector);
         
         log.setEditable(false);
+        log.setFont(new Font(Font.MONOSPACED,Font.PLAIN,
+                log.getFont().getSize()));
         var l = new NotebookLogListener(this);
         log.getDocument().addDocumentListener(l);
         log.addKeyListener(l);
