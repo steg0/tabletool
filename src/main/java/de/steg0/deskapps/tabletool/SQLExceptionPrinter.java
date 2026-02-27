@@ -16,7 +16,7 @@ class SQLExceptionPrinter
         for(;e!=null;e=e.getNextException())
         {
             b.append("Error code: "+e.getErrorCode()+"\n");
-            b.append("SQL State: "+e.getSQLState()+"\n");
+            b.append("SQL state: "+e.getSQLState()+"\n");
             b.append(describeVendorSpecificProperties(e));
             b.append(e.getMessage()+"\n");
             var cause = e.getCause();
@@ -41,22 +41,29 @@ class SQLExceptionPrinter
                 {
                 case "SQLServerError":
                     var property = pd.getReadMethod().invoke(se);
-                    beanInfo = Introspector.getBeanInfo(property.getClass());
-                    for(var pd0 : beanInfo.getPropertyDescriptors())
-                    {
-                        switch(pd0.getName())
-                        {
-                            case "lineNumber":
-                                return "lineNumber="+pd0.getReadMethod()
-                                        .invoke(property)+"\n";
-                        }
-                    }
+                    return describeMSSQLExceptionProperties(property);
                 }
             }
         }
         catch(Exception e)
         {
             logger.log(Level.INFO,"Error during SQLException introspection",e);
+        }
+        return "";
+    }
+
+    private static String describeMSSQLExceptionProperties(Object property)
+    throws Exception
+    {
+        var beanInfo = Introspector.getBeanInfo(property.getClass());
+        for(var pd0 : beanInfo.getPropertyDescriptors())
+        {
+            switch(pd0.getName())
+            {
+            case "lineNumber":
+                return "Line number: "+pd0.getReadMethod()
+                        .invoke(property)+"\n";
+            }
         }
         return "";
     }
