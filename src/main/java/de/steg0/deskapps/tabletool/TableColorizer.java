@@ -4,12 +4,18 @@ import java.awt.Color;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 
 class TableColorizer
 {
-    /**Taints table/table header background a bit (null safe). */
+    /**
+     * Taints table/table header background a bit (null safe). This doesn't work
+     * well for some LAFs. It is only activated for the Metal LAF.
+    */
     static void colorize(JTable table,Color bg)
     {
+        if(!UIManager.getLookAndFeel().getClass().getName().equals(
+                UIManager.getCrossPlatformLookAndFeelClassName())) return;
         if(table==null) return;
         JScrollPane scrollpane = (JScrollPane)table.getParent().getParent();
         int r = bg.getRed(),
