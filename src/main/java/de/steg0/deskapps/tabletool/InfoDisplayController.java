@@ -30,7 +30,7 @@ class InfoDisplayController
     {
         var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         
-        String dialogtitle = "Info display - Tabtype";
+        String dialogtitle = Tabtype.getFrameTitle("Info display");
         
         infoDisplay.setTitle(dialogtitle);
         infoDisplay.getContentPane().removeAll();

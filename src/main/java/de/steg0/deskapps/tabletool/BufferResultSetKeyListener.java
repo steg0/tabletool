@@ -12,10 +12,12 @@ import de.steg0.deskapps.tabletool.BufferEvent.Type;
 class BufferResultSetKeyListener implements KeyListener
 {
     private final BufferController b;
+    private final BufferResultSetPopup popup;
 
-    BufferResultSetKeyListener(BufferController b)
+    BufferResultSetKeyListener(BufferController b,BufferResultSetPopup popup)
     {
         this.b = b;
+        this.popup = popup;
     }
 
     private void scrollToView()
@@ -26,13 +28,14 @@ class BufferResultSetKeyListener implements KeyListener
                 b.resultview.getSelectedColumn(),
                 true
         );
+        int sbwidth = b.resultscrollpane.getVerticalScrollBar().getWidth();
         Rectangle headerBounds = 
                 b.resultview.getTableHeader().getBounds();
         Point position = ((JViewport)b.resultview.getParent())
-            .getViewPosition();
+                .getViewPosition();
         var e = new BufferEvent(b,Type.SELECTED_RECT_CHANGED);
         e.selectedRect = new Rectangle(
-                (int)cellRect.getX(),
+                (int)cellRect.getX() + sbwidth,
                 (int)(rect.getHeight() + 
                       cellRect.getY() - 
                       position.getY() +
@@ -73,6 +76,16 @@ class BufferResultSetKeyListener implements KeyListener
             break;
         case KeyEvent.VK_BACK_SPACE:
             if(e.isControlDown()) b.closeBuffer();
+            break;
+        case KeyEvent.VK_F10:
+            Rectangle cellRect = b.resultview.getCellRect(
+                    b.resultview.getSelectedRow(),
+                    b.resultview.getSelectedColumn(),
+                    true
+            );
+            if(e.isShiftDown()) popup.showPopup(e.getComponent(),
+                    cellRect.x,cellRect.y);
+            e.consume();
         }
     }
 }

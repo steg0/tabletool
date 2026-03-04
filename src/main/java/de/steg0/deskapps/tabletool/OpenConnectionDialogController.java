@@ -1,7 +1,10 @@
 package de.steg0.deskapps.tabletool;
 
+import static java.awt.event.InputEvent.SHIFT_DOWN_MASK;
+
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -49,6 +52,7 @@ class OpenConnectionDialogController
         
         var table = new JTable(notebook.connections);
         table.setColumnSelectionAllowed(true);
+        new ColumnSelectionListener(table).attach();
         TableSizer.sizeColumns(table);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         var tablepane = new JScrollPane(table);
@@ -78,22 +82,13 @@ class OpenConnectionDialogController
                     closeButtonListener.actionPerformed(null);
             }
         });
+        table.addKeyListener(new OpenConnectionDialogKeyListener(this,hint));
+
         f.pack();
         f.setLocationRelativeTo(parent);
         
         table.setRowSelectionInterval(0,0);
-        logger.log(Level.FINE,"Looking for connection name \"{0}...\"",hint);
-        for(int i=0;i<notebook.connections.getRowCount();i++)
-        {
-            ConnectionState val = notebook.connections.getElementAt(i);
-            if(val.info().name.startsWith(hint))
-            {
-                table.setRowSelectionInterval(i,i);
-                break;
-            }
-        }
-        table.setColumnSelectionInterval(0,0);
-        table.requestFocusInWindow();
+        moveTo(table,hint);
 
         index = null;
         f.setVisible(true);
@@ -103,6 +98,66 @@ class OpenConnectionDialogController
             TableCellEditor editor = table.getCellEditor();
             if(editor!=null) editor.stopCellEditing();
             notebook.openConnection(index);
+        }
+    }
+
+    void moveTo(JTable table,String hint)
+    {
+        logger.log(Level.FINE,"Looking for connection name \"{0}...\"",hint);
+        for(int i=0;i<notebook.connections.getRowCount();i++)
+        {
+            ConnectionState val = notebook.connections.getElementAt(i);
+            if(val.info().name.startsWith(hint) ||
+               hint.length()>1 && val.info().name.contains(hint))
+            {
+                table.setRowSelectionInterval(i,i);
+                table.scrollRectToVisible(table.getCellRect(i,0,true));
+                break;
+            }
+        }
+        table.setColumnSelectionInterval(0,0);
+        table.requestFocusInWindow();
+    }
+}
+
+class OpenConnectionDialogKeyListener extends KeyAdapter
+{
+    private long lastKeyTime = System.currentTimeMillis();
+    private String searchstr;
+    private OpenConnectionDialogController controller;
+
+    OpenConnectionDialogKeyListener(OpenConnectionDialogController c,
+            String searchstr)
+    {
+        this.searchstr = searchstr;
+        controller = c;
+    }
+
+    private void updateSearchStr(long time,char character)
+    {
+        if(time-lastKeyTime < 700)
+        {
+            searchstr += character;
+        }
+        else
+        {
+            searchstr=String.valueOf(character);
+        }
+
+        lastKeyTime = time;
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e)
+    {
+        char c = e.getKeyChar();
+        if(e.getModifiersEx() != 0 && e.getModifiersEx() != SHIFT_DOWN_MASK)
+            return;
+        if(c != KeyEvent.CHAR_UNDEFINED && Character.isLetterOrDigit(c))
+        {
+            e.consume();
+            updateSearchStr(e.getWhen(),c);
+            controller.moveTo((JTable)e.getSource(),searchstr);
         }
     }
 }

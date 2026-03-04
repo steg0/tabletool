@@ -25,15 +25,15 @@ class NotebookLogListener extends KeyAdapter implements DocumentListener
 
     private void sizeLog()
     {
-        logger.fine("Autoresizing log area to accommodate text");
+        logger.finer("Autoresizing log area to accommodate text");
         int lines = Math.min(10,nb.log.getLineCount());
         int lineheight = nb.log.getFontMetrics(nb.log.getFont()).getHeight();
         int logheight = lineheight * lines;
-        logger.log(Level.FINE,"logheight={0}",logheight);
+        logger.log(Level.FINER,"logheight={0}",logheight);
         int dividerSize = nb.logBufferPane.getDividerSize();
-        logger.log(Level.FINE,"dividerSize={0}",dividerSize);
+        logger.log(Level.FINER,"dividerSize={0}",dividerSize);
         int logBufferHeight = nb.logBufferPane.getHeight();
-        logger.log(Level.FINE,"logBufferHeight={0}",logBufferHeight);
+        logger.log(Level.FINER,"logBufferHeight={0}",logBufferHeight);
         nb.logBufferPane.setDividerLocation(logBufferHeight - logheight -
                 dividerSize - (int)(lineheight * .4));
     }

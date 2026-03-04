@@ -1,9 +1,6 @@
 package de.steg0.deskapps.tabletool;
 
-import static java.awt.event.ActionEvent.ALT_MASK;
-import static java.awt.event.ActionEvent.CTRL_MASK;
 import static java.lang.Math.max;
-import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -12,7 +9,6 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -44,11 +40,16 @@ import javax.swing.text.Document;
 import javax.swing.undo.UndoManager;
 
 import de.steg0.deskapps.tabletool.BufferEvent.Type;
+import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
 import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCanceledException;
 
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
+    static final String SPLIT_MARKER = "(Statement submitted)";
+    /**Separator symbol a user can place between buffers. This shouldn't
+     * contain characters that throw off the CSV parser. */
+    private static final String SEPARATOR_MARKER = "---";
     
     private static final String CONNECTION_LABEL_PREFIX =
             "\u00b7\u00b7\u00b7\u00b7 ";
@@ -106,6 +107,7 @@ class BufferController
     }
     
     JTable resultview;
+    JScrollPane resultscrollpane;
     JLabel resultMessageLabel;
     BufferConfigSource configSource;
     JdbcParametersInputController parametersController;
@@ -131,11 +133,11 @@ class BufferController
         this.updateCountConsumer = new BufferUpdateCountConsumer(parent,this);
         
         unfocusedBorder = BorderFactory.createDashedBorder(
-                configSource.getNonFocusedEditorBorderColor());
+                configSource.getNonFocusedEditorBorderColor(),2,1,1,false);
         focusedBorder = BorderFactory.createDashedBorder(
-                configSource.getFocusedEditorBorderColor());
+                configSource.getFocusedEditorBorderColor(),2,1,1,false);
         unsavedBorder = BorderFactory.createDashedBorder(
-                configSource.getUnsavedEditorBorderColor());
+                configSource.getUnsavedEditorBorderColor(),2,1,1,false);
         setBrandingColors();
 
         editor.addFocusListener(new BufferEditorFocusListener(this));
@@ -168,32 +170,7 @@ class BufferController
         }
         editor.setTabSize(configSource.getEditorTabsize());
         
-        var actions = new BufferActions(parent,this);
-        var im = editor.getInputMap();
-        im.put(getKeyStroke(KeyEvent.VK_F5,0),"Execute");
-        im.put(getKeyStroke(KeyEvent.VK_R,CTRL_MASK),"Execute");
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,ALT_MASK),"JDBC Parameters");
-        im.put(getKeyStroke(KeyEvent.VK_ENTER,CTRL_MASK),"Execute/Split");
-        im.put(getKeyStroke(KeyEvent.VK_F1,0),"Show Info");
-        im.put(getKeyStroke(KeyEvent.VK_F2,0),"Show Snippets");
-        im.put(getKeyStroke(KeyEvent.VK_F8,0),"Show Completions");
-        im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
-        im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
-        im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
-        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
-        im.put(getKeyStroke(KeyEvent.VK_D,CTRL_MASK),"Delete Line");
-        var am = editor.getActionMap();
-        am.put("Execute",actions.executeAction);
-        am.put("JDBC Parameters",actions.showJdbcParametersAction);
-        am.put("Execute/Split",actions.executeSplitAction);
-        am.put("Show Info",actions.showInfoAction);
-        am.put("Show Snippets",actions.showSnippetsPopupAction);
-        am.put("Show Completions",actions.showCompletionPopupAction);
-        am.put("Toggle Comment",new EditorPrefixToggler(editor,"--"));
-        am.put("Undo",actions.undoAction);
-        am.put("Redo",actions.redoAction);
-        am.put("Go To Line",actions.goToLineAction);
-        am.put("Delete Line",actions.deleteLineAction);
+        new BufferActions(parent,this).attach();
     }
 
     /**
@@ -217,7 +194,7 @@ class BufferController
         editor.setBackground(bg);
         panel.setBackground(bg);
         focusedBorder = BorderFactory.createDashedBorder(
-                configSource.getFocusedEditorBorderColor());
+                configSource.getFocusedEditorBorderColor(),2,1,1,false);
 
         if(editor.isFocusOwner())
         {
@@ -278,16 +255,17 @@ class BufferController
         setConnectionLabelFontSize();
     }
 
-    int searchNext(int loc,String text)
+    int searchNext(int loc,String text,boolean forward)
     {
-        int index = editor.getText().toLowerCase().indexOf(
-                text.toLowerCase(),loc);
+        String lc = editor.getText().toLowerCase();
+        int index = forward? lc.indexOf(text.toLowerCase(),loc) :
+                lc.lastIndexOf(text.toLowerCase(),loc);
         if(index>=0)
         {
-            logger.log(Level.FINE,"Found at location: {0}",index);
+            logger.log(Level.FINER,"Found at location: {0}",index);
             editor.requestFocusInWindow();
             editor.setSelectionStart(index);
-            logger.log(Level.FINE,"Setting selection end to {0}",text.length());
+            logger.log(Level.FINER,"Setting selection end to {0}",text.length());
             editor.setSelectionEnd(index+text.length());
         }
         return index;
@@ -416,15 +394,15 @@ class BufferController
  
     void startLineSelection(int y)
     {
-        logger.log(Level.FINE,"startLineSelection,y1={0}",y);
+        logger.log(Level.FINER,"startLineSelection,y1={0}",y);
         selectListener.clickPos = editor.viewToModel2D(new Point(0,y));
         selectListener.clickCount = 1;
     }
     
     void dragLineSelection(int y1,int y2)
     {
-        logger.log(Level.FINE,"dragLineSelection,y1={0}",y1);
-        logger.log(Level.FINE,"dragLineSelection,y2={0}",y2);
+        logger.log(Level.FINER,"dragLineSelection,y1={0}",y1);
+        logger.log(Level.FINER,"dragLineSelection,y2={0}",y2);
         
         focusEditor(null,null);
         
@@ -438,7 +416,7 @@ class BufferController
         else try
         {
             y1=(int)editor.modelToView2D(selectListener.clickPos).getCenterY();
-            logger.log(Level.FINE,"point Y from selectListener: {0}",y1);
+            logger.log(Level.FINER,"point Y from selectListener: {0}",y1);
             clickPos = editor.viewToModel2D(new Point(0,y1));
         }
         catch(BadLocationException e)
@@ -506,6 +484,10 @@ class BufferController
             w.write("\n");
             rsm.store(w,true);
         }
+        else if(terminatedWithSeparator())
+        {
+            w.write("\n--CSV Result\n--" + SEPARATOR_MARKER + "\n");
+        }
     }
     
     /**
@@ -527,7 +509,15 @@ class BufferController
                 var rsm = new ResultSetTableModel();
                 rsm.resultMessage = lmr.message;
                 rsm.load(r);
-                addResultSetTable(rsm);
+                if(rsm.getColumnName(0).equals(SEPARATOR_MARKER) &&
+                    rsm.getColumnCount()==0)
+                {
+                    addResultSetTable(null,SEPARATOR_MARKER);
+                }
+                else
+                {
+                    addResultSetTable(rsm,null);
+                }
                 break;
             }
             else
@@ -552,10 +542,12 @@ class BufferController
 
     ConnectionWorker connection;
     
-    void fetch(boolean split)
+    void submit(boolean fetch,boolean split)
     {
+        assert fetch || split;
+        if(split && !fetch && terminatedWithSeparator()) return;
         savedCaretPosition = editor.getCaretPosition();
-        if(getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
+        if(fetch && getTextFromCurrentLine(false).startsWith(CONNECT_COMMENT))
         {
             logger.log(Level.FINE,"Found connect comment");
             fireBufferEvent(Type.DRY_FETCH);
@@ -570,15 +562,15 @@ class BufferController
             log.accept("No query found at "+new Date());
             return;
         }
-        else if(connection == null)
+        else if(fetch && connection == null)
         {
             log.accept("No connection available at "+new Date());
             fireBufferEvent(Type.DRY_FETCH);
             return;
         }
 
-        String placeholderlog;
-        try
+        String placeholderlog=null;
+        if(fetch) try
         {
             text=placeholderInputController.fill(text);
             placeholderlog=placeholderInputController.describeLastValues();
@@ -589,7 +581,21 @@ class BufferController
             return;
         }
         
-        if(split) try
+        if(fetch) try
+        {
+            connection.submit(text,configSource.fetchsize,
+                    parametersController,placeholderlog,resultConsumer,
+                    updateCountConsumer,log,false,
+                    configSource.updatableResultSets);
+        }
+        catch(OperationRunningException e)
+        {
+            log.accept(e.getMessage() + " at " + new Date());
+            return;
+        }
+        else fireBufferEvent(new BufferEvent(this,Type.NULL_FETCH));
+
+        if(split && !awaitingSplitResult()) try
         {
             int end = savedSelectionEnd;
             logger.log(Level.FINE,"Cutting to new buffer at {0}",end);
@@ -601,8 +607,7 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            resultview=null;  /* this acts as a flag that we're in a split */
-            removeResultView();
+            addResultSetTable(null,fetch? SPLIT_MARKER : SEPARATOR_MARKER);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -613,10 +618,6 @@ class BufferController
         {
             assert false : e.getMessage();
         }
-
-        connection.submit(text,configSource.fetchsize,parametersController,
-                placeholderlog,resultConsumer,updateCountConsumer,log,false,
-                configSource.updatableResultSets);
     }
 
     void closeCurrentResultSet()
@@ -632,11 +633,21 @@ class BufferController
 
     ResultSetTableModel getResultSetTableModel()
     {
-        if(resultview != null)
-        {
-            return (ResultSetTableModel)resultview.getModel();
-        }
-        return null;
+        return resultview != null &&
+                resultview.getModel() instanceof ResultSetTableModel rsm?
+                        rsm : null;
+    }
+
+    boolean awaitingSplitResult()
+    {
+        return resultview != null &&
+                resultview.getColumnName(0).equals(SPLIT_MARKER);
+    }
+
+    boolean terminatedWithSeparator()
+    {
+        return resultview != null &&
+                resultview.getColumnName(0).equals(SEPARATOR_MARKER);
     }
     
     String selectCurrentQuery()
@@ -720,29 +731,31 @@ class BufferController
             log.accept(FETCH_LOG_FORMAT.format(logargs) + paramlog);
         }
         
-        addResultSetTable(rsm);
+        addResultSetTable(rsm,null);
 
         fireBufferEvent(Type.RESULT_VIEW_UPDATED);
     };
 
-    private KeyListener resultsetKeyListener = 
-        new BufferResultSetKeyListener(this);
-
-    void addResultSetTable(ResultSetTableModel rsm)
+    void addResultSetTable(ResultSetTableModel rsm,String dummyTitle)
     {
         removeResultView();
 
-        resultview = new JTable(rsm);
+        resultview = rsm != null?
+                new JTable(rsm) :
+                new JTable(new Object[][]{},new Object[]{dummyTitle});
         
         new CellDisplayController(cellDisplay,resultview,log,configSource.pwd,
                 editor.getFont());
-        new BufferResultSetPopup(parent,this).attach();
+        var popup = new BufferResultSetPopup(parent,this);
+        popup.attachMouseListener();
+        new ColumnSelectionListener(resultview).attach();
         
         resultview.setCellSelectionEnabled(true);
-        
+
+        var resultsetKeyListener = new BufferResultSetKeyListener(this,popup);
         resultview.addKeyListener(resultsetKeyListener);
         
-        var resultscrollpane = new JScrollPane(resultview,
+        resultscrollpane = new JScrollPane(resultview,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         resultscrollpane.setComponentOrientation(
@@ -762,7 +775,7 @@ class BufferController
         
         panel.add(resultscrollpane,resultviewConstraints);
 
-        if(rsm.resultMessage!=null && !rsm.resultMessage.isEmpty())
+        if(rsm!=null && rsm.resultMessage!=null && !rsm.resultMessage.isEmpty())
         {
             logger.log(Level.FINE,"resultMessage={0}",rsm.resultMessage);
             resultMessageLabel = new JLabel(rsm.resultMessage);
@@ -821,15 +834,16 @@ class BufferController
         new InfoDisplayController(infoDisplay,inforesultview);
     }
 
-    private void removeResultView()
+    void removeResultView()
     {
+        resultview=null;
+        resultscrollpane=null;
         while(panel.getComponentCount()>2) panel.remove(2);
     }
 
     void closeBuffer()
     {
         closeCurrentResultSet();
-        resultview=null;
         resultMessageLabel=null;
         removeResultView();
         fireBufferEvent(Type.RESULT_VIEW_CLOSED);

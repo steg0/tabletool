@@ -23,9 +23,9 @@ class ResultSetTableModel
 implements TableModel,AutoCloseable
 {
     private static final MessageFormat FETCH_INFO_FORMAT = 
-            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {2} at {1}");
+            new MessageFormat("{0} row{0,choice,0#s|1#|1<s} fetched from {2} in {3} ms at {1}");
     private static final MessageFormat FETCH_ALL_INFO_FORMAT = 
-            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {2} at {1}");
+            new MessageFormat("{0,choice,0#All 0 rows|1#The only row|1<All {0} rows} fetched from {2} in {3} ms at {1}");
 
     Logger logger = Logger.getLogger("tabtype");
 
@@ -38,6 +38,7 @@ implements TableModel,AutoCloseable
     String connectionDescription;
     private boolean skipEmptyColumns;
     boolean updatable;
+    long duration;
     /**
      * A description of JDBC IN parameters set in the dialog for the
      * execution.
@@ -68,7 +69,7 @@ implements TableModel,AutoCloseable
      * externally. */
     void update(String connectionDescription,Statement st,int fetchsize,
             String inlog,String outlog,String placeholderlog,
-            boolean skipEmptyColumns,boolean updatable)
+            boolean skipEmptyColumns,boolean updatable,long duration)
     throws SQLException
     {
         this.st = st;
@@ -80,6 +81,7 @@ implements TableModel,AutoCloseable
         this.placeholderlog = placeholderlog == null? "" : placeholderlog;
         this.skipEmptyColumns = skipEmptyColumns;
         this.updatable = updatable;
+        this.duration = duration;
         Boolean[] logargs = {skipEmptyColumns,updatable};
         logger.log(Level.FINE,"skipEmptyColumns={0},updatable={1}",logargs);
         fill();
@@ -130,7 +132,8 @@ implements TableModel,AutoCloseable
         Object[] logargs = {
                 getRowCount(),
                 date.toString(),
-                connectionDescription
+                connectionDescription,
+                duration
         };
         if(getRowCount() < fetchsize)
         {

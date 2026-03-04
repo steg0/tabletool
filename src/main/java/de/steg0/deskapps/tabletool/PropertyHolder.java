@@ -126,6 +126,11 @@ class PropertyHolder
         return getColorProperty("default.bg",fallback);
     }
 
+    Color getDefaultConnectedBackground()
+    {
+        return getColorProperty("default.connectedBg",null);
+    }
+
     Color getFrameBackground()
     {
         return getColorProperty("frame.bg",null);
@@ -224,7 +229,9 @@ class PropertyHolder
         {
             command.add(properties.getProperty(commandPrefix+argnum));
         }
-        return new ExternalToolDefinition(name,command);
+        boolean spawn = "true".equals(properties.getProperty(
+                EXTERNAL_TOOL_DEFINITION_PREFIX + name + ".spawn"));
+        return new ExternalToolDefinition(name,command,spawn);
     }
 
     class ConnectionInfo

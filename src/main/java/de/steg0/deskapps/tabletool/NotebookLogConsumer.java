@@ -17,8 +17,10 @@ class NotebookLogConsumer implements Consumer<String>,ActionListener
     Logger logger = Logger.getLogger("tabtype");
 
     private Border 
-        regularBorder = BorderFactory.createDashedBorder(Color.WHITE),
-        hilightedBorder = BorderFactory.createDashedBorder(Color.BLUE);
+        regularBorder = BorderFactory.createDashedBorder(Color.WHITE,
+                2,1,1,false),
+        hilightedBorder = BorderFactory.createDashedBorder(Color.BLUE,
+                2,1,1,false);
 
     private final JTextArea log;
     private Timer unhilighter;

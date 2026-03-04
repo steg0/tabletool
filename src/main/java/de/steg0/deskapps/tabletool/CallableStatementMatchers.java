@@ -29,4 +29,16 @@ class CallableStatementMatchers
         assert matches : "the pattern is designed to match always";
         return m;
     }
+
+    static String removeSemicolon(String sql)
+    {
+        if(sql.endsWith(";"))
+        {
+            String lc = sql.toLowerCase();
+            String noSemicolon = lc.substring(0,sql.length()-1);
+            if(!noSemicolon.trim().endsWith("end")) sql = sql
+                    .substring(0,sql.length()-1);
+        }
+        return sql;
+    }
 }

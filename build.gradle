@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'eclipse'
 }
 
 repositories {
@@ -22,7 +23,7 @@ dependencies {
     testImplementation libs.junit.junit
 }
 
-version = '0.57-SNAPSHOT'
+version = '0.58-SNAPSHOT'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -43,7 +44,7 @@ tasks.withType(JavaExec) {
     args '-config'
     args 'src/main/resources/sample.properties.xml'
     args '-config'
-    args 'local.properties'
+    args System.getenv('APPDATA') + '/tabtype/tabtype.properties'
     args '-logconfig'
     args 'test.logging.properties'
     args 'test.tabtype'
@@ -64,8 +65,8 @@ application {
     mainClass = 'de.steg0.deskapps.tabletool.Tabtype'
     applicationDefaultJvmArgs = [
         "-XX:+UseSerialGC",
-        "-Dswing.plaf.metal.controlFont=Segoe UI",
-	"-Dswing.metalTheme=steel",
+        "-Dswing.plaf.metal.controlFont=Helvetica",
+        "-Dswing.plaf.metal.userFont=Roboto Condensed",
         "-Dderby.system.home=${System.properties['user.home']}"
     ]
 }

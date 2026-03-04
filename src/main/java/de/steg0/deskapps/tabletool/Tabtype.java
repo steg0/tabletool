@@ -1,8 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import static java.util.stream.Collectors.joining;
-
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -23,12 +20,8 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -68,9 +61,15 @@ implements Runnable
     static String getFrameTitle(File workspace)
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
-                "(.)\\.[^.]+$","$1")+" - " : "");
+                "(.)\\.[^.]+$","$1") : "");
+        return getFrameTitle(wsprefix);
+    }
+
+    static String getFrameTitle(String prefix)
+    {
         String jvmName = ManagementFactory.getRuntimeMXBean().getName();
-        String title = wsprefix + "Tabtype " + jvmName;
+        String title = prefix + (prefix.isEmpty()? "" : " - ") + "Tabtype " +
+                jvmName;
         return title;
     }
 
@@ -84,7 +83,7 @@ implements Runnable
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(this);
         
-        var jdbcParametersDialog = new JFrame("JDBC Parameters Input");
+        var jdbcParametersDialog = new JFrame(getFrameTitle("JDBC Parameters"));
         jdbcParametersDialog.setIconImages(getIcons());
         parametersController = new JdbcParametersInputController(
                 jdbcParametersDialog);
@@ -199,27 +198,18 @@ implements Runnable
         boolean proceed = controller.closeWorkspace(false);
         if(proceed)
         {
-            List<Exception> cancelResult = controller.cancelAll();
-            controller.shutdownExecutor();
-            if(!cancelResult.isEmpty())
+            boolean terminated = controller.shutdownExecutor();
+            if(!terminated)
             {
-                logger.log(Level.WARNING,"Exception shutting down: {}",
-                        cancelResult);
-                var dialog = new JDialog(frame,"Graceful shutdown failed",true);
-                dialog.getContentPane().setLayout(new BorderLayout(0,5));
-                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-                var text = new JTextArea(cancelResult.stream()
-                        .map(Exception::getMessage).collect(joining("\n")));
-                text.setEditable(false);
-                var scrollpane = new JScrollPane(text);
-                dialog.getContentPane().add(scrollpane,BorderLayout.CENTER);
-                var okButton = new JButton("OK");
-                okButton.addActionListener(e -> dialog.dispose());
-                dialog.getContentPane().add(okButton,BorderLayout.SOUTH);
-                dialog.getRootPane().setDefaultButton(okButton);
-                dialog.pack();
-                dialog.setLocationRelativeTo(frame);
-                dialog.setVisible(true);
+                logger.log(Level.WARNING,"Timed out shutting down");
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Operations are still running in the background.\n" +
+                        "Exiting the program might expose database specific" +
+                        " behavior\nwhen it comes to open transactions.",
+                        "Graceful shutdown failed",
+                        JOptionPane.INFORMATION_MESSAGE);                
+                System.exit(4);
             }
             logger.fine("Disposing frames");
             frame.dispose();

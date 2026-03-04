@@ -4,6 +4,7 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -54,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.NumberFormatter;
 
 import de.steg0.deskapps.tabletool.ConnectionListModel.PasswordPromptCanceledException;
+import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
 
 /**
  * Represents a "notebook", i. e. a series of text field/result table pairs that
@@ -143,6 +145,8 @@ class NotebookController
         connectionPanel.add(connectionsSelector);
         
         log.setEditable(false);
+        log.setFont(new Font(Font.MONOSPACED,Font.PLAIN,
+                log.getFont().getSize()));
         var l = new NotebookLogListener(this);
         log.getDocument().addDocumentListener(l);
         log.addKeyListener(l);
@@ -239,8 +243,9 @@ class NotebookController
 
     private void setBranding(Color bg,Color logBg,Color logFg,String label)
     {
-        if(logBg==null) logBg=bg;
+        if(logBg==null) logBg=bufferConfigSource.getEditorBackgroundColor(bg);
         if(logFg==null) logFg=defaultLogFg;
+        if(bg==null) bg=bufferConfigSource.getEditorBackgroundColor(bg);
         bufferPanel.setBackground(bg);
         log.setBackground(logBg);
         log.setForeground(logFg);
@@ -325,24 +330,33 @@ class NotebookController
                 newBufferController.undoManager.discardAllEdits();
                 if(e.removedRsm != null)
                 {
-                    newBufferController.addResultSetTable(e.removedRsm);
+                    newBufferController.addResultSetTable(e.removedRsm,null);
                 }
                 break;
                 
             case NULL_FETCH:
                 logger.log(Level.FINE,"No fetch result at #{0}",i);
-                if(next!=null && source.resultview==null)
+                boolean split = source.awaitingSplitResult();
+                if(split)
                 {
-                    logger.log(Level.FINE,"Undoing #{0} after split",i);
+                    source.removeResultView();
+                }
+                if(next!=null && split)
+                {
+                    logger.log(Level.FINE,"Checking undo #{0} after split",i);
                     if(next.editor.getText().length() > 0 &&
-                       source.undoManager.canUndo()) 
+                       source.undoManager.canUndo())
                     {
+                        logger.log(Level.FINE,"Undoing #{0} after split",i);
                         source.undoManager.undo();
                     }
-                    if(next.resultview != null) 
+                    if(next.resultview != null)
                     {
-                        source.addResultSetTable(next.getResultSetTableModel());
+                        logger.fine("Carrying over next resultview");
+                        source.addResultSetTable(next.getResultSetTableModel(),
+                                null);
                     }
+                    logger.log(Level.FINE,"Removing next buffer (#{0})",i+1);
                     remove(i+1);
                 }
                 source.restoreCaretPosition(true);
@@ -359,7 +373,8 @@ class NotebookController
                     }
                     if(next.resultview != null) 
                     {
-                        source.addResultSetTable(next.getResultSetTableModel());
+                        source.addResultSetTable(next.getResultSetTableModel(),
+                                null);
                     }
                     remove(i+1);
                 }
@@ -561,7 +576,7 @@ class NotebookController
         }
     }
 
-    public boolean rename()
+    boolean rename()
     {
         if(file == null)
         {
@@ -638,6 +653,9 @@ class NotebookController
 
     private void applyAutocommit()
     {
+        bufferConfigSource.autocommit = autocommitCb.isSelected();
+        logger.log(Level.FINE,"bufferConfigSource.autocommit={0}",
+                bufferConfigSource.autocommit);
         onConnection(c -> 
         {
             c.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->
@@ -661,30 +679,32 @@ class NotebookController
     {
         onConnection((c) -> 
         {
-            try
-            {
-                c.cancel(logConsumer);
-            }
-            catch(SQLException e)
-            {
-                logConsumer.accept(SQLExceptionPrinter.toString(e));
-            }
+            c.cancel(logConsumer);
         });
     }
 
     void openConnection()
     {
         logger.log(Level.FINE,"lastFocusedBuffer={0}",lastFocusedBuffer);
-        if(!openConnection(lastFocused().getTextFromCurrentLine(false)))
+        if(openConnection(lastFocused().getTextFromCurrentLine(false),false)
+                == null)
         {
-            logger.fine("No suitable connection definition found");
+            logger.fine("No suitable connection definition found starting "+
+                    "at current line");
+            String hint = openConnection(lastFocused().editor.getText(),true);
+            if(hint==null)
+            {
+                ConnectionWorker current = first().connection;
+                hint = current != null? current.info.name : "";
+            }
+            logger.log(Level.FINE,"hint=<{0}>",hint);
             var connectionDialog = new OpenConnectionDialogController(
                     this,parent);
-            connectionDialog.pick("");
+            connectionDialog.pick(hint);
         }
     }
 
-    private boolean openConnection(String contextline)
+    private String openConnection(String contextline,boolean findOnly)
     {
         logger.log(Level.FINE,"Looking for alias in context: <{0}>",
                 contextline);
@@ -696,11 +716,11 @@ class NotebookController
             if(contextline.startsWith(matchstr))
             {
                 logger.fine("Match");
-                openConnection(i);
-                return true;
+                if(!findOnly) openConnection(i);
+                return connections.getElementAt(i).info().name;
             }
         }
-        return false;
+        return null;
     }
 
     void openConnection(int index)
@@ -748,18 +768,30 @@ class NotebookController
         fetchsizeField.setValue(fetchsize);
     }
 
-    boolean findAndAdvance(NotebookSearchState state)
+    boolean findAndAdvance(NotebookSearchState state,boolean forward)
     {
         if(state.buf>=buffers.size()) return false;
+        if(state.buf<0) return false;
         assert state.text != null;
-        logger.log(Level.FINE,"Finding: {0}",state.text);
-        logger.log(Level.FINE,"Buffer index: {0}",state.buf);
-        logger.log(Level.FINE,"Last search location: {0}",state.loc);
-        state.loc=buffers.get(state.buf).searchNext(state.loc+1,state.text);
+        logger.log(Level.FINER,"Finding: {0}",state.text);
+        logger.log(Level.FINER,"Buffer index: {0}",state.buf);
+        logger.log(Level.FINER,"Last search location: {0}",state.loc);
+        logger.log(Level.FINER,"forward={0}",forward);
+        state.loc=buffers.get(state.buf).searchNext(
+                state.loc + (forward? 0 : -1),state.text,forward);
         if(state.loc<0) 
         {
-            state.buf++;
-            return findAndAdvance(state);
+            if(forward)
+            {
+                state.buf++;
+            }
+            else
+            {
+                state.buf--;
+                if(state.buf>=0) state.loc =
+                        buffers.get(state.buf).editor.getText().length();
+            }
+            return findAndAdvance(state,forward);
         }
         return true;
     }
@@ -785,12 +817,22 @@ class NotebookController
                 bufferConfigSource.updatableResultSets);
     };
 
-    private void onConnection(Consumer<ConnectionWorker> c)
+    private static interface ConnectionWorkerCallback
+    {
+        void invokeWith(ConnectionWorker w)
+        throws OperationRunningException;
+    }
+
+    private void onConnection(ConnectionWorkerCallback c)
     {
         ConnectionWorker selectedConnection = first().connection;
-        if(selectedConnection != null)
+        if(selectedConnection != null) try
         {
-            c.accept(selectedConnection);
+            c.invokeWith(selectedConnection);
+        }
+        catch(OperationRunningException e)
+        {
+            logConsumer.accept(e.getMessage() + " at " + new Date());
         }
         else
         {
@@ -807,6 +849,7 @@ class NotebookController
         if(event.getStateChange()==ItemEvent.DESELECTED) return;
         try
         {
+            connectionsSelector.setPopupVisible(false);
             var item = (Connections.ConnectionState)event.getItem();
             var connection = connections.getConnection(item,logConsumer,parent);
             connection.setAutoCommit(autocommitCb.isSelected(),logConsumer,() ->

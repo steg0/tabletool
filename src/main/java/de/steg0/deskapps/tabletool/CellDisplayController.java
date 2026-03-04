@@ -148,7 +148,7 @@ class CellDisplayController
             updateButton.setEnabled(updatable);
             buttonPanel.add(updateButton);
 
-            dialogtitle = "CLOB display - Tabtype";
+            dialogtitle = Tabtype.getFrameTitle("CLOB display");
         }
         else if(value instanceof Blob)
         {
@@ -187,8 +187,8 @@ class CellDisplayController
                         Font.PLAIN,
                         textarea.getFont().getSize()));
                 textarea.setText(dump.dump);
-                dialogtitle = "BLOB bytes 0 to "+dump.length+" of "+
-                    blob.length()+" - Tabtype";
+                dialogtitle = Tabtype.getFrameTitle("BLOB bytes 0 to " +
+                        dump.length + " of " + blob.length());
             }
         }
         else if(value instanceof byte[] b)
@@ -200,7 +200,8 @@ class CellDisplayController
                     Font.PLAIN,
                     textarea.getFont().getSize()));
             textarea.setText(dump.dump);
-            dialogtitle = "byte["+b.length+"] display - Tabtype";
+            dialogtitle = Tabtype.getFrameTitle("byte[" +
+                    b.length + "] display");
         }
         else
         {
@@ -219,7 +220,7 @@ class CellDisplayController
                 buttonPanel.add(updateButton);
             }
 
-            dialogtitle = "Scalar value display - Tabtype";
+            dialogtitle = Tabtype.getFrameTitle("Scalar value display");
         }
         textarea.setCaretPosition(0);
 

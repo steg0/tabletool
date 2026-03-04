@@ -3,9 +3,12 @@ package de.steg0.deskapps.tabletool;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Consumer;
+
+import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
 
 /**
  * Represents the list of connections available to the runtime.
@@ -108,10 +111,14 @@ class Connections
                     jdbcConnection,
                     executor
             );
-            if(connectionInfo[i].initSql != null)
+            if(connectionInfo[i].initSql != null) try
             {
                 workers[i].submit(connectionInfo[i].initSql,0,null,null,
                         (r,c) -> {},e -> {},log,false,false);
+            }
+            catch(OperationRunningException e)
+            {
+                log.accept(e.getMessage() + " at " + new Date());
             }
         }
         return workers[i];
@@ -139,19 +146,5 @@ class Connections
     ConnectionState getElementAt(int index)
     {
         return connectionStates[index];
-    }
-
-    List<Exception> cancelAll()
-    {
-        List<Exception> errors = new ArrayList<>();
-        for(var worker : workers) try
-        {
-            if(worker!=null) worker.cancel(l -> {});
-        }
-        catch(Exception e)
-        {
-            errors.add(e);
-        }
-        return errors;
     }
 }

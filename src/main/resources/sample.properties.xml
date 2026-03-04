@@ -43,7 +43,8 @@
     <entry key="resultview.height">150</entry>
     -->
 
-    <entry key="default.bg">#dddddd</entry>
+    <entry key="default.bg">#eeeeee</entry>
+    <entry key="default.connectedBg">#eee5de</entry>
     <entry key="editor.nonFocusedBorder">#ffffff</entry>
     <entry key="editor.focusedBorder">#0000ff</entry>
     <entry key="editor.unsavedBorder">#aaaaaa</entry>
@@ -56,7 +57,11 @@
         They can be used to modify LAF appearance.
     -->
 
-    <!-- <entry key="uiDefaults.color.TabbedPane.selected">#dddddd</entry> -->
+    <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.Table.gridColor">#b8b8b8</entry>
+
+    <!--Property configuration examples for Steel theme:-->
+    <!--
     <entry key="uiDefaults.color.TabbedPane.background">#dddddd</entry>
     <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
     <entry key="uiDefaults.color.ScrollBar.shadow">#cccccc</entry>
@@ -68,6 +73,11 @@
     <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
     <entry key="uiDefaults.color.Table.background">#e7e7e7</entry>
+    <entry key="uiDefaults.color.Menu.selectionBackground">#aaaaaa</entry>
+    <entry key="uiDefaults.color.MenuItem.selectionBackground">#aaaaaa</entry>
+    <entry key="uiDefaults.color.ComboBox.selectionBackground">#aaaaaa</entry>
+    <entry key="uiDefaults.gradient.Button.gradient">.1,0,#cccccc,#dddddd,#cccccc</entry>
+    -->
 
     <!--Property configuration examples for Ocean theme:-->
     <!--
@@ -111,7 +121,8 @@
     <entry key="connections.derby.focusedBorderColor">#ee3838</entry>
     <!--
         confirmations means that the tool gives a note when an operation
-        has come back with an update count. Default is false.
+        has come back with an update count, or will warn before submitting
+        an operation on a connection that uses autocommit. Default is false.
     -->
     <!--
     <entry key="connections.derby.confirmations">true</entry>
@@ -184,10 +195,16 @@
 
     <!--
         externalTools allows specifying commands that will show
-        up in the Tools menu. Those operate by getting the query
-        under the cursor through STDIN and writing their result to
-        STDOUT. Tabtype will replace the selected content with that
-        output. For all this, UTF-8 encoding is used.
+        up in the Tools menu. Those are designed to operate by
+        getting the query under the cursor through STDIN and writing
+        their result to STDOUT. Tabtype will replace the selected
+        content with that output. For all this, UTF-8 encoding is used.
+        If the editor content should remain unchanged, the "spawn" option
+        may be set, which causes the STDOUT data to be ignored.
+        For the execution of the tool, the environment variables
+        JDBC_URL, JDBC_USER, and JDBC_PASSWORD will be set to the
+        respective connection properties if available in the current
+        buffer. JDBC_STATEMENT will be set to the statement text.
     -->
     <entry key="externalTools.SQL::Beautify.command.1">perl</entry>
     <entry key="externalTools.SQL::Beautify.command.2">-I</entry>
@@ -206,14 +223,19 @@
     <entry key="externalTools.cat-to-emacs.command.2">-c</entry>
     <entry key="externalTools.cat-to-emacs.command.3">~/config/desktop-helpers/cat-to-emacs -f tabtype-snippet.sql</entry>
 
+    <entry key="externalTools.fmt -p --.command.1">fmt</entry>
+    <entry key="externalTools.fmt -p --.command.2">-p</entry>
+    <entry key="externalTools.fmt -p --.command.3">-- </entry>
+
+    <entry key="externalTools.interactive-sqlexport.spawn">true</entry>
     <entry key="externalTools.interactive-sqlexport.command.1">bash</entry>
     <entry key="externalTools.interactive-sqlexport.command.2">-c</entry>
     <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
         set -e
         cd ~/Documents
-        stmt=`cat`
-        echo -n "$stmt"
-        cmd /c start bash interactive-sqlexport ""$stmt"" > /dev/null 2>&1
+        export MSYS_NO_PATHCONV=1
+        cmd /c start bash interactive-sqlexport > /dev/null 2>&1
+        cat
     ]]></entry>
 
     <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.1">tr</entry>
@@ -380,7 +402,7 @@
         from qsys2.syscolumns c
         join qsys2.library_list_info i
             on i.schema_name=c.table_schema
-            or current_schema=t*c.table_schema
+            or current_schema=c.table_schema
         where lower(column_name) like lower(&amp;param || '%')
     </entry>
 

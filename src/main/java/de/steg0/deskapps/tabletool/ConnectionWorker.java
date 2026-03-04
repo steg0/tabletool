@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -42,7 +43,12 @@ class ConnectionWorker
     }
 
     ResultSetTableModel lastReportedResult;
+    /**The most recent non-queueable operation (kept to be able
+     * to reject additional operations while it is running) */
     private AtomicReference<Operation> lastOp = new AtomicReference<>();
+    /**The most recent SQL statement passed to execution. This
+     * is kept as convenience to offer a cancel function to the
+     * user. */
     private volatile Statement lastStatement;
     
     /**
@@ -66,6 +72,7 @@ class ConnectionWorker
             boolean skipEmptyColumns,
             boolean updatable
     )
+    throws OperationRunningException
     {
         logger.info(sql);
         logger.log(Level.FINE,"Using {0}",info.url);
@@ -96,6 +103,7 @@ class ConnectionWorker
         private long ts;
 
         public void start()
+        throws OperationRunningException
         {
             executeOnConnection("SQL",sql,() ->
             {
@@ -116,26 +124,19 @@ class ConnectionWorker
             {
                 Matcher callableStatementParts = CallableStatementMatchers
                         .prefixMatch(sql);
-                String lc = sql.toLowerCase();
+                sql = CallableStatementMatchers.removeSemicolon(sql);
                 String inlog,outlog;
                 if(callableStatementParts.group(1).length() > 0)
                 {
-                    if(sql.endsWith(";"))
-                    {
-                        String noSemicolon = lc.substring(0,sql.length()-1);
-                        if(!noSemicolon.trim().endsWith("end")) sql = sql
-                                .substring(0,sql.length()-1);
-                    }
-
                     CallableStatement st = connection.prepareCall(sql);
 
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
-                    logger.fine("Executing (callable statement)");
+                    logger.fine("Executing callable statement reference");
+                    lastStatement = st;
                     boolean result = st.execute();
 
-                    lastStatement = st;
                     outlog = parameterTransfer(st,
                             JdbcParametersInputController::readFromStatement);
 
@@ -151,7 +152,6 @@ class ConnectionWorker
                 }
                 else
                 {
-                    if(sql.endsWith(";")) sql = sql.substring(0,sql.length()-1);
                     PreparedStatement st = updatable?
                             connection.prepareStatement(
                                     sql,
@@ -165,7 +165,7 @@ class ConnectionWorker
                     inlog = parameterTransfer(st,
                             JdbcParametersInputController::applyToStatement);
 
-                    logger.fine("Executing (statement)");
+                    logger.fine("Executing statement reference");
                     lastStatement = st;
                     boolean result = st.execute();
 
@@ -190,6 +190,7 @@ class ConnectionWorker
             }
             finally
             {
+                logger.fine("Clearing statement reference");
                 lastStatement = null;
             }
         }
@@ -251,9 +252,9 @@ class ConnectionWorker
         throws SQLException
         {
             lastReportedResult = new ResultSetTableModel();
-            lastReportedResult.update(info.name,statement,fetchsize,inlog,
-                    outlog,placeholderlog,skipEmptyColumns,updatable);
             long now = System.currentTimeMillis();
+            lastReportedResult.update(info.name,statement,fetchsize,inlog,
+                    outlog,placeholderlog,skipEmptyColumns,updatable,now-ts);
             invokeLater(() -> resultConsumer.accept(lastReportedResult,
                     now-ts));
         }
@@ -265,34 +266,57 @@ class ConnectionWorker
      */
     void closeResultSet(Consumer<String> log)
     {
-        executeOnConnection("Close ResultSet",null,() -> 
+        try
         {
-            if(lastReportedResult!=null)
+            executeOnConnection("Close ResultSet",null,() -> 
             {
-                lastReportedResult.close();
-                lastReportedResult = null;
-                return "Closed ResultSet";
-            }
-            return null;
-        },log,true);
+                if(lastReportedResult!=null)
+                {
+                    lastReportedResult.close();
+                    lastReportedResult = null;
+                    return "Closed ResultSet";
+                }
+                return null;
+            },log,true);
+        }
+        catch(OperationRunningException ignored)
+        {
+            assert false : "this operation is supposed to queue";
+        }
     }
 
+    /**
+     * Invokes a cancel operation on the currently executing JDBC statement,
+     * as far as available. This is directly submitted to the instance's
+     * {@link Executor} member, so it's designed to be asynchronous (and not
+     * synchronized with blocking operations on the connection).
+     */
     void cancel(Consumer<String> log)
-    throws SQLException
     {
         Statement st = lastStatement;
         if(st!=null)
         {
-            st.cancel();
-            log.accept("Invoked cancel operation at "+new Date());
+            executor.submit(() ->
+            {
+                try
+                {
+                    st.cancel();
+                    log.accept("Invoked cancel operation at "+new Date());
+                }
+                catch(SQLException e)
+                {
+                    log.accept(SQLExceptionPrinter.toString(e));
+                }
+            });
         }
         else
         {
-            log.accept("No statement is currently executing at "+new Date());
+            log.accept("No statement reference available at "+new Date());
         }
     }
     
     void commit(Consumer<String> log)
+    throws OperationRunningException
     {
         executeOnConnection("Commit",null,() ->
         {
@@ -302,6 +326,7 @@ class ConnectionWorker
     }
     
     void rollback(Consumer<String> log)
+    throws OperationRunningException
     {
         executeOnConnection("Rollback",null,() ->
         {
@@ -311,6 +336,7 @@ class ConnectionWorker
     }
     
     void disconnect(Consumer<String> log,Runnable cb)
+    throws OperationRunningException
     {
         executeOnConnection("Disconnect",null,() ->
         {
@@ -322,22 +348,38 @@ class ConnectionWorker
     
     void setAutoCommit(boolean enabled,Consumer<String> log,Runnable cb)
     {
-        executeOnConnection("Enable autocommit",null,() ->
+        try
         {
-            connection.setAutoCommit(enabled);
-            invokeLater(cb);
-            return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
-                    "Ctrl+R, or F5 to execute statements";
-        },log,true);
+            executeOnConnection("Enable autocommit: "+enabled,null,() ->
+            {
+                connection.setAutoCommit(enabled);
+                invokeLater(cb);
+                return "Autocommit set to "+enabled+". Use Ctrl+ENTER, "+
+                        "Ctrl+R, or F5 to execute statements";
+            },log,true);
+        }
+        catch(OperationRunningException ignored)
+        {
+            assert false : "this operation is supposed to queue";
+        }
+    }
+
+    static class OperationRunningException extends Exception
+    {
+        private OperationRunningException(String description)
+        {
+            super(description);
+        }
     }
 
     /**
      * @param queue If <code>true</code>, will wait on the object's monitor
      * if another statement is currently executing. If <code>false</code>,
-     * it will report an error and return in such cases.
+     * it will throw {@link OperationRunningException} in such cases.
      */
     private void executeOnConnection(String operationName,String statement,
             Callable<String> runnable,Consumer<String> log,boolean queue)
+    throws OperationRunningException
     {
         Operation op = new Operation(operationName,statement,runnable,log);
         if(!queue)
@@ -345,10 +387,13 @@ class ConnectionWorker
             Operation checkval = lastOp.compareAndExchange(null,op);
             if(checkval != null)
             {
-                log.accept("Currently executing:\n"+checkval+
-                        "\nNot enqueueing new operation at "+new Date());
-                return;
+                throw new OperationRunningException("Currently executing:\n"+
+                        checkval+"\nNot enqueueing new operation");
             }
+        }
+        else
+        {
+            log.accept("Enqueued "+op+" at "+new Date());
         }
         executor.execute(op);
     }
