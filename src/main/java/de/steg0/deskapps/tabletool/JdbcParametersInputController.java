@@ -67,6 +67,8 @@ class JdbcParametersInputController implements ActionListener
     private void createTable()
     {
         table = new JTable(data,COLUMN_HEADERS);
+        table.setCellSelectionEnabled(true);
+        new ColumnSelectionListener(table).attach();
         table.getColumnModel().getColumn(0).setCellEditor(cbEditor);
         table.getColumnModel().getColumn(1).setCellEditor(cbEditor);
         table.getColumnModel().getColumn(3).setCellEditor(cbEditor);

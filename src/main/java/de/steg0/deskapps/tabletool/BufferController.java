@@ -748,6 +748,7 @@ class BufferController
                 editor.getFont());
         var popup = new BufferResultSetPopup(parent,this);
         popup.attachMouseListener();
+        new ColumnSelectionListener(resultview).attach();
         
         resultview.setCellSelectionEnabled(true);
 
