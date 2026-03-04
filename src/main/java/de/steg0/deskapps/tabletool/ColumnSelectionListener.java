@@ -18,7 +18,7 @@ class ColumnSelectionListener
 
     void attach()
     {
-        var popuplistener = new MouseAdapter()
+        var listener = new MouseAdapter()
         {
             @Override
             public void mouseClicked(MouseEvent e)
@@ -57,6 +57,6 @@ class ColumnSelectionListener
                 }
             }
         };
-        t.getTableHeader().addMouseListener(popuplistener);
+        t.getTableHeader().addMouseListener(listener);
     }
 }
