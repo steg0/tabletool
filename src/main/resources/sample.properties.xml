@@ -58,6 +58,7 @@
     -->
 
     <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
+    <entry key="uiDefaults.color.Table.gridColor">#b8b8b8</entry>
 
     <!--Property configuration examples for Steel theme:-->
     <!--
