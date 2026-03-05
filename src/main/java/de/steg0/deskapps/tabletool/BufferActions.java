@@ -260,10 +260,10 @@ class BufferActions
                 catch(Exception e)
                 {
                     JOptionPane.showMessageDialog(
-                        parent,
-                        "Error navigating: "+e.getMessage(),
-                        "Error navigating",
-                        JOptionPane.ERROR_MESSAGE);
+                            parent,
+                            "Error navigating: "+e.getMessage(),
+                            "Error navigating",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         },
