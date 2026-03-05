@@ -382,6 +382,53 @@ implements KeyListener
                 if(c.hasSavedFocusPosition) c.restoreFocus();
             }
         },
+        goToAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                String text = JOptionPane.showInputDialog(parent,
+                        "Go to line or buffer name match:");
+                if(text!=null) try
+                {
+                    int line = Integer.parseInt(text);
+                    BufferController b = getSelected().lastFocused();
+                    int position = b.editor.getLineStartOffset(line - 1);
+                    b.editor.setCaretPosition(position);        
+                }
+                catch(NumberFormatException e)
+                {
+                    int sel = tabbedPane.getSelectedIndex();
+                    for(int i=sel;i<tabbedPane.getTabCount();i++)
+                    {
+                        if(tabbedPane.getTitleAt(i).contains(text))
+                        {
+                            tabbedPane.setSelectedIndex(i);
+                            NotebookController c = getSelected();
+                            if(c.hasSavedFocusPosition) c.restoreFocus();
+                            return;
+                        }
+                    }
+                    for(int i=0;i<sel;i++)
+                    {
+                        if(tabbedPane.getTitleAt(i).contains(text))
+                        {
+                            tabbedPane.setSelectedIndex(i);
+                            NotebookController c = getSelected();
+                            if(c.hasSavedFocusPosition) c.restoreFocus();
+                            return;
+                        }
+                    }
+                }
+                catch(Exception e)
+                {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Error navigating: "+e.getMessage(),
+                            "Error navigating",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        },
         moveTabLeftAction = new AbstractAction("Move Tab Left")
         {
             @Override public void actionPerformed(ActionEvent e)
@@ -557,6 +604,7 @@ implements KeyListener
                 "Select Last Tab");
         im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK),"Select Previous Tab");
         im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK),"Select Next Tab");
+        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To");
         im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK|CTRL_MASK),
                 "Move Tab Left");
         im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK|CTRL_MASK),
@@ -583,6 +631,7 @@ implements KeyListener
         am.put("Select Last Tab",selectLastTabAction);
         am.put("Select Previous Tab",selectPreviousTabAction);
         am.put("Select Next Tab",selectNextTabAction);
+        am.put("Go To",goToAction);
         am.put("Move Tab Left",moveTabLeftAction);
         am.put("Move Tab Right",moveTabRightAction);
         am.put("Zoom+",new ZoomAction(1.3));
