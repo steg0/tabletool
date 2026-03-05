@@ -965,11 +965,11 @@ implements KeyListener
 
         Workspace w = new Workspace();
         w.setFiles(notebooks
-            .stream()
-            .map((n) -> n.file)
-            .filter(Objects::nonNull)
-            .map((f) -> f.getPath())
-            .toArray(String[]::new));
+                .stream()
+                .map((n) -> n.file)
+                .filter(Objects::nonNull)
+                .map((f) -> f.getPath())
+                .toArray(String[]::new));
         var selectedNb = getSelected();
         if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));
