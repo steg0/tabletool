@@ -1,6 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
