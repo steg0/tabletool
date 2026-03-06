@@ -525,6 +525,7 @@ class NotebookController
         if(file==null || saveAs)
         {
             var filechooser = new JFileChooser(bufferConfigSource.pwd);
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showSaveDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
             newFile=filechooser.getSelectedFile();

@@ -215,7 +215,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 var filechooser = new JFileChooser(getPwd());
-                filechooser.setPreferredSize(new java.awt.Dimension((int)filechooser.getPreferredSize().getWidth() * 2,(int)filechooser.getPreferredSize().getHeight() * 2));
+                ComponentSizer.size(filechooser,1.8);
                 int returnVal = filechooser.showSaveDialog(parent);
                 if(returnVal != JFileChooser.APPROVE_OPTION) return;
                 var newFile=filechooser.getSelectedFile();
@@ -249,6 +249,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 var filechooser = new JFileChooser(getPwd());
+                ComponentSizer.size(filechooser,1.8);
                 int returnVal = filechooser.showOpenDialog(parent);
                 if(returnVal != JFileChooser.APPROVE_OPTION) return;
                 boolean proceed = closeWorkspace(false);
@@ -790,6 +791,7 @@ implements KeyListener
         if(file==null)
         {
             var filechooser = new JFileChooser(getPwd());
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showOpenDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();

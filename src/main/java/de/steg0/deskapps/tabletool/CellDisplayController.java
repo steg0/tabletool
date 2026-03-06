@@ -374,6 +374,7 @@ class CellDisplayController
         public void actionPerformed(ActionEvent event)
         {
             var filechooser = new JFileChooser(pwd);
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showSaveDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
@@ -409,6 +410,7 @@ class CellDisplayController
         public void actionPerformed(ActionEvent event)
         {
             var filechooser = new JFileChooser(pwd);
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showOpenDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();

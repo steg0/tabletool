@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,5 +52,12 @@ class ComponentSizer
             logger.log(Level.FINER,"bpadd={0}",bpadd);
             col.setPreferredWidth((int)(colMinWidth * (10000 + bpadd) / 10000));
         }
+    }
+
+    static void size(Component c,double factor)
+    {
+        c.setPreferredSize(new Dimension(
+                (int)(c.getPreferredSize().getWidth() * factor),
+                (int)(c.getPreferredSize().getHeight() * factor)));
     }
 }
