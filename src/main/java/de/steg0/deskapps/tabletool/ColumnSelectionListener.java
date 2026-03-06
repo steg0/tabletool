@@ -24,7 +24,7 @@ class ColumnSelectionListener
             public void mouseClicked(MouseEvent e)
             {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
-                int clickcolumn = t.columnAtPoint(new Point(e.getX(),e.getY()));
+                int clickcolumn = t.columnAtPoint(e.getPoint());
 
                 if(e.isShiftDown())
                 {
