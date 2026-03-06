@@ -146,7 +146,7 @@
     </entry>
 
     <!--
-        snippet allows specifying SQL shorthands for F2.
+        snippets allows specifying SQL shorthands for F2.
         An optional placeholder is replaced with the selected text.
         It is possible to assign them to drivers as well as connections
         (with "connections.SOME_NAME_REGEX.snippets."). Multiple matches
