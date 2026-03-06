@@ -58,32 +58,11 @@
     -->
 
     <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
-    <entry key="uiDefaults.color.Table.gridColor">#b8b8b8</entry>
-
-    <!--Property configuration examples for Steel theme:-->
-    <!--
-    <entry key="uiDefaults.color.TabbedPane.background">#dddddd</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
-    <entry key="uiDefaults.color.ScrollBar.shadow">#cccccc</entry>
-    <entry key="uiDefaults.color.ScrollBar.darkShadow">#bbbbbb</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#cccccc</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbShadow">#aaaaaa</entry>
-    <entry key="uiDefaults.color.List.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.TextField.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.Table.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.Menu.selectionBackground">#aaaaaa</entry>
-    <entry key="uiDefaults.color.MenuItem.selectionBackground">#aaaaaa</entry>
-    <entry key="uiDefaults.color.ComboBox.selectionBackground">#aaaaaa</entry>
-    <entry key="uiDefaults.gradient.Button.gradient">.1,0,#cccccc,#dddddd,#cccccc</entry>
-    -->
 
     <!--Property configuration examples for Ocean theme:-->
-    <!--
-    <entry key="uiDefaults.color.Button.background">#eeeeee</entry>
+    <entry key="uiDefaults.gradient.Button.gradient">.3,0,#eeeeee,#f9f9f9,#dddddd</entry>
     <entry key="uiDefaults.color.ComboBox.background">#f9f9f9</entry>
-    <entry key="uiDefaults.gradient.CheckBox.gradient">1,0,#eeeeee,#eeeeee,#eeeeee</entry>
+    <entry key="uiDefaults.gradient.CheckBox.gradient">.3,0,#eeeeee,#f9f9f9,#dddddd</entry>
     <entry key="uiDefaults.color.ScrollBar.highlight">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.shadow">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.darkShadow">#b8b8b8</entry>
@@ -97,7 +76,6 @@
     <entry key="uiDefaults.color.TextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.FormattedTextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.TextArea.background">#f9f9f9</entry>
-    -->
 
     <!--
         For connections, the part after the first dot is the name
