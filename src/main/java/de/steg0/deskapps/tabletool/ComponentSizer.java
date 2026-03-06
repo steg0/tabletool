@@ -9,7 +9,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-class TableSizer
+class ComponentSizer
 {
     static Logger logger = Logger.getLogger("tabtype");
     

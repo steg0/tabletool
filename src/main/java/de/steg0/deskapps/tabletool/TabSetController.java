@@ -215,6 +215,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 var filechooser = new JFileChooser(getPwd());
+                filechooser.setPreferredSize(new java.awt.Dimension((int)filechooser.getPreferredSize().getWidth() * 2,(int)filechooser.getPreferredSize().getHeight() * 2));
                 int returnVal = filechooser.showSaveDialog(parent);
                 if(returnVal != JFileChooser.APPROVE_OPTION) return;
                 var newFile=filechooser.getSelectedFile();
