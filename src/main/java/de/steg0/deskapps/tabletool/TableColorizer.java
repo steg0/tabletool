@@ -12,10 +12,11 @@ class TableColorizer
      * Taints table/table header background a bit (null safe). This doesn't work
      * well for some LAFs. It is only activated for the Metal LAF.
     */
-    static void colorize(JTable table,Color bg)
+    static void colorize(JTable table,Color bg,BufferConfigSource cfg)
     {
-        if(!UIManager.getLookAndFeel().getClass().getName().equals(
-                UIManager.getCrossPlatformLookAndFeelClassName())) return;
+        if(!(UIManager.getLookAndFeel().getClass().getName().equals(
+                UIManager.getCrossPlatformLookAndFeelClassName()) &&
+                cfg.colorizeJavaLafTables())) return;
         if(table==null) return;
         JScrollPane scrollpane = (JScrollPane)table.getParent().getParent();
         int r = bg.getRed(),

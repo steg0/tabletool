@@ -117,8 +117,8 @@ class PropertyHolder
 
     int getTabPlacement()
     {
-        return Integer.parseInt(
-                properties.getOrDefault("tab.placement",JTabbedPane.TOP).toString());
+        return Integer.parseInt(properties.getOrDefault("tab.placement",
+                JTabbedPane.TOP).toString());
     }
     
     Color getDefaultBackground(Color fallback)
@@ -149,6 +149,12 @@ class PropertyHolder
     Color getUnsavedEditorBorderColor()
     {
         return getColorProperty("editor.unsavedBorder",Color.GRAY);
+    }
+
+    boolean colorizeJavaLafTables()
+    {
+        return Boolean.TRUE.toString().equals(properties.getOrDefault(
+                "editor.colorizeJavaLafTables",""));
     }
 
     private static final String UIDEFAULTS_COLOR_PREFIX = "uiDefaults.color.";

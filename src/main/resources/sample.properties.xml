@@ -48,6 +48,7 @@
     <entry key="editor.nonFocusedBorder">#ffffff</entry>
     <entry key="editor.focusedBorder">#0000ff</entry>
     <entry key="editor.unsavedBorder">#aaaaaa</entry>
+    <entry key="editor.colorizeJavaLafTables">false</entry>
     <!--
     <entry key="frame.bg">#bbbbbb</entry>
     -->
