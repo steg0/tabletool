@@ -160,6 +160,7 @@ class NotebookController
         connectionPanel.add(autocommitCb);
 
         commitButton.addActionListener((e) -> commit());
+        ComponentSizer.size(commitButton,1.1,1);
         im = commitButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = commitButton.getActionMap();
@@ -168,6 +169,7 @@ class NotebookController
         
         disconnectButton.addActionListener((e) -> disconnect());
         disconnectButton.setMnemonic(KeyEvent.VK_D);
+        ComponentSizer.size(disconnectButton,1.1,1);
         im = disconnectButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = disconnectButton.getActionMap();
@@ -193,6 +195,7 @@ class NotebookController
         connectionPanel.add(updatableCb);
         
         rollbackButton.addActionListener((e) -> rollback());
+        ComponentSizer.size(rollbackButton,1.1,1);
         im = rollbackButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = rollbackButton.getActionMap();

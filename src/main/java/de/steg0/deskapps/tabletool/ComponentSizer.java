@@ -56,8 +56,13 @@ class ComponentSizer
 
     static void size(Component c,double factor)
     {
+        size(c,factor,factor);
+    }
+
+    static void size(Component c,double xfactor,double yfactor)
+    {
         c.setPreferredSize(new Dimension(
-                (int)(c.getPreferredSize().getWidth() * factor),
-                (int)(c.getPreferredSize().getHeight() * factor)));
+                (int)(c.getPreferredSize().getWidth() * xfactor),
+                (int)(c.getPreferredSize().getHeight() * yfactor)));
     }
 }
