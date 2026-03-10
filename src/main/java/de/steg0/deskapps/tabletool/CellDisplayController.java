@@ -182,10 +182,7 @@ class CellDisplayController
             try(var is = blob.getBinaryStream())
             {
                 var dump = new HexDump(is,16*0x100);
-                textarea.setFont(new Font(
-                        Font.MONOSPACED,
-                        Font.PLAIN,
-                        textarea.getFont().getSize()));
+                textarea.setFont(editorfont);
                 textarea.setText(dump.dump);
                 dialogtitle = Tabtype.getFrameTitle("BLOB bytes 0 to " +
                         dump.length + " of " + blob.length());
@@ -195,10 +192,7 @@ class CellDisplayController
         {
             textarea.setEditable(false);
             var dump = new HexDump(new ByteArrayInputStream(b),b.length);
-            textarea.setFont(new Font(
-                    Font.MONOSPACED,
-                    Font.PLAIN,
-                    textarea.getFont().getSize()));
+            textarea.setFont(editorfont);
             textarea.setText(dump.dump);
             dialogtitle = Tabtype.getFrameTitle("byte[" +
                     b.length + "] display");
