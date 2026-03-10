@@ -40,7 +40,7 @@ While editing SQL in a notebook, in addition to the shortcuts shown in the menu 
 • Ctrl+F, Ctrl+B - find text (case-insensitively), starting on currently selected tab (forward/backward).
 • F3, Shift+F3 - find next/find previous.
 • Ctrl+D - delete line.
-• Ctrl+G - go to line.
+• Ctrl+G - go to line or buffer name.
 • Ctrl+Z, Ctrl+Y - undo/redo. These are local to the focused editor section.
 • Ctrl+Up - focus tab title.
 • F1 - execute infoTemplate for word under cursor or selection.
