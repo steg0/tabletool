@@ -108,7 +108,7 @@ implements TableModel,AutoCloseable
                 Object o = rs.getObject(i);
                 if(o != null && !String.valueOf(o).isEmpty())
                     keepcols[i-1] = true;
-                row.add(rs.getObject(i));
+                row.add(o);
             }
             rowbuf.add(row);
             rowcount++;
