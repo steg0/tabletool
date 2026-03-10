@@ -144,14 +144,6 @@ class NotebookController
                 new NotebookConnectionsSelectorKeyListener(this,parent));
         connectionPanel.add(connectionsSelector);
         
-        log.setEditable(false);
-        log.setFont(new Font(Font.MONOSPACED,Font.PLAIN,
-                log.getFont().getSize()));
-        var l = new NotebookLogListener(this);
-        log.getDocument().addDocumentListener(l);
-        log.addKeyListener(l);
-        logConsumer = new NotebookLogConsumer(log);
-        
         autocommitCb.addActionListener(e -> applyAutocommit());
         im = autocommitCb.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
@@ -212,9 +204,16 @@ class NotebookController
         var buffer = newBufferController();
         add(0,buffer);
 
+        log.setEditable(false);
+        log.setFont(buffer.editor.getFont());
+        var l = new NotebookLogListener(this);
+        log.getDocument().addDocumentListener(l);
+        log.addKeyListener(l);
+        logConsumer = new NotebookLogConsumer(log);
+
         logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(1);
-        
+
         scrollIncrement = propertyHolder.getScrollIncrement();
         bufferPane = new JScrollPane(bufferPanel);
         bufferPane.setBorder(null);
