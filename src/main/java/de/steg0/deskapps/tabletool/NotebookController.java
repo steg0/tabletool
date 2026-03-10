@@ -4,7 +4,6 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
