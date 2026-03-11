@@ -115,6 +115,11 @@ class PropertyHolder
                 properties.getOrDefault("editor.tabsize","8").toString());
     }
 
+    String getLogFontName()
+    {
+        return properties.getProperty("log.font");
+    }
+
     int getTabPlacement()
     {
         return Integer.parseInt(properties.getOrDefault("tab.placement",

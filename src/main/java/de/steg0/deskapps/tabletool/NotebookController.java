@@ -4,6 +4,7 @@ import static javax.swing.KeyStroke.getKeyStroke;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
@@ -200,15 +201,21 @@ class NotebookController
         
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
-        var buffer = newBufferController();
-        add(0,buffer);
-
         log.setEditable(false);
-        log.setFont(buffer.editor.getFont());
+        String logFontName = propertyHolder.getLogFontName();
+        if(logFontName != null)
+        {
+            Font logFont = log.getFont();
+            logFont=new Font(logFontName,logFont.getStyle(),logFont.getSize());
+            log.setFont(logFont);
+        }
         var l = new NotebookLogListener(this);
         log.getDocument().addDocumentListener(l);
         log.addKeyListener(l);
         logConsumer = new NotebookLogConsumer(log);
+
+        var buffer = newBufferController();
+        add(0,buffer);
 
         logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(1);

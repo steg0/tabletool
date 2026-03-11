@@ -36,6 +36,11 @@
     <entry key="editor.tabsize">4</entry>
     -->
     <!--
+        The font to use for the status bar area. Default font size will
+        be used for this one.
+    -->
+    <entry key="log.font">DejaVu Sans Mono</entry>
+    <!--
     <entry key="scroll.increment">16</entry>
     -->
     <!--
