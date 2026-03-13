@@ -126,6 +126,8 @@ implements TableModel,AutoCloseable
         cols = colbuf.toArray(String[]::new);
         rows = new ArrayList<Object[]>(fetchsize);
         for(var row : rowbuf) rows.add(row.toArray());
+
+        if(!updatable) close();
         
         resultSetClosed = rs.isClosed();
         date = new Date();
@@ -388,7 +390,8 @@ implements TableModel,AutoCloseable
 
     /**
      * Right now this is only called from {@link ConnectionWorker} on
-     * its executor, so it's serial with other operations on the connection.
+     * its executor and from {@link #fill()} above, so it's serial with
+     * other operations on the connection.
      */
     @Override
     public void close() throws SQLException

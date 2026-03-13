@@ -109,6 +109,7 @@ class ConnectionWorker
             {
                 if(lastReportedResult!=null && !lastReportedResult.isClosed())
                 {
+                    logger.fine("Going to close prior ResultSet");
                     lastReportedResult.close();
                     logger.fine("Closed prior ResultSet");
                 }
@@ -393,7 +394,7 @@ class ConnectionWorker
         }
         else
         {
-            log.accept("Enqueued "+op+" at "+new Date());
+            logger.log(Level.FINE,"Enqueuing {0}",op);
         }
         executor.execute(op);
     }

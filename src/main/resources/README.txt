@@ -56,8 +56,9 @@ A right click on the result table brings up a popup menu which also allows closi
 
 Closing also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
 
-(A) a subsequent query is submitted over the connection; and, as mentioned,
-(B) the result table is closed (either with the UI action or by closing the tab).
+(A) a subsequent query is submitted over the connection; or, as mentioned,
+(B) the result table is closed (either with the UI action or by closing the tab); or
+(C) the connection definition is set to disallow updatable ResultSets.
 
 Some JDBC drivers close ResultSets automatically when the cursor moves beyond the last row.
 
