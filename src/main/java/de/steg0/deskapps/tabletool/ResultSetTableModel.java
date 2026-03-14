@@ -34,7 +34,6 @@ implements TableModel,AutoCloseable
     private String cols[];
     private List<Object[]> rows;
     int fetchsize;
-    boolean resultSetClosed;
     String connectionDescription;
     private boolean skipEmptyColumns;
     boolean updatable;
@@ -129,7 +128,6 @@ implements TableModel,AutoCloseable
 
         if(!updatable) close();
         
-        resultSetClosed = rs.isClosed();
         date = new Date();
         Object[] logargs = {
                 getRowCount(),
@@ -383,9 +381,20 @@ implements TableModel,AutoCloseable
     {
     }
 
-    boolean isClosed() throws SQLException
+    boolean isClosed()
     {
-        return rs==null || rs.isClosed();
+        try
+        {
+            return rs==null || rs.isClosed();
+        }
+        catch(SQLException e)
+        {
+            logger.log(Level.FINE,
+                    "Error querying ResultSet state, reporting as open",e);
+            /* if there is anything wrong with the ResultSet, the user will
+             * be notified while closing */
+            return true;
+        }
     }
 
     /**
@@ -399,6 +408,7 @@ implements TableModel,AutoCloseable
         if(rs==null) return;
         try
         {
+            logger.fine("Closing ResultSet");
             rs.close();
         }
         finally

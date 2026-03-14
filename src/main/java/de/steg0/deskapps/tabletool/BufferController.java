@@ -713,7 +713,7 @@ class BufferController
         Object[] logargs = {
                 rsm.getRowCount(),
                 t,
-                rsm.resultSetClosed? "closed" : "open",
+                rsm.isClosed()? "closed" : "open",
                 rsm.date.toString(),
                 rsm.connectionDescription
         };
@@ -807,7 +807,7 @@ class BufferController
         Object[] logargs = {
                 rsm.getRowCount(),
                 t,
-                rsm.resultSetClosed? "closed" : "open",
+                rsm.isClosed()? "closed" : "open",
                 new Date().toString(),
                 rsm.connectionDescription
         };
