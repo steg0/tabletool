@@ -169,6 +169,7 @@ class BufferController
             editor.setFont(f2);
         }
         editor.setTabSize(configSource.getEditorTabsize());
+        editor.putClientProperty("caretWidth",2);
         
         new BufferActions(parent,this).attach();
     }
