@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +44,7 @@ class Connections
     private final ThreadPoolExecutor executor;
     
     Connections(PropertyHolder propertyHolder,ThreadPoolExecutor executor)
+    throws ParseException
     {
         connectionInfo = propertyHolder.getConnections();
         this.executor = executor;
@@ -55,7 +57,7 @@ class Connections
      * are added to the end of the list. Removed ones are kept to not
      * require disconnect.
      */
-    void refresh(PropertyHolder propertyHolder)
+    void refresh(PropertyHolder propertyHolder) throws ParseException
     {
         var newConnectionInfo = propertyHolder.getConnections();
         List<PropertyHolder.ConnectionInfo> mergedConnectionInfo =

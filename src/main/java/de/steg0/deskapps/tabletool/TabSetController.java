@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -71,6 +72,7 @@ implements KeyListener
     TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             JdbcParametersInputController parametersController,
             PropertyHolder propertyHolder,File workspaceFile)
+    throws ParseException
     {
         this.parent = parent;
         this.cellDisplay = cellDisplay;
@@ -289,7 +291,18 @@ implements KeyListener
             }
             @Override public void actionPerformed(ActionEvent e)
             {
-                cloneTab();
+                try
+                {
+                    cloneTab();
+                }
+                catch(ParseException pe)
+                {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Error cloning tab:\n"+pe.getMessage(),
+                            "Error cloning tab",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         },
         revertAction = new AbstractAction("Revert")
@@ -343,7 +356,7 @@ implements KeyListener
                     }
                     menubar.recreate();
                 }
-                catch(IOException e)
+                catch(ParseException | IOException e)
                 {
                     JOptionPane.showMessageDialog(
                             parent,
@@ -739,7 +752,8 @@ implements KeyListener
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         retitle();
         if(notebooks.size()==0) add(-1);
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() ->
+        {
             NotebookController c = getSelected();
             if(c.hasSavedFocusPosition) c.restoreFocus();
         });
@@ -867,7 +881,7 @@ implements KeyListener
         }
     }
 
-    private void cloneTab()
+    private void cloneTab() throws ParseException
     {
         try(var w = new StringWriter())
         {

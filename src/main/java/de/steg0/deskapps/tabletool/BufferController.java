@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.Objects;
@@ -92,8 +93,15 @@ class BufferController
         if(!editor.hasFocus())
         {
             editor.setBorder(unfocusedBorder);
-            connectionLabel.setForeground(
-                    configSource.getNonFocusedEditorBorderColor());
+            try
+            {
+                connectionLabel.setForeground(
+                        configSource.getNonFocusedEditorBorderColor());
+            }
+            catch(ParseException pe)
+            {
+                log.accept("Error setting buffer colors: " + pe);
+            }
         }
     }
     
@@ -119,7 +127,7 @@ class BufferController
     BufferController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             JdbcParametersInputController parametersController,
             Consumer<String> updateLog,BufferConfigSource configSource,
-            Listener listener)
+            Listener listener) throws ParseException
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
@@ -191,35 +199,42 @@ class BufferController
 
     void setBrandingColors()
     {
-        Color bg = configSource.getEditorBackgroundColor(defaultBackground);
-        editor.setBackground(bg);
-        panel.setBackground(bg);
-        focusedBorder = BorderFactory.createDashedBorder(
-                configSource.getFocusedEditorBorderColor(),2,1,1,false);
+        try
+        {
+            Color bg = configSource.getEditorBackgroundColor(defaultBackground);
+            editor.setBackground(bg);
+            panel.setBackground(bg);
+            focusedBorder = BorderFactory.createDashedBorder(
+                    configSource.getFocusedEditorBorderColor(),2,1,1,false);
 
-        if(editor.isFocusOwner())
-        {
-            editor.setBorder(focusedBorder);
-            connectionLabel.setForeground(
-                    configSource.getFocusedEditorBorderColor());
-        }
-        else
-        {
-            if(isUnsaved())
+            if(editor.isFocusOwner())
             {
-                editor.setBorder(unsavedBorder);
+                editor.setBorder(focusedBorder);
                 connectionLabel.setForeground(
-                        configSource.getUnsavedEditorBorderColor());
+                        configSource.getFocusedEditorBorderColor());
             }
             else
             {
-                editor.setBorder(unfocusedBorder);
-                connectionLabel.setForeground(
-                        configSource.getNonFocusedEditorBorderColor());
+                if(isUnsaved())
+                {
+                    editor.setBorder(unsavedBorder);
+                    connectionLabel.setForeground(
+                            configSource.getUnsavedEditorBorderColor());
+                }
+                else
+                {
+                    editor.setBorder(unfocusedBorder);
+                    connectionLabel.setForeground(
+                            configSource.getNonFocusedEditorBorderColor());
+                }
             }
-        }
 
-        TableColorizer.colorize(resultview,bg,configSource);
+            TableColorizer.colorize(resultview,bg,configSource);
+        }
+        catch(ParseException pe)
+        {
+            log.accept("Error setting buffer colors: " + pe);
+        }
     }
 
     String getBrandingText()
