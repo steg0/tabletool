@@ -90,7 +90,7 @@
     <entry key="connections.derby.username">tabtype</entry>
     <!--
         A password can have the special value "PROMPT", which means
-        the user will be asked for it once every property refresh. If
+        the user will be asked for it once until property refresh. If
         somebody changes the server password in the meantime, this
         means a property refresh will need to be executed by the
         user in the File menu.
