@@ -93,7 +93,7 @@ class NotebookController
             Connections.AUTOCOMMIT_DEFAULT);
     private final JCheckBox updatableCb = new JCheckBox("Updatable",false);
     
-    final JScrollPane bufferPane;
+    final JScrollPane bufferPane,logPane;
     private final int scrollIncrement;
     
     final JTextArea log = new JTextArea();
@@ -141,7 +141,7 @@ class NotebookController
         bufferPane.addMouseListener(ml);
         bufferPane.addMouseMotionListener(ml);
         logBufferPane.add(bufferPane);
-        var logPane = new JScrollPane(log);
+        logPane = new JScrollPane(log);
         logPane.setBorder(null);
         logBufferPane.add(logPane);
 
