@@ -299,7 +299,7 @@ implements KeyListener
                 {
                     JOptionPane.showMessageDialog(
                             parent,
-                            "Error cloning tab:\n"+pe.getMessage(),
+                            "Error cloning tab: "+pe.getMessage(),
                             "Error cloning tab",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -335,7 +335,7 @@ implements KeyListener
                 {
                     JOptionPane.showMessageDialog(
                             parent,
-                            "Error opening properties files:\n"+e.getMessage(),
+                            "Error opening properties files: "+e.getMessage(),
                             "Error opening properties",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -360,7 +360,7 @@ implements KeyListener
                 {
                     JOptionPane.showMessageDialog(
                             parent,
-                            "Error refreshing files:\n"+e.getMessage(),
+                            "Error refreshing files: "+e.getMessage(),
                             "Error refreshing properties",
                             JOptionPane.ERROR_MESSAGE);
                 }
