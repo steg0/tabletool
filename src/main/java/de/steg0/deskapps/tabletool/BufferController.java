@@ -105,8 +105,10 @@ class BufferController
         }
     }
     
-    /**The system-default editor background */
-    Color defaultBackground = panel.getBackground();
+    /**
+     * The system-default editor background. This is Swing's default.
+     */
+    private final Color defaultBackground = panel.getBackground();
     
     UndoManager undoManager = new UndoManager();
     
@@ -157,11 +159,48 @@ class BufferController
         connectionLabelConstraints.anchor = GridBagConstraints.NORTHWEST;
         setConnectionLabelFontSize();
         panel.add(connectionLabel,connectionLabelConstraints);
-        defaultBackground = configSource.getEditorBackgroundColor(
-                defaultBackground);
-        panel.setBackground(defaultBackground);
+        panel.setBackground(defaultBackground());
         
         editor.addKeyListener(editorKeyListener);
+        editor.putClientProperty("caretWidth",2);
+        setBrandingFont();
+        
+        new BufferActions(parent,this).attach();
+    }
+
+    /**The default editor background to use, which is Swing's default
+     * unless an override was set in properties. */
+    Color defaultBackground()
+    {
+        try
+        {
+            return configSource.getDefaultBackgroundColor(defaultBackground);
+        }
+        catch(ParseException e)
+        {
+            log.accept("Error setting buffer colors: " + e);
+        }
+        return defaultBackground;
+    }
+
+    /**
+     * Updates color and labeling for the buffer, to be called on connection
+     * and focus change.
+     */
+    void setBranding(String text)
+    {
+        Objects.requireNonNull(text);
+
+        setBrandingColors();
+        setBrandingFont();
+
+        if(text.isBlank()) connectionLabel.setText(text);
+        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
+                CONNECTION_LABEL_SUFFIX);
+    }
+
+    private void setBrandingFont()
+    {
         String fontName = configSource.getEditorFontName();
         if(fontName != null)
         {
@@ -177,31 +216,14 @@ class BufferController
             editor.setFont(f2);
         }
         editor.setTabSize(configSource.getEditorTabsize());
-        editor.putClientProperty("caretWidth",2);
-        
-        new BufferActions(parent,this).attach();
-    }
-
-    /**
-     * Updates color and labeling for the buffer, to be called on connection
-     * and focus change.
-     */
-    void setBranding(String text)
-    {
-        Objects.requireNonNull(text);
-
-        setBrandingColors();
-
-        if(text.isBlank()) connectionLabel.setText(text);
-        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
-                CONNECTION_LABEL_SUFFIX);
     }
 
     void setBrandingColors()
     {
         try
         {
-            Color bg = configSource.getEditorBackgroundColor(defaultBackground);
+            Color bg = configSource.getEditorBackgroundColor(
+                    defaultBackground());
             editor.setBackground(bg);
             panel.setBackground(bg);
             focusedBorder = BorderFactory.createDashedBorder(

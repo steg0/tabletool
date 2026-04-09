@@ -57,6 +57,7 @@ import javax.swing.text.NumberFormatter;
 
 import de.steg0.deskapps.tabletool.ConnectionListModel.PasswordPromptCanceledException;
 import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
+import de.steg0.deskapps.tabletool.Connections.ConnectionState;
 
 /**
  * Represents a "notebook", i. e. a series of text field/result table pairs that
@@ -78,6 +79,7 @@ class NotebookController
     private final JFrame parent,cellDisplay,infoDisplay;
     private final JdbcParametersInputController parametersController;
     private BufferConfigSource bufferConfigSource;
+    private PropertyHolder propertyHolder;
     
     File file;
     
@@ -103,6 +105,7 @@ class NotebookController
     
     final List<BufferController> buffers = new ArrayList<>();
     private BufferController first() { return buffers.get(0); }
+    Color bufferDefaultBackground() { return first().defaultBackground(); }
     private int lastFocusedBuffer;
     BufferController lastFocused() { return buffers.get(lastFocusedBuffer); }
     boolean hasSavedFocusPosition;
@@ -128,6 +131,7 @@ class NotebookController
         this.listener = listener;
         this.bufferConfigSource = new BufferConfigSource(propertyHolder,
                 this.connections,pwd);
+        this.propertyHolder = propertyHolder;
         
         logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         logBufferPane.setResizeWeight(1);
@@ -226,13 +230,6 @@ class NotebookController
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
         log.setEditable(false);
-        String logFontName = propertyHolder.getLogFontName();
-        if(logFontName != null)
-        {
-            Font logFont = log.getFont();
-            logFont=new Font(logFontName,logFont.getStyle(),logFont.getSize());
-            log.setFont(logFont);
-        }
         var l = new NotebookLogListener(this);
         log.getDocument().addDocumentListener(l);
         log.addKeyListener(l);
@@ -241,7 +238,7 @@ class NotebookController
         var buffer = newBufferController();
         add(0,buffer);
 
-        setBranding(first().defaultBackground,null,null,"");
+        setBranding(bufferDefaultBackground(),null,null,"");
     }
 
     private BufferController newBufferController() throws ParseException
@@ -249,6 +246,20 @@ class NotebookController
         return new BufferController(parent,cellDisplay,infoDisplay,
                 parametersController,logConsumer,bufferConfigSource,
                 bufferListener);
+    }
+
+    void refreshBranding()
+    {
+        ConnectionState item = connections.getSelectedItem();
+        if(item==null)
+        {
+            setBranding(bufferDefaultBackground(),null,null,"");
+        }
+        else
+        {
+            setBranding(item.info().background,item.info().logBackground,
+                    item.info().logForeground,item.info().name);
+        }
     }
 
     private void setBranding(Color bg,Color logBg,Color logFg,String label)
@@ -262,10 +273,17 @@ class NotebookController
             bufferPanel.setBackground(bg);
             log.setBackground(logBg);
             log.setForeground(logFg);
+            String logFontName = propertyHolder.getLogFontName();
+            if(logFontName != null)
+            {
+                Font logFont = log.getFont();
+                logFont=new Font(logFontName,logFont.getStyle(),logFont.getSize());
+                log.setFont(logFont);
+            }
         }
         catch(ParseException pe)
         {
-            logConsumer.accept("Error setting notebook colors: " + pe);
+            logConsumer.accept("Error setting notebook branding: " + pe);
         }
         for(BufferController buffer : buffers) buffer.setBranding(label);
     }
@@ -928,7 +946,7 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBranding(first().defaultBackground,null,null,"");
+        setBranding(bufferDefaultBackground(),null,null,"");
 
         updatableCb.setSelected(false);
     }

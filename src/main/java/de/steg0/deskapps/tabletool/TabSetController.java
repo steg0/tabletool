@@ -353,6 +353,7 @@ implements KeyListener
                     for(var notebook : notebooks)
                     {
                         notebook.connections.notifyIntervalAdded(oldSize);
+                        notebook.refreshBranding();
                     }
                     menubar.recreate();
                 }

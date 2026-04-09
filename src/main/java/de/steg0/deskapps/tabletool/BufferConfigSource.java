@@ -69,6 +69,12 @@ class BufferConfigSource
     {
         return propertyHolder.getUnsavedEditorBorderColor();
     }
+    /**Returns background color to use for unconnected editors. */
+    Color getDefaultBackgroundColor(Color fallback) throws ParseException
+    {
+        return propertyHolder.getDefaultBackground(fallback);
+    }
+    /**Returns background color, taking connection state into account. */
     Color getEditorBackgroundColor(Color fallback) throws ParseException
     {
         ConnectionState connectionState = connectionListModel.getSelectedItem();
