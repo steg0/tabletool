@@ -184,6 +184,9 @@
         content with that output. For all this, UTF-8 encoding is used.
         If the editor content should remain unchanged, the "spawn" option
         may be set, which causes the STDOUT data to be ignored.
+        Tabtype will remove trailing semicolons in this mode of operation,
+        so that tools can directly use the string as input for a database
+        driver.
         For the execution of the tool, the environment variables
         JDBC_URL, JDBC_USER, and JDBC_PASSWORD will be set to the
         respective connection properties if available in the current

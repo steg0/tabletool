@@ -107,7 +107,7 @@ class ExternalToolAction extends AbstractAction implements Runnable
                 pb.environment().put("JDBC_PASSWORD",
                         b.connection.info.password);
             }
-            text = CallableStatementMatchers.removeSemicolon(text);
+            if(spawn) text = CallableStatementMatchers.removeSemicolon(text);
             pb.environment().put("JDBC_STATEMENT",text);
             Process p = pb.start();
             logger.log(Level.FINE,"Started process {0}", p.pid());
