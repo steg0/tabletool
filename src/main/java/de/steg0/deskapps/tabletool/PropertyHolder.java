@@ -158,12 +158,6 @@ class PropertyHolder
         return getColorProperty("editor.unsavedBorder",Color.GRAY);
     }
 
-    boolean colorizeJavaLafTables()
-    {
-        return Boolean.TRUE.toString().equals(properties.getOrDefault(
-                "editor.colorizeJavaLafTables",""));
-    }
-
     private static final String UIDEFAULTS_COLOR_PREFIX = "uiDefaults.color.";
 
     Object[] getColorUIDefaults()

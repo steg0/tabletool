@@ -93,10 +93,6 @@ class BufferConfigSource
         }
         return bg;
     }
-    boolean colorizeJavaLafTables()
-    {
-        return propertyHolder.colorizeJavaLafTables();
-    }
 
     String getCompletionTemplate()
     {

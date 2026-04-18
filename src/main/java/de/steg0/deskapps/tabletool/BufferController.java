@@ -250,8 +250,6 @@ class BufferController
                             configSource.getNonFocusedEditorBorderColor());
                 }
             }
-
-            TableColorizer.colorize(resultview,bg,configSource);
         }
         catch(ParseException pe)
         {
@@ -798,7 +796,6 @@ class BufferController
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         resultscrollpane.setComponentOrientation(
                 ComponentOrientation.RIGHT_TO_LEFT);
-        TableColorizer.colorize(resultview,editor.getBackground(),configSource);
 
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
