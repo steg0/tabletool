@@ -218,21 +218,7 @@
     <entry key="externalTools.sqlexport.command.3">start</entry>
     <entry key="externalTools.sqlexport.command.4">bash</entry>
     <entry key="externalTools.sqlexport.command.5">-c</entry>
-    <entry key="externalTools.sqlexport.command.6"><![CDATA[' ^
-        export MSYS_NO_PATHCONV=1; ^
-        echo "Connection: $JDBC_CONNECTION"; ^
-        echo "User: $JDBC_USER"; ^
-        echo "Starting export."; ^
-        filename=`mktemp ~/Documents/ttexport-XXXXXX.sql`; ^
-        echo sqlexport ^
-            -dest "exported_data" ^
-            -jdbcUrl "$JDBC_URL" ^
-            -username "$JDBC_USER" ^
-            -password "$JDBC_PASSWORD" ^
-            "$JDBC_STATEMENT" ^> "$filename"; ^
-        echo "$filename created. Press ENTER to exit."; ^
-        read; ^
-    ']]></entry>
+    <entry key="externalTools.sqlexport.command.6">export MSYS_NO_PATHCONV=1; echo ""Statement: [$JDBC_STATEMENT]""; echo ""Connection: [$JDBC_URL]""; echo ""User: [$JDBC_USER]""; echo ""Starting export.""; filename=`mktemp ~/Documents/ttexport-XXXXXX.sql`; sqlexport -dest exported_data -jdbcUrl ""$JDBC_URL"" -username ""$JDBC_USER"" -password ""$JDBC_PASSWORD"" ""$JDBC_STATEMENT"" ^&gt; ""$filename""; echo ""Exit code: $?""; echo ""Output file is $filename. Press ENTER to exit.""; read</entry>
 
     <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.1">tr</entry>
     <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.2">[[:upper:]]</entry>
