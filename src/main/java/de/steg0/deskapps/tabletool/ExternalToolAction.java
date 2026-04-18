@@ -110,6 +110,7 @@ class ExternalToolAction extends AbstractAction implements Runnable
             if(spawn) text = CallableStatementMatchers.removeSemicolon(text);
             pb.environment().put("JDBC_STATEMENT",text);
             Process p = pb.start();
+            logger.log(Level.FINE,"command={0}",def.command());
             logger.log(Level.FINE,"Started process {0}", p.pid());
             os = p.getOutputStream();
             os.write(text.getBytes(StandardCharsets.UTF_8));
