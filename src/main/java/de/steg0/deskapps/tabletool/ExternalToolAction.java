@@ -29,7 +29,6 @@ class ExternalToolAction extends AbstractAction implements Runnable
     private JDialog blockingDialog;
     private BufferController b;
     String text;
-    private boolean spawn;
 
     ExternalToolAction(TabSetController tabset,ExternalToolDefinition def,
             int number,JFrame parent)
@@ -107,7 +106,8 @@ class ExternalToolAction extends AbstractAction implements Runnable
                 pb.environment().put("JDBC_PASSWORD",
                         b.connection.info.password);
             }
-            if(spawn) text = CallableStatementMatchers.removeSemicolon(text);
+            if(def.spawn()) text = CallableStatementMatchers
+                    .removeSemicolon(text);
             pb.environment().put("JDBC_STATEMENT",text);
             Process p = pb.start();
             logger.log(Level.FINE,"command={0}",def.command());
@@ -148,7 +148,8 @@ class ExternalToolAction extends AbstractAction implements Runnable
                 {
                     if(errStr.length()>0) b.log.accept("Process STDERR at " +
                             new Date() + ":\n" + errStr);
-                    if(exitcode==0&&!spawn) b.editor.replaceSelection(outStr);
+                    if(exitcode==0&&!def.spawn()) b.editor
+                            .replaceSelection(outStr);
                 }
                 if(blockingDialog != null) blockingDialog.dispose();
                 blockingDialog = null;
