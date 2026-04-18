@@ -3,6 +3,7 @@ package de.steg0.deskapps.tabletool;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.text.ParseException;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -14,6 +15,7 @@ public class PropertyHolderTest
 {
     @Test
     public void connectionList_shouldBeSorted()
+    throws ParseException
     {
         var p = new Properties();
         p.put("connections.a.url","jdbc:");
@@ -26,6 +28,7 @@ public class PropertyHolderTest
 
     @Test
     public void completionTemplateForConnection()
+    throws ParseException
     {
         var p = new Properties();
         p.put("connections.a.url","jdbc:");
@@ -41,6 +44,7 @@ public class PropertyHolderTest
     
     @Test
     public void completionTemplateForDriver()
+    throws ParseException
     {
         var p = new Properties();
         p.put("connections.a.url","jdbc:a:");
@@ -55,6 +59,7 @@ public class PropertyHolderTest
     
     @Test
     public void completionTemplateForConnection_partOfName_nomatch()
+    throws ParseException
     {
         var p = new Properties();
         p.put("connections.ca.url","jdbc:");
@@ -66,6 +71,7 @@ public class PropertyHolderTest
     
     @Test
     public void completionTemplateForConnection_partOfName_match()
+    throws ParseException
     {
         var p = new Properties();
         p.put("connections.ca.url","jdbc:");
