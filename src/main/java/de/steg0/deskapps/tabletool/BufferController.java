@@ -184,8 +184,8 @@ class BufferController
     }
 
     /**
-     * Updates color and labeling for the buffer, to be called on connection
-     * and focus change.
+     * Updates color, font, and labeling for the buffer, to be called on
+     * connection and focus change.
      */
     void setBranding(String text)
     {
