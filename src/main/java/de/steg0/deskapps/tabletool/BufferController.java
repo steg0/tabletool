@@ -47,7 +47,7 @@ import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCancel
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
-    static final String SPLIT_MARKER = "(Statement submitted)";
+    static final String SPLIT_MARKER = "Submitted at ";
     /**Separator symbol a user can place between buffers. This shouldn't
      * contain characters that throw off the CSV parser. */
     private static final String SEPARATOR_MARKER = "---";
@@ -643,7 +643,8 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            addResultSetTable(null,fetch? SPLIT_MARKER : SEPARATOR_MARKER);
+            addResultSetTable(null,fetch? SPLIT_MARKER + new Date() :
+                    SEPARATOR_MARKER);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -677,7 +678,7 @@ class BufferController
     boolean awaitingSplitResult()
     {
         return resultview != null &&
-                resultview.getColumnName(0).equals(SPLIT_MARKER);
+                resultview.getColumnName(0).startsWith(SPLIT_MARKER);
     }
 
     boolean terminatedWithSeparator()
