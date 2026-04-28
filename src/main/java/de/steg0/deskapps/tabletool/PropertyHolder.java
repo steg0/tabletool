@@ -223,6 +223,7 @@ class PropertyHolder
                 .filter((k) -> k.startsWith(EXTERNAL_TOOL_DEFINITION_PREFIX))
                 .map(PropertyHolder::getExternalToolNameKey)
                 .distinct()
+                .sorted()
                 .map(this::getExternalToolDefinition)
                 .toArray(ExternalToolDefinition[]::new);
     }
