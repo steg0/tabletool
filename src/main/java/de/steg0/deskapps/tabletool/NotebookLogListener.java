@@ -5,10 +5,13 @@ import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-class NotebookLogListener extends KeyAdapter implements DocumentListener
+class NotebookLogListener
+extends KeyAdapter
+implements DocumentListener,Runnable
 {
     Logger logger = Logger.getLogger("tabtype");
 
@@ -25,6 +28,11 @@ class NotebookLogListener extends KeyAdapter implements DocumentListener
 
     private void sizeLog()
     {
+        SwingUtilities.invokeLater(this);
+    }
+
+    public void run()
+    {
         logger.finer("Autoresizing log area to accommodate text");
         int lines = Math.min(10,nb.log.getLineCount());
         int lineheight = nb.log.getFontMetrics(nb.log.getFont()).getHeight();
@@ -32,10 +40,13 @@ class NotebookLogListener extends KeyAdapter implements DocumentListener
         logger.log(Level.FINER,"logheight={0}",logheight);
         int dividerSize = nb.logBufferPane.getDividerSize();
         logger.log(Level.FINER,"dividerSize={0}",dividerSize);
+        int sbSize = nb.logPane.getHorizontalScrollBar().isVisible()?
+                nb.logPane.getHorizontalScrollBar().getHeight() : 0;
+        logger.log(Level.FINER,"sbSize={0}",sbSize);
         int logBufferHeight = nb.logBufferPane.getHeight();
         logger.log(Level.FINER,"logBufferHeight={0}",logBufferHeight);
         nb.logBufferPane.setDividerLocation(logBufferHeight - logheight -
-                dividerSize - (int)(lineheight * .4));
+                dividerSize - sbSize - (int)(lineheight * .4));
     }
 
     /**

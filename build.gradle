@@ -65,7 +65,7 @@ application {
     mainClass = 'de.steg0.deskapps.tabletool.Tabtype'
     applicationDefaultJvmArgs = [
         "-XX:+UseSerialGC",
-        "-Dswing.plaf.metal.controlFont=Helvetica",
+        "-Dswing.plaf.metal.controlFont=Segoe UI",
         "-Dswing.plaf.metal.userFont=Roboto Condensed",
         "-Dderby.system.home=${System.properties['user.home']}"
     ]

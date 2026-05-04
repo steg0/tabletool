@@ -47,7 +47,6 @@ class BufferActions
         im.put(getKeyStroke(KeyEvent.VK_SLASH,CTRL_MASK),"Toggle Comment");
         im.put(getKeyStroke(KeyEvent.VK_Z,CTRL_MASK),"Undo");
         im.put(getKeyStroke(KeyEvent.VK_Y,CTRL_MASK),"Redo");
-        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To Line");
         im.put(getKeyStroke(KeyEvent.VK_D,CTRL_MASK),"Delete Line");
         var am = b.editor.getActionMap();
         am.put("Execute",executeAction);
@@ -60,7 +59,6 @@ class BufferActions
         am.put("Toggle Comment",new EditorPrefixToggler(b.editor,"--"));
         am.put("Undo",undoAction);
         am.put("Redo",redoAction);
-        am.put("Go To Line",goToLineAction);
         am.put("Delete Line",deleteLineAction);
     }
 
@@ -244,27 +242,6 @@ class BufferActions
             @Override public void actionPerformed(ActionEvent e)
             {
                 if(b.undoManager.canRedo()) b.undoManager.redo();
-            }
-        },
-        goToLineAction = new AbstractAction()
-        {
-            @Override public void actionPerformed(ActionEvent event)
-            {
-                String text = JOptionPane.showInputDialog(parent,"Go to line:");
-                if(text!=null) try
-                {
-                    int line = Integer.parseInt(text);
-                    int position = b.editor.getLineStartOffset(line - 1);
-                    b.editor.setCaretPosition(position);        
-                }
-                catch(Exception e)
-                {
-                    JOptionPane.showMessageDialog(
-                        parent,
-                        "Error navigating: "+e.getMessage(),
-                        "Error navigating",
-                        JOptionPane.ERROR_MESSAGE);
-                }
             }
         },
         deleteLineAction = new AbstractAction()

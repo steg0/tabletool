@@ -2,6 +2,7 @@ package de.steg0.deskapps.tabletool;
 
 import java.awt.Color;
 import java.io.File;
+import java.text.ParseException;
 import java.util.Map;
 
 import de.steg0.deskapps.tabletool.Connections.ConnectionState;
@@ -44,12 +45,12 @@ class BufferConfigSource
         return propertyHolder.getEditorTabsize();
     }
 
-    Color getNonFocusedEditorBorderColor()
+    Color getNonFocusedEditorBorderColor() throws ParseException
     {
         return propertyHolder.getNonFocusedEditorBorderColor();
     }
 
-    Color getFocusedEditorBorderColor()
+    Color getFocusedEditorBorderColor() throws ParseException
     {
         ConnectionState connectionState = connectionListModel.getSelectedItem();
         if(connectionState == null)
@@ -64,11 +65,17 @@ class BufferConfigSource
         return focusedBorderColor;
     }
 
-    Color getUnsavedEditorBorderColor()
+    Color getUnsavedEditorBorderColor() throws ParseException
     {
         return propertyHolder.getUnsavedEditorBorderColor();
     }
-    Color getEditorBackgroundColor(Color fallback)
+    /**Returns background color to use for unconnected editors. */
+    Color getDefaultBackgroundColor(Color fallback) throws ParseException
+    {
+        return propertyHolder.getDefaultBackground(fallback);
+    }
+    /**Returns background color, taking connection state into account. */
+    Color getEditorBackgroundColor(Color fallback) throws ParseException
     {
         ConnectionState connectionState = connectionListModel.getSelectedItem();
         if(connectionState == null)

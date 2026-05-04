@@ -40,7 +40,7 @@ While editing SQL in a notebook, in addition to the shortcuts shown in the menu 
 • Ctrl+F, Ctrl+B - find text (case-insensitively), starting on currently selected tab (forward/backward).
 • F3, Shift+F3 - find next/find previous.
 • Ctrl+D - delete line.
-• Ctrl+G - go to line.
+• Ctrl+G - go to line or buffer name.
 • Ctrl+Z, Ctrl+Y - undo/redo. These are local to the focused editor section.
 • Ctrl+Up - focus tab title.
 • F1 - execute infoTemplate for word under cursor or selection.
@@ -56,8 +56,9 @@ A right click on the result table brings up a popup menu which also allows closi
 
 Closing also closes any underlying ResultSet. Normally, the tool leaves ResultSets open, but closes them when:
 
-(A) a subsequent query is submitted over the connection; and, as mentioned,
-(B) the result table is closed (either with the UI action or by closing the tab).
+(A) a subsequent query is submitted over the connection; or, as mentioned,
+(B) the result table is closed (either with the UI action or by closing the tab); or
+(C) the connection definition is set to disallow updatable ResultSets.
 
 Some JDBC drivers close ResultSets automatically when the cursor moves beyond the last row.
 

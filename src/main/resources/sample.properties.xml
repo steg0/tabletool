@@ -28,14 +28,18 @@
 
     <!--
         The font to use for editor buffers. This will also be used for
-        info display and cell value windows (except for blob hexdumps,
-        which will use the system monospace font).
+        info display and cell value windows.
     -->
     <entry key="editor.font">Go Mono</entry>
     <entry key="editor.fontsize">13</entry>
     <!--
     <entry key="editor.tabsize">4</entry>
     -->
+    <!--
+        The font to use for the status bar area. Default font size will
+        be used for this one.
+    -->
+    <entry key="log.font">Liberation Mono</entry>
     <!--
     <entry key="scroll.increment">16</entry>
     -->
@@ -58,32 +62,11 @@
     -->
 
     <entry key="uiDefaults.color.Table.background">#f9f9f9</entry>
-    <entry key="uiDefaults.color.Table.gridColor">#b8b8b8</entry>
-
-    <!--Property configuration examples for Steel theme:-->
-    <!--
-    <entry key="uiDefaults.color.TabbedPane.background">#dddddd</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumb">#aaaaaa</entry>
-    <entry key="uiDefaults.color.ScrollBar.shadow">#cccccc</entry>
-    <entry key="uiDefaults.color.ScrollBar.darkShadow">#bbbbbb</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbHighlight">#cccccc</entry>
-    <entry key="uiDefaults.color.ScrollBar.thumbShadow">#aaaaaa</entry>
-    <entry key="uiDefaults.color.List.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.TextField.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.FormattedTextField.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.TextArea.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.Table.background">#e7e7e7</entry>
-    <entry key="uiDefaults.color.Menu.selectionBackground">#aaaaaa</entry>
-    <entry key="uiDefaults.color.MenuItem.selectionBackground">#aaaaaa</entry>
-    <entry key="uiDefaults.color.ComboBox.selectionBackground">#aaaaaa</entry>
-    <entry key="uiDefaults.gradient.Button.gradient">.1,0,#cccccc,#dddddd,#cccccc</entry>
-    -->
 
     <!--Property configuration examples for Ocean theme:-->
-    <!--
-    <entry key="uiDefaults.color.Button.background">#eeeeee</entry>
+    <entry key="uiDefaults.gradient.Button.gradient">.3,0,#eeeeee,#f9f9f9,#dddddd</entry>
     <entry key="uiDefaults.color.ComboBox.background">#f9f9f9</entry>
-    <entry key="uiDefaults.gradient.CheckBox.gradient">1,0,#eeeeee,#eeeeee,#eeeeee</entry>
+    <entry key="uiDefaults.gradient.CheckBox.gradient">.3,0,#eeeeee,#f9f9f9,#dddddd</entry>
     <entry key="uiDefaults.color.ScrollBar.highlight">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.shadow">#f9f9f9</entry>
     <entry key="uiDefaults.color.ScrollBar.darkShadow">#b8b8b8</entry>
@@ -97,7 +80,6 @@
     <entry key="uiDefaults.color.TextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.FormattedTextField.background">#f9f9f9</entry>
     <entry key="uiDefaults.color.TextArea.background">#f9f9f9</entry>
-    -->
 
     <!--
         For connections, the part after the first dot is the name
@@ -107,7 +89,7 @@
     <entry key="connections.derby.username">tabtype</entry>
     <!--
         A password can have the special value "PROMPT", which means
-        the user will be asked for it once every property refresh. If
+        the user will be asked for it once until property refresh. If
         somebody changes the server password in the meantime, this
         means a property refresh will need to be executed by the
         user in the File menu.
@@ -168,7 +150,7 @@
     </entry>
 
     <!--
-        snippet allows specifying SQL shorthands for F2.
+        snippets allows specifying SQL shorthands for F2.
         An optional placeholder is replaced with the selected text.
         It is possible to assign them to drivers as well as connections
         (with "connections.SOME_NAME_REGEX.snippets."). Multiple matches
@@ -201,6 +183,9 @@
         content with that output. For all this, UTF-8 encoding is used.
         If the editor content should remain unchanged, the "spawn" option
         may be set, which causes the STDOUT data to be ignored.
+        Tabtype will remove trailing semicolons in this mode of operation,
+        so that tools can directly use the string as input for a database
+        driver.
         For the execution of the tool, the environment variables
         JDBC_URL, JDBC_USER, and JDBC_PASSWORD will be set to the
         respective connection properties if available in the current
@@ -227,16 +212,13 @@
     <entry key="externalTools.fmt -p --.command.2">-p</entry>
     <entry key="externalTools.fmt -p --.command.3">-- </entry>
 
-    <entry key="externalTools.interactive-sqlexport.spawn">true</entry>
-    <entry key="externalTools.interactive-sqlexport.command.1">bash</entry>
-    <entry key="externalTools.interactive-sqlexport.command.2">-c</entry>
-    <entry key="externalTools.interactive-sqlexport.command.3"><![CDATA[
-        set -e
-        cd ~/Documents
-        export MSYS_NO_PATHCONV=1
-        cmd /c start bash interactive-sqlexport > /dev/null 2>&1
-        cat
-    ]]></entry>
+    <entry key="externalTools.sqlexport.spawn">true</entry>
+    <entry key="externalTools.sqlexport.command.1">cmd</entry>
+    <entry key="externalTools.sqlexport.command.2">/c</entry>
+    <entry key="externalTools.sqlexport.command.3">start</entry>
+    <entry key="externalTools.sqlexport.command.4">bash</entry>
+    <entry key="externalTools.sqlexport.command.5">-c</entry>
+    <entry key="externalTools.sqlexport.command.6">export MSYS_NO_PATHCONV=1; echo ""Statement: [$JDBC_STATEMENT]""; echo ""Connection: [$JDBC_URL]""; echo ""User: [$JDBC_USER]""; echo ""Starting export.""; filename=`mktemp ~/Documents/ttexport-XXXXXX.sql`; sqlexport -dest exported_data -jdbcUrl ""$JDBC_URL"" -username ""$JDBC_USER"" -password ""$JDBC_PASSWORD"" ""$JDBC_STATEMENT"" &gt; ""$filename""; echo ""Exit code: $?""; echo ""Output file is $filename. Press ENTER to exit.""; read</entry>
 
     <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.1">tr</entry>
     <entry key="externalTools.tr [[:upper:]] [[:lower:]].command.2">[[:upper:]]</entry>

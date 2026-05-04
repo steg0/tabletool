@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.Objects;
@@ -46,7 +47,7 @@ import de.steg0.deskapps.tabletool.PlaceholderInputController.SubstitutionCancel
 class BufferController
 {
     static final String CONNECT_COMMENT = "-- connect ";
-    static final String SPLIT_MARKER = "(Statement submitted)";
+    static final String SPLIT_MARKER = "Submitted at ";
     /**Separator symbol a user can place between buffers. This shouldn't
      * contain characters that throw off the CSV parser. */
     private static final String SEPARATOR_MARKER = "---";
@@ -92,13 +93,22 @@ class BufferController
         if(!editor.hasFocus())
         {
             editor.setBorder(unfocusedBorder);
-            connectionLabel.setForeground(
-                    configSource.getNonFocusedEditorBorderColor());
+            try
+            {
+                connectionLabel.setForeground(
+                        configSource.getNonFocusedEditorBorderColor());
+            }
+            catch(ParseException pe)
+            {
+                log.accept("Error setting buffer colors: " + pe);
+            }
         }
     }
     
-    /**The system-default editor background */
-    Color defaultBackground = panel.getBackground();
+    /**
+     * The system-default editor background. This is Swing's default.
+     */
+    private final Color defaultBackground = panel.getBackground();
     
     UndoManager undoManager = new UndoManager();
     
@@ -119,7 +129,7 @@ class BufferController
     BufferController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             JdbcParametersInputController parametersController,
             Consumer<String> updateLog,BufferConfigSource configSource,
-            Listener listener)
+            Listener listener) throws ParseException
     {
         this.cellDisplay = cellDisplay;
         this.infoDisplay = infoDisplay;
@@ -149,11 +159,48 @@ class BufferController
         connectionLabelConstraints.anchor = GridBagConstraints.NORTHWEST;
         setConnectionLabelFontSize();
         panel.add(connectionLabel,connectionLabelConstraints);
-        defaultBackground = configSource.getEditorBackgroundColor(
-                defaultBackground);
-        panel.setBackground(defaultBackground);
+        panel.setBackground(defaultBackground());
         
         editor.addKeyListener(editorKeyListener);
+        editor.putClientProperty("caretWidth",2);
+        setBrandingFont();
+        
+        new BufferActions(parent,this).attach();
+    }
+
+    /**The default editor background to use, which is Swing's default
+     * unless an override was set in properties. */
+    Color defaultBackground()
+    {
+        try
+        {
+            return configSource.getDefaultBackgroundColor(defaultBackground);
+        }
+        catch(ParseException e)
+        {
+            log.accept("Error setting buffer colors: " + e);
+        }
+        return defaultBackground;
+    }
+
+    /**
+     * Updates color, font, and labeling for the buffer, to be called on
+     * connection and focus change.
+     */
+    void setBranding(String text)
+    {
+        Objects.requireNonNull(text);
+
+        setBrandingColors();
+        setBrandingFont();
+
+        if(text.isBlank()) connectionLabel.setText(text);
+        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
+                CONNECTION_LABEL_SUFFIX);
+    }
+
+    private void setBrandingFont()
+    {
         String fontName = configSource.getEditorFontName();
         if(fontName != null)
         {
@@ -169,56 +216,45 @@ class BufferController
             editor.setFont(f2);
         }
         editor.setTabSize(configSource.getEditorTabsize());
-        
-        new BufferActions(parent,this).attach();
-    }
-
-    /**
-     * Updates color and labeling for the buffer, to be called on connection
-     * and focus change.
-     */
-    void setBranding(String text)
-    {
-        Objects.requireNonNull(text);
-
-        setBrandingColors();
-
-        if(text.isBlank()) connectionLabel.setText(text);
-        else connectionLabel.setText(CONNECTION_LABEL_PREFIX+text+
-                CONNECTION_LABEL_SUFFIX);
     }
 
     void setBrandingColors()
     {
-        Color bg = configSource.getEditorBackgroundColor(defaultBackground);
-        editor.setBackground(bg);
-        panel.setBackground(bg);
-        focusedBorder = BorderFactory.createDashedBorder(
-                configSource.getFocusedEditorBorderColor(),2,1,1,false);
+        try
+        {
+            Color bg = configSource.getEditorBackgroundColor(
+                    defaultBackground());
+            editor.setBackground(bg);
+            panel.setBackground(bg);
+            focusedBorder = BorderFactory.createDashedBorder(
+                    configSource.getFocusedEditorBorderColor(),2,1,1,false);
 
-        if(editor.isFocusOwner())
-        {
-            editor.setBorder(focusedBorder);
-            connectionLabel.setForeground(
-                    configSource.getFocusedEditorBorderColor());
-        }
-        else
-        {
-            if(isUnsaved())
+            if(editor.isFocusOwner())
             {
-                editor.setBorder(unsavedBorder);
+                editor.setBorder(focusedBorder);
                 connectionLabel.setForeground(
-                        configSource.getUnsavedEditorBorderColor());
+                        configSource.getFocusedEditorBorderColor());
             }
             else
             {
-                editor.setBorder(unfocusedBorder);
-                connectionLabel.setForeground(
-                        configSource.getNonFocusedEditorBorderColor());
+                if(isUnsaved())
+                {
+                    editor.setBorder(unsavedBorder);
+                    connectionLabel.setForeground(
+                            configSource.getUnsavedEditorBorderColor());
+                }
+                else
+                {
+                    editor.setBorder(unfocusedBorder);
+                    connectionLabel.setForeground(
+                            configSource.getNonFocusedEditorBorderColor());
+                }
             }
         }
-
-        TableColorizer.colorize(resultview,bg);
+        catch(ParseException pe)
+        {
+            log.accept("Error setting buffer colors: " + pe);
+        }
     }
 
     String getBrandingText()
@@ -607,7 +643,8 @@ class BufferController
             e.removedText = d.getText(end,len);
             fireBufferEvent(e);
 
-            addResultSetTable(null,fetch? SPLIT_MARKER : SEPARATOR_MARKER);
+            addResultSetTable(null,fetch? SPLIT_MARKER + new Date() :
+                    SEPARATOR_MARKER);
 
             /* Split now so that the user cannot edit anything inbetween,
              * which would mess up our offsets. Use Document API so that
@@ -641,7 +678,7 @@ class BufferController
     boolean awaitingSplitResult()
     {
         return resultview != null &&
-                resultview.getColumnName(0).equals(SPLIT_MARKER);
+                resultview.getColumnName(0).startsWith(SPLIT_MARKER);
     }
 
     boolean terminatedWithSeparator()
@@ -713,7 +750,7 @@ class BufferController
         Object[] logargs = {
                 rsm.getRowCount(),
                 t,
-                rsm.resultSetClosed? "closed" : "open",
+                rsm.isClosed()? "closed" : "open",
                 rsm.date.toString(),
                 rsm.connectionDescription
         };
@@ -760,7 +797,6 @@ class BufferController
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         resultscrollpane.setComponentOrientation(
                 ComponentOrientation.RIGHT_TO_LEFT);
-        TableColorizer.colorize(resultview,editor.getBackground());
 
         var resultviewConstraints = new GridBagConstraints();
         resultviewConstraints.anchor = GridBagConstraints.WEST;
@@ -807,7 +843,7 @@ class BufferController
         Object[] logargs = {
                 rsm.getRowCount(),
                 t,
-                rsm.resultSetClosed? "closed" : "open",
+                rsm.isClosed()? "closed" : "open",
                 new Date().toString(),
                 rsm.connectionDescription
         };

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -71,6 +72,7 @@ implements KeyListener
     TabSetController(JFrame parent,JFrame cellDisplay,JFrame infoDisplay,
             JdbcParametersInputController parametersController,
             PropertyHolder propertyHolder,File workspaceFile)
+    throws ParseException
     {
         this.parent = parent;
         this.cellDisplay = cellDisplay;
@@ -215,6 +217,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 var filechooser = new JFileChooser(getPwd());
+                ComponentSizer.size(filechooser,1.8);
                 int returnVal = filechooser.showSaveDialog(parent);
                 if(returnVal != JFileChooser.APPROVE_OPTION) return;
                 var newFile=filechooser.getSelectedFile();
@@ -248,6 +251,7 @@ implements KeyListener
             @Override public void actionPerformed(ActionEvent e)
             {
                 var filechooser = new JFileChooser(getPwd());
+                ComponentSizer.size(filechooser,1.8);
                 int returnVal = filechooser.showOpenDialog(parent);
                 if(returnVal != JFileChooser.APPROVE_OPTION) return;
                 boolean proceed = closeWorkspace(false);
@@ -287,7 +291,18 @@ implements KeyListener
             }
             @Override public void actionPerformed(ActionEvent e)
             {
-                cloneTab();
+                try
+                {
+                    cloneTab();
+                }
+                catch(ParseException pe)
+                {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Error cloning tab: "+pe.getMessage(),
+                            "Error cloning tab",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         },
         revertAction = new AbstractAction("Revert")
@@ -320,7 +335,7 @@ implements KeyListener
                 {
                     JOptionPane.showMessageDialog(
                             parent,
-                            "Error opening properties files:\n"+e.getMessage(),
+                            "Error opening properties files: "+e.getMessage(),
                             "Error opening properties",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -338,14 +353,15 @@ implements KeyListener
                     for(var notebook : notebooks)
                     {
                         notebook.connections.notifyIntervalAdded(oldSize);
+                        notebook.refreshBranding();
                     }
                     menubar.recreate();
                 }
-                catch(IOException e)
+                catch(ParseException | IOException e)
                 {
                     JOptionPane.showMessageDialog(
                             parent,
-                            "Error refreshing files:\n"+e.getMessage(),
+                            "Error refreshing files: "+e.getMessage(),
                             "Error refreshing properties",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -380,6 +396,53 @@ implements KeyListener
                 tabbedPane.setSelectedIndex(selected+1);
                 NotebookController c = getSelected();
                 if(c.hasSavedFocusPosition) c.restoreFocus();
+            }
+        },
+        goToAction = new AbstractAction()
+        {
+            @Override public void actionPerformed(ActionEvent event)
+            {
+                String text = JOptionPane.showInputDialog(parent,
+                        "Go to line or buffer name match:");
+                if(text!=null) try
+                {
+                    int line = Integer.parseInt(text);
+                    BufferController b = getSelected().lastFocused();
+                    int position = b.editor.getLineStartOffset(line - 1);
+                    b.editor.setCaretPosition(position);        
+                }
+                catch(NumberFormatException e)
+                {
+                    int sel = tabbedPane.getSelectedIndex();
+                    for(int i=sel;i<tabbedPane.getTabCount();i++)
+                    {
+                        if(tabbedPane.getTitleAt(i).contains(text))
+                        {
+                            tabbedPane.setSelectedIndex(i);
+                            NotebookController c = getSelected();
+                            if(c.hasSavedFocusPosition) c.restoreFocus();
+                            return;
+                        }
+                    }
+                    for(int i=0;i<sel;i++)
+                    {
+                        if(tabbedPane.getTitleAt(i).contains(text))
+                        {
+                            tabbedPane.setSelectedIndex(i);
+                            NotebookController c = getSelected();
+                            if(c.hasSavedFocusPosition) c.restoreFocus();
+                            return;
+                        }
+                    }
+                }
+                catch(Exception e)
+                {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Error navigating: "+e.getMessage(),
+                            "Error navigating",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         },
         moveTabLeftAction = new AbstractAction("Move Tab Left")
@@ -557,6 +620,7 @@ implements KeyListener
                 "Select Last Tab");
         im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK),"Select Previous Tab");
         im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK),"Select Next Tab");
+        im.put(getKeyStroke(KeyEvent.VK_G,CTRL_MASK),"Go To");
         im.put(getKeyStroke(KeyEvent.VK_LEFT,ALT_MASK|CTRL_MASK),
                 "Move Tab Left");
         im.put(getKeyStroke(KeyEvent.VK_RIGHT,ALT_MASK|CTRL_MASK),
@@ -583,6 +647,7 @@ implements KeyListener
         am.put("Select Last Tab",selectLastTabAction);
         am.put("Select Previous Tab",selectPreviousTabAction);
         am.put("Select Next Tab",selectNextTabAction);
+        am.put("Go To",goToAction);
         am.put("Move Tab Left",moveTabLeftAction);
         am.put("Move Tab Right",moveTabRightAction);
         am.put("Zoom+",new ZoomAction(1.3));
@@ -688,7 +753,8 @@ implements KeyListener
         tabbedPane.remove(tabbedPane.getSelectedIndex());
         retitle();
         if(notebooks.size()==0) add(-1);
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() ->
+        {
             NotebookController c = getSelected();
             if(c.hasSavedFocusPosition) c.restoreFocus();
         });
@@ -740,6 +806,7 @@ implements KeyListener
         if(file==null)
         {
             var filechooser = new JFileChooser(getPwd());
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showOpenDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             file=filechooser.getSelectedFile();
@@ -815,7 +882,7 @@ implements KeyListener
         }
     }
 
-    private void cloneTab()
+    private void cloneTab() throws ParseException
     {
         try(var w = new StringWriter())
         {
@@ -965,11 +1032,11 @@ implements KeyListener
 
         Workspace w = new Workspace();
         w.setFiles(notebooks
-            .stream()
-            .map((n) -> n.file)
-            .filter(Objects::nonNull)
-            .map((f) -> f.getPath())
-            .toArray(String[]::new));
+                .stream()
+                .map((n) -> n.file)
+                .filter(Objects::nonNull)
+                .map((f) -> f.getPath())
+                .toArray(String[]::new));
         var selectedNb = getSelected();
         if(selectedNb.file != null) w.setActiveFile(selectedNb.file.getPath());
         w.setRecentFiles(recents.toArray(new String[recents.size()]));

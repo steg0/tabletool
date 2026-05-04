@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,7 +43,7 @@ class PropertyHolder
     void load()
     throws IOException
     {
-        properties = new Properties();
+        var properties = new Properties();
         if(propertiesfiles!=null)
         {
             for(File propertiesfile : propertiesfiles)
@@ -62,6 +63,7 @@ class PropertyHolder
                 }
             }
         }
+        this.properties = properties;
     }
     
     Dimension getDefaultFrameSize()
@@ -115,38 +117,43 @@ class PropertyHolder
                 properties.getOrDefault("editor.tabsize","8").toString());
     }
 
+    String getLogFontName()
+    {
+        return properties.getProperty("log.font");
+    }
+
     int getTabPlacement()
     {
-        return Integer.parseInt(
-                properties.getOrDefault("tab.placement",JTabbedPane.TOP).toString());
+        return Integer.parseInt(properties.getOrDefault("tab.placement",
+                JTabbedPane.TOP).toString());
     }
     
-    Color getDefaultBackground(Color fallback)
+    Color getDefaultBackground(Color fallback) throws ParseException
     {
         return getColorProperty("default.bg",fallback);
     }
 
-    Color getDefaultConnectedBackground()
+    Color getDefaultConnectedBackground() throws ParseException
     {
         return getColorProperty("default.connectedBg",null);
     }
 
-    Color getFrameBackground()
+    Color getFrameBackground() throws ParseException
     {
         return getColorProperty("frame.bg",null);
     }
 
-    Color getNonFocusedEditorBorderColor()
+    Color getNonFocusedEditorBorderColor() throws ParseException
     {
         return getColorProperty("editor.nonFocusedBorder",Color.WHITE);
     }
 
-    Color getFocusedEditorBorderColor()
+    Color getFocusedEditorBorderColor() throws ParseException
     {
         return getColorProperty("editor.focusedBorder",Color.BLUE);
     }
 
-    Color getUnsavedEditorBorderColor()
+    Color getUnsavedEditorBorderColor() throws ParseException
     {
         return getColorProperty("editor.unsavedBorder",Color.GRAY);
     }
@@ -187,9 +194,18 @@ class PropertyHolder
     }
 
     private Color getColorProperty(String key,Color defaultColor)
+    throws ParseException
     {
         if(!properties.containsKey(key)) return defaultColor;
-        return Color.decode(properties.getProperty(key).toString());
+        try
+        {
+            return Color.decode(properties.getProperty(key).toString());
+        }
+        catch(Exception e)
+        {
+            throw new ParseException("Cannot read color definition from "+
+                    "tool properties: "+e.getMessage(),-1);
+        }
     }
 
     String getPlaceholderRegex()
@@ -207,6 +223,7 @@ class PropertyHolder
                 .filter((k) -> k.startsWith(EXTERNAL_TOOL_DEFINITION_PREFIX))
                 .map(PropertyHolder::getExternalToolNameKey)
                 .distinct()
+                .sorted()
                 .map(this::getExternalToolDefinition)
                 .toArray(ExternalToolDefinition[]::new);
     }
@@ -246,7 +263,7 @@ class PropertyHolder
         final boolean confirmations;
         final boolean updatableResultSets;
         
-        ConnectionInfo(String nameKey)
+        ConnectionInfo(String nameKey) throws ParseException
         {
             name=nameKey;
             logger.fine("Initializing ConnectionInfo: "+nameKey);
@@ -304,17 +321,21 @@ class PropertyHolder
     
     /**@return a new array of {@link ConnectionInfo} instances parsed
      * from the property table. */
-    ConnectionInfo[] getConnections()
+    ConnectionInfo[] getConnections() throws ParseException
     {
-        return properties
-                .keySet().stream()
+        String[] connproperties = properties.keySet().stream()
                 .filter((k) -> String.valueOf(k).startsWith(
                         ConnectionInfo.CONNECTIONS_PREFIX) && 
                         String.valueOf(k).endsWith(".url"))
                 .map(PropertyHolder::getConnectionNameKey)
                 .sorted()
-                .map(ConnectionInfo::new)
-                .toArray(ConnectionInfo[]::new);
+                .toArray(String[]::new);
+        var info = new ConnectionInfo[connproperties.length];
+        for(int i=0;i<connproperties.length;i++)
+        {
+            info[i] = new ConnectionInfo(connproperties[i]);
+        }
+        return info;
     }
 
     private static String getConnectionNameKey(Object propertyKey)

@@ -182,10 +182,7 @@ class CellDisplayController
             try(var is = blob.getBinaryStream())
             {
                 var dump = new HexDump(is,16*0x100);
-                textarea.setFont(new Font(
-                        Font.MONOSPACED,
-                        Font.PLAIN,
-                        textarea.getFont().getSize()));
+                textarea.setFont(editorfont);
                 textarea.setText(dump.dump);
                 dialogtitle = Tabtype.getFrameTitle("BLOB bytes 0 to " +
                         dump.length + " of " + blob.length());
@@ -195,10 +192,7 @@ class CellDisplayController
         {
             textarea.setEditable(false);
             var dump = new HexDump(new ByteArrayInputStream(b),b.length);
-            textarea.setFont(new Font(
-                    Font.MONOSPACED,
-                    Font.PLAIN,
-                    textarea.getFont().getSize()));
+            textarea.setFont(editorfont);
             textarea.setText(dump.dump);
             dialogtitle = Tabtype.getFrameTitle("byte[" +
                     b.length + "] display");
@@ -374,6 +368,7 @@ class CellDisplayController
         public void actionPerformed(ActionEvent event)
         {
             var filechooser = new JFileChooser(pwd);
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showSaveDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();
@@ -409,6 +404,7 @@ class CellDisplayController
         public void actionPerformed(ActionEvent event)
         {
             var filechooser = new JFileChooser(pwd);
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showOpenDialog(cellDisplay);
             if(returnVal != JFileChooser.APPROVE_OPTION) return;
             File file=filechooser.getSelectedFile();

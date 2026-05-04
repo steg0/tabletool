@@ -15,7 +15,6 @@ class GrowingCsvBuffer
 
     /**
      * @throws IndexOutOfBoundsException if no header has been scanned
-     * @throws IllegalStateException if an empty header field has been scanned
      */
     String[] getHeader()
     {

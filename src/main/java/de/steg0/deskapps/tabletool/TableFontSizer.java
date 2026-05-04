@@ -24,7 +24,7 @@ class TableFontSizer
         resultview.getTableHeader().setFont(hf2);
         int lineHeight = (int)hf2.getMaxCharBounds(new FontRenderContext(
                 null,false,false)).getHeight();
-        TableSizer.sizeColumns(resultview);
+        ComponentSizer.sizeColumns(resultview);
         resultview.setRowHeight(lineHeight);
         Dimension preferredSize = resultview.getPreferredSize();
         var viewportSize = new Dimension((int)preferredSize.getWidth(),

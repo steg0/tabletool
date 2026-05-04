@@ -1,6 +1,5 @@
 package de.steg0.deskapps.tabletool;
 
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -24,7 +23,7 @@ class ColumnSelectionListener
             public void mouseClicked(MouseEvent e)
             {
                 if(e.getButton() != MouseEvent.BUTTON1) return;
-                int clickcolumn = t.columnAtPoint(new Point(e.getX(),e.getY()));
+                int clickcolumn = t.columnAtPoint(e.getPoint());
 
                 if(e.isShiftDown())
                 {

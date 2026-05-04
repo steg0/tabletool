@@ -241,7 +241,7 @@ implements Runnable
                 {
                     JOptionPane.showMessageDialog(
                             null,
-                            "Error loading logger configuration:\n"+e,
+                            "Error loading logger configuration: "+e,
                             "Error loading logger configuration",
                             JOptionPane.ERROR_MESSAGE);
                 }

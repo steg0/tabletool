@@ -25,6 +25,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.EventListener;
@@ -56,6 +57,7 @@ import javax.swing.text.NumberFormatter;
 
 import de.steg0.deskapps.tabletool.ConnectionListModel.PasswordPromptCanceledException;
 import de.steg0.deskapps.tabletool.ConnectionWorker.OperationRunningException;
+import de.steg0.deskapps.tabletool.Connections.ConnectionState;
 
 /**
  * Represents a "notebook", i. e. a series of text field/result table pairs that
@@ -77,6 +79,7 @@ class NotebookController
     private final JFrame parent,cellDisplay,infoDisplay;
     private final JdbcParametersInputController parametersController;
     private BufferConfigSource bufferConfigSource;
+    private PropertyHolder propertyHolder;
     
     File file;
     
@@ -92,7 +95,7 @@ class NotebookController
             Connections.AUTOCOMMIT_DEFAULT);
     private final JCheckBox updatableCb = new JCheckBox("Updatable",false);
     
-    final JScrollPane bufferPane;
+    final JScrollPane bufferPane,logPane;
     private final int scrollIncrement;
     
     final JTextArea log = new JTextArea();
@@ -102,6 +105,7 @@ class NotebookController
     
     final List<BufferController> buffers = new ArrayList<>();
     private BufferController first() { return buffers.get(0); }
+    Color bufferDefaultBackground() { return first().defaultBackground(); }
     private int lastFocusedBuffer;
     BufferController lastFocused() { return buffers.get(lastFocusedBuffer); }
     boolean hasSavedFocusPosition;
@@ -117,6 +121,7 @@ class NotebookController
             Connections connections,
             File pwd,
             Listener listener)
+    throws ParseException
     {
         this.parent = parent;
         this.cellDisplay = cellDisplay;
@@ -126,7 +131,30 @@ class NotebookController
         this.listener = listener;
         this.bufferConfigSource = new BufferConfigSource(propertyHolder,
                 this.connections,pwd);
+        this.propertyHolder = propertyHolder;
         
+        logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        logBufferPane.setResizeWeight(1);
+
+        scrollIncrement = propertyHolder.getScrollIncrement();
+        bufferPane = new JScrollPane(bufferPanel);
+        bufferPane.setBorder(null);
+        bufferPane.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
+        bufferPane.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
+        var ml = new NotebookBufferPaneMouseListener(this);
+        bufferPane.addMouseListener(ml);
+        bufferPane.addMouseMotionListener(ml);
+        logBufferPane.add(bufferPane);
+        logPane = new JScrollPane(log);
+        logPane.setBorder(null);
+        logBufferPane.add(logPane);
+
+        var bufferPaneConstraints = new GridBagConstraints();
+        bufferPaneConstraints.fill = GridBagConstraints.BOTH;
+        bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
+        bufferPaneConstraints.gridy = 1;
+        notebookPanel.add(logBufferPane,bufferPaneConstraints);
+
         var connectionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         connectionsSelector = new JComboBox<>(this.connections);
@@ -144,14 +172,6 @@ class NotebookController
                 new NotebookConnectionsSelectorKeyListener(this,parent));
         connectionPanel.add(connectionsSelector);
         
-        log.setEditable(false);
-        log.setFont(new Font(Font.MONOSPACED,Font.PLAIN,
-                log.getFont().getSize()));
-        var l = new NotebookLogListener(this);
-        log.getDocument().addDocumentListener(l);
-        log.addKeyListener(l);
-        logConsumer = new NotebookLogConsumer(log);
-        
         autocommitCb.addActionListener(e -> applyAutocommit());
         im = autocommitCb.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
@@ -160,6 +180,7 @@ class NotebookController
         connectionPanel.add(autocommitCb);
 
         commitButton.addActionListener((e) -> commit());
+        ComponentSizer.size(commitButton,1.1,1);
         im = commitButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = commitButton.getActionMap();
@@ -168,6 +189,7 @@ class NotebookController
         
         disconnectButton.addActionListener((e) -> disconnect());
         disconnectButton.setMnemonic(KeyEvent.VK_D);
+        ComponentSizer.size(disconnectButton,1.1,1);
         im = disconnectButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = disconnectButton.getActionMap();
@@ -193,6 +215,7 @@ class NotebookController
         connectionPanel.add(updatableCb);
         
         rollbackButton.addActionListener((e) -> rollback());
+        ComponentSizer.size(rollbackButton,1.1,1);
         im = rollbackButton.getInputMap();
         im.put(getKeyStroke(KeyEvent.VK_ESCAPE,0),"Focus Buffer");
         am = rollbackButton.getActionMap();
@@ -206,49 +229,62 @@ class NotebookController
         
         notebookPanel.add(connectionPanel,connectionPanelConstraints);
         
+        log.setEditable(false);
+        var l = new NotebookLogListener(this);
+        log.getDocument().addDocumentListener(l);
+        log.addKeyListener(l);
+        logConsumer = new NotebookLogConsumer(log);
+
         var buffer = newBufferController();
         add(0,buffer);
 
-        logBufferPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        logBufferPane.setResizeWeight(1);
-        
-        scrollIncrement = propertyHolder.getScrollIncrement();
-        bufferPane = new JScrollPane(bufferPanel);
-        bufferPane.setBorder(null);
-        bufferPane.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
-        bufferPane.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
-        var ml = new NotebookBufferPaneMouseListener(this);
-        bufferPane.addMouseListener(ml);
-        bufferPane.addMouseMotionListener(ml);
-        logBufferPane.add(bufferPane);
-        var logPane = new JScrollPane(log);
-        logPane.setBorder(null);
-        logBufferPane.add(logPane);
-
-        var bufferPaneConstraints = new GridBagConstraints();
-        bufferPaneConstraints.fill = GridBagConstraints.BOTH;
-        bufferPaneConstraints.weighty = bufferPaneConstraints.weightx = 1;
-        bufferPaneConstraints.gridy = 1;
-        notebookPanel.add(logBufferPane,bufferPaneConstraints);
-        
-        setBranding(first().defaultBackground,null,null,"");
+        setBranding(bufferDefaultBackground(),null,null,"");
     }
 
-    private BufferController newBufferController()
+    private BufferController newBufferController() throws ParseException
     {
         return new BufferController(parent,cellDisplay,infoDisplay,
                 parametersController,logConsumer,bufferConfigSource,
                 bufferListener);
     }
 
+    void refreshBranding()
+    {
+        ConnectionState item = connections.getSelectedItem();
+        if(item==null)
+        {
+            setBranding(bufferDefaultBackground(),null,null,"");
+        }
+        else
+        {
+            setBranding(item.info().background,item.info().logBackground,
+                    item.info().logForeground,item.info().name);
+        }
+    }
+
     private void setBranding(Color bg,Color logBg,Color logFg,String label)
     {
-        if(logBg==null) logBg=bufferConfigSource.getEditorBackgroundColor(bg);
-        if(logFg==null) logFg=defaultLogFg;
-        if(bg==null) bg=bufferConfigSource.getEditorBackgroundColor(bg);
-        bufferPanel.setBackground(bg);
-        log.setBackground(logBg);
-        log.setForeground(logFg);
+        try
+        {
+            if(logBg==null) logBg=bufferConfigSource.getEditorBackgroundColor(
+                    bg);
+            if(logFg==null) logFg=defaultLogFg;
+            if(bg==null) bg=bufferConfigSource.getEditorBackgroundColor(bg);
+            bufferPanel.setBackground(bg);
+            log.setBackground(logBg);
+            log.setForeground(logFg);
+            String logFontName = propertyHolder.getLogFontName();
+            if(logFontName != null)
+            {
+                Font logFont = log.getFont();
+                logFont=new Font(logFontName,logFont.getStyle(),logFont.getSize());
+                log.setFont(logFont);
+            }
+        }
+        catch(ParseException pe)
+        {
+            logConsumer.accept("Error setting notebook branding: " + pe);
+        }
         for(BufferController buffer : buffers) buffer.setBranding(label);
     }
     
@@ -321,16 +357,23 @@ class NotebookController
                 
             case SPLIT_REQUESTED:
                 logger.log(Level.FINE,"Split requested by #{0}",i);
-                var newBufferController = newBufferController();
-                newBufferController.connection = source.connection;
-                newBufferController.setBranding(source.getBrandingText());
-                add(i+1,newBufferController);
-                bufferPanel.revalidate();
-                newBufferController.append(e.removedText);
-                newBufferController.undoManager.discardAllEdits();
-                if(e.removedRsm != null)
+                try
                 {
-                    newBufferController.addResultSetTable(e.removedRsm,null);
+                    var newBufferController = newBufferController();
+                    newBufferController.connection = source.connection;
+                    newBufferController.setBranding(source.getBrandingText());
+                    add(i+1,newBufferController);
+                    bufferPanel.revalidate();
+                    newBufferController.append(e.removedText);
+                    newBufferController.undoManager.discardAllEdits();
+                    if(e.removedRsm != null)
+                    {
+                        newBufferController.addResultSetTable(e.removedRsm,null);
+                    }
+                }
+                catch(ParseException pe)
+                {
+                    source.log.accept("Error creating buffer: " + pe);
                 }
                 break;
                 
@@ -460,20 +503,27 @@ class NotebookController
     void exitedSouth(BufferController source)
     {
         int i=buffers.indexOf(source);
-        if(buffers.size() <= i+1)
+        try
         {
-            var newBufferController = newBufferController();
-            newBufferController.connection = source.connection;
-            newBufferController.setBranding(source.getBrandingText());
-            add(i+1,newBufferController);
-            bufferPanel.revalidate();
+            if(buffers.size() <= i+1)
+            {
+                var newBufferController = newBufferController();
+                newBufferController.connection = source.connection;
+                newBufferController.setBranding(source.getBrandingText());
+                add(i+1,newBufferController);
+                bufferPanel.revalidate();
+            }
+            buffers.get(i+1).focusEditor(source.getCaretPositionInLine(),0);
+            /* scroll relative to source, because if we added a buffer above,
+             * it's not yet laid out */
+            int h = source.getLineHeight();
+            selectedRectChanged(source,new Rectangle(0,
+                    (int)source.panel.getBounds().getHeight(),1,h));
         }
-        buffers.get(i+1).focusEditor(source.getCaretPositionInLine(),0);
-        /* scroll relative to source, because if we added a buffer above, it's 
-         * not yet laid out */
-        int h = source.getLineHeight();
-        selectedRectChanged(source,new Rectangle(0,
-                (int)source.panel.getBounds().getHeight(),1,h));
+        catch(ParseException pe)
+        {
+            source.log.accept("Error creating buffer: " + pe);
+        }
     }
 
     private void selectedRectChanged(BufferController source,Rectangle rect)
@@ -525,6 +575,7 @@ class NotebookController
         if(file==null || saveAs)
         {
             var filechooser = new JFileChooser(bufferConfigSource.pwd);
+            ComponentSizer.size(filechooser,1.8);
             int returnVal = filechooser.showSaveDialog(parent);
             if(returnVal != JFileChooser.APPROVE_OPTION) return false;
             newFile=filechooser.getSelectedFile();
@@ -623,7 +674,7 @@ class NotebookController
     }
     
     void load(File f)
-    throws IOException
+    throws IOException,ParseException
     {
         load(new FileReader(f));
         file = f;
@@ -632,7 +683,7 @@ class NotebookController
     }
 
     void load(Reader reader)
-    throws IOException
+    throws IOException,ParseException
     {
         try(var r = new LineNumberReader(reader))
         {
@@ -895,7 +946,8 @@ class NotebookController
         connectionsSelector.setSelectedIndex(-1);
         connectionsSelector.repaint();
         
-        setBranding(first().defaultBackground,null,null,"");
+        setBranding(bufferDefaultBackground(),null,null,"");
+
         updatableCb.setSelected(false);
     }
     

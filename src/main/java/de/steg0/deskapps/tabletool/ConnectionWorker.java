@@ -109,6 +109,7 @@ class ConnectionWorker
             {
                 if(lastReportedResult!=null && !lastReportedResult.isClosed())
                 {
+                    logger.fine("Going to close prior ResultSet");
                     lastReportedResult.close();
                     logger.fine("Closed prior ResultSet");
                 }
@@ -238,12 +239,14 @@ class ConnectionWorker
             var countEvent = new UpdateCountEvent(ConnectionWorker.this,
                     statement.getUpdateCount(),now-ts,inlog,outlog,
                     placeholderlog);
+            logger.fine("Reporting update count");
             invokeLater(() -> updateCountConsumer.accept(countEvent));
             statement.close();
         }
         
         private void reportNullResult()
         {
+            logger.fine("Reporting null result");
             invokeLater(() -> resultConsumer.accept(null,0L));
         }
 
@@ -393,7 +396,7 @@ class ConnectionWorker
         }
         else
         {
-            log.accept("Enqueued "+op+" at "+new Date());
+            logger.log(Level.FINE,"Enqueuing {0}",op);
         }
         executor.execute(op);
     }

@@ -34,7 +34,6 @@ implements TableModel,AutoCloseable
     private String cols[];
     private List<Object[]> rows;
     int fetchsize;
-    boolean resultSetClosed;
     String connectionDescription;
     private boolean skipEmptyColumns;
     boolean updatable;
@@ -108,7 +107,7 @@ implements TableModel,AutoCloseable
                 Object o = rs.getObject(i);
                 if(o != null && !String.valueOf(o).isEmpty())
                     keepcols[i-1] = true;
-                row.add(rs.getObject(i));
+                row.add(o);
             }
             rowbuf.add(row);
             rowcount++;
@@ -126,8 +125,9 @@ implements TableModel,AutoCloseable
         cols = colbuf.toArray(String[]::new);
         rows = new ArrayList<Object[]>(fetchsize);
         for(var row : rowbuf) rows.add(row.toArray());
+
+        if(!updatable) close();
         
-        resultSetClosed = rs.isClosed();
         date = new Date();
         Object[] logargs = {
                 getRowCount(),
@@ -381,14 +381,26 @@ implements TableModel,AutoCloseable
     {
     }
 
-    boolean isClosed() throws SQLException
+    boolean isClosed()
     {
-        return rs==null || rs.isClosed();
+        try
+        {
+            return rs==null || rs.isClosed();
+        }
+        catch(SQLException e)
+        {
+            logger.log(Level.FINE,
+                    "Error querying ResultSet state, reporting as open",e);
+            /* if there is anything wrong with the ResultSet, the user will
+             * be notified while closing */
+            return true;
+        }
     }
 
     /**
      * Right now this is only called from {@link ConnectionWorker} on
-     * its executor, so it's serial with other operations on the connection.
+     * its executor and from {@link #fill()} above, so it's serial with
+     * other operations on the connection.
      */
     @Override
     public void close() throws SQLException
@@ -396,6 +408,7 @@ implements TableModel,AutoCloseable
         if(rs==null) return;
         try
         {
+            logger.fine("Closing ResultSet");
             rs.close();
         }
         finally

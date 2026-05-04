@@ -1,6 +1,7 @@
 package de.steg0.deskapps.tabletool;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -9,7 +10,7 @@ import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-class TableSizer
+class ComponentSizer
 {
     static Logger logger = Logger.getLogger("tabtype");
     
@@ -51,5 +52,17 @@ class TableSizer
             logger.log(Level.FINER,"bpadd={0}",bpadd);
             col.setPreferredWidth((int)(colMinWidth * (10000 + bpadd) / 10000));
         }
+    }
+
+    static void size(Component c,double factor)
+    {
+        size(c,factor,factor);
+    }
+
+    static void size(Component c,double xfactor,double yfactor)
+    {
+        c.setPreferredSize(new Dimension(
+                (int)(c.getPreferredSize().getWidth() * xfactor),
+                (int)(c.getPreferredSize().getHeight() * yfactor)));
     }
 }
