@@ -9,7 +9,7 @@ import javax.swing.JOptionPane;
 class ShowSampleConfigAction extends AbstractAction
 {
     JFrame parent;
-    
+
     ShowSampleConfigAction(JFrame parent)
     {
         super("Show Sample Config");
