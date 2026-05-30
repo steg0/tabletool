@@ -1,12 +1,8 @@
 ― Invocation ―
 
-In addition to options dealing with JVM specifics, the tool supports the following command line arguments:
+The tool can be called with arguments which will be understood as SQL files to be opened in a new, unnamed workspace.
 
--config <file> - to specify one or more properties files where connection definitions will be read from. For such files, the Java .properties format as well as its XML variant are supported.
-
--logconfig <file> - to specify a Java Logger properties file. The tool's logger is called "tabtype".
-
-Also, an optional single file name argument, ending with .xml or .tabtype, is supported which is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially. Other arguments will be understood as SQL files to open.
+A file name argument ending with .xml or .tabtype is understood as "workspace file" (an XML format) where the current set of open SQL files will be persisted to. The file does not need to exist initially.
 
 
 ― Property file format ―

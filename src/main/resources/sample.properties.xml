@@ -4,10 +4,9 @@
     
     <comment>
         This is an annotated configuration file for Tabtype, which
-        uses the Java XML properties syntax. Next to this, the regular
-        Java properties format is also supported; which combination of
-        these is in use depends on the -config arguments with which
-        the tool is invoked.
+        uses the Java XML properties syntax. It represents the default
+        configuration the tool uses. For additional user-defined configuration,
+        XML as well as the regular Java properties format are supported.
     </comment>
     
     <!--
