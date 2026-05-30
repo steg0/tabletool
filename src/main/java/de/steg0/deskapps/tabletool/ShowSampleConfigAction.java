@@ -19,7 +19,7 @@ class ShowSampleConfigAction extends AbstractAction
     @Override
     public void actionPerformed(ActionEvent event)
     {
-        try(var i=getClass().getResourceAsStream("/sample.properties.xml");
+        try(var i=PropertyHolder.getDefaultProperties();
                 var e=new DesktopExporter("TabtypeSampleConfiguration",".xml"))
         {
             i.transferTo(e.getOutputStream());

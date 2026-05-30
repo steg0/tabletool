@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -327,7 +329,22 @@ implements KeyListener
                 {
                     for(File f : propertyHolder.propertiesfiles)
                     {
-                        if(!f.exists()) Files.createFile(f.toPath());
+                        if(!f.exists())
+                        {
+                            var templateName = f.getName().endsWith(".xml")?
+                                    "/empty.properties.xml" :
+                                    "/empty.properties";
+                            try(var i = getClass().getResourceAsStream(
+                                    templateName))
+                            {
+                                if(f.getParent() != null)
+                                {
+                                    Files.createDirectories(Paths.get(
+                                            f.getParent()));
+                                }
+                                Files.copy(i,f.toPath());
+                            }
+                        }
                         Desktop.getDesktop().open(f);
                     }
                 }
@@ -460,7 +477,6 @@ implements KeyListener
                     retitle();
                     tabbedPane.setSelectedComponent(c);
                 }
-        
             }
         },
         moveTabRightAction = new AbstractAction("Move Tab Right")

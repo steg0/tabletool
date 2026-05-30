@@ -9,6 +9,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,8 @@ class PropertyHolder
 {
     Logger logger = Logger.getLogger("tabtype");
 
+    static final String DEFAULT_PROPERTIES_FILE = "/sample.properties.xml";
+    
     File[] propertiesfiles;
     private Properties properties;
     
@@ -39,11 +42,21 @@ class PropertyHolder
     {
         this.properties = properties;
     }
-    
+
+    static InputStream getDefaultProperties()
+    {
+        return PropertyHolder.class.getResourceAsStream(
+                DEFAULT_PROPERTIES_FILE);
+    }
+
     void load()
     throws IOException
     {
         var properties = new Properties();
+        try(var defaultProperties = getDefaultProperties())
+        {
+            properties.loadFromXML(defaultProperties);
+        }
         if(propertiesfiles!=null)
         {
             for(File propertiesfile : propertiesfiles)
