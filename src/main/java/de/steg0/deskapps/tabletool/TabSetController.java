@@ -498,7 +498,20 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                getSelected().commit();
+                var selected = getSelected();
+                var stop = selected.first().connection != null &&
+                        selected.first().connection.info.confirmations &&
+                        JOptionPane.showConfirmDialog(
+                                parent,
+                                "This connection has confirmations enabled. " +
+                                "Continue?\n",
+                                "Confirm execution",
+                                JOptionPane.YES_NO_OPTION) !=
+                                JOptionPane.YES_OPTION;
+                if(!stop)
+                {
+                    selected.commit();
+                }
             }
         },
         rollbackAction = new AbstractAction("Rollback")

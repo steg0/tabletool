@@ -104,7 +104,7 @@ class NotebookController
     private final Consumer<String> logConsumer;
     
     final List<BufferController> buffers = new ArrayList<>();
-    private BufferController first() { return buffers.get(0); }
+    BufferController first() { return buffers.get(0); }
     Color bufferDefaultBackground() { return first().defaultBackground(); }
     private int lastFocusedBuffer;
     BufferController lastFocused() { return buffers.get(lastFocusedBuffer); }
@@ -687,7 +687,8 @@ class NotebookController
     {
         try(var r = new LineNumberReader(reader))
         {
-            assert buffers.size()==1 : "load only supports uninitialized panels";
+            assert buffers.size()==1 :
+                    "load only supports uninitialized panels";
             int linesRead = first().load(r);
             while(linesRead>0)
             {
