@@ -29,8 +29,8 @@
         The font to use for editor buffers. This will also be used for
         info display and cell value windows.
     -->
+    <entry key="editor.font">DejaVu Sans Mono</entry>
     <!--
-    <entry key="editor.font">Go Mono</entry>
     <entry key="editor.fontsize">13</entry>
     <entry key="editor.tabsize">4</entry>
     -->
