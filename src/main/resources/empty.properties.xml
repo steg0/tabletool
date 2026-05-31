@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    
+    <comment>
+        This is an empty configuraton file for Tabtype, which
+        uses the Java XML properties sytax. See below for 
+        an example of how to define a connection in this format.
+    </comment>
+    
+    <!--
+    <entry key="connections.derby.url">jdbc:derby:tabtype_user_derby;create=true</entry>
+    <entry key="connections.derby.username">tabtype</entry>
+    <entry key="connections.derby.password">PROMPT</entry>
+    <entry key="connections.derby.bg">#f0f0d7</entry>
+    <entry key="connections.derby.logBg">#a1a150</entry>
+    <entry key="connections.derby.logFg">#ffffff</entry>
+    <entry key="connections.derby.focusedBorderColor">#ee3838</entry>
+    <entry key="connections.derby.confirmations">true</entry>
+    <entry key="connections.derby.updatableResultSets">true</entry>
+    -->
+
+</properties>

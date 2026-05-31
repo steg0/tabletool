@@ -8,7 +8,7 @@ import java.io.OutputStreamWriter;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-public class CsvExporter
+class CsvExporter
 {
     static void openTemp(JFrame parent,String csv)
     {

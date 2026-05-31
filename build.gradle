@@ -42,7 +42,7 @@ tasks.withType(Javadoc) {
 
 tasks.withType(JavaExec) {
     args '-config'
-    args 'src/main/resources/sample.properties.xml'
+    args System.getenv('APPDATA') + '/tabtype/tabtype.properties.xml'
     args '-config'
     args System.getenv('APPDATA') + '/tabtype/tabtype.properties'
     args '-logconfig'

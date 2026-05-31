@@ -41,14 +41,14 @@ implements Runnable
     private JdbcParametersInputController parametersController;
     private File properties[],workspace,sqlFiles[];
     private TabSetController controller;
-    
+
     private Tabtype(Collection<String> propertiesFiles,String workspaceFile)
     {
         properties = propertiesFiles.stream().map(f -> new File(f))
                 .toArray(File[]::new);
         if(workspaceFile!=null) workspace = new File(workspaceFile);
     }
-    
+
     private Tabtype(Collection<String> propertiesFiles,String[] sqlFiles)
     {
         properties = propertiesFiles.stream().map(f -> new File(f))
@@ -57,7 +57,7 @@ implements Runnable
                 .map((p) -> new File(p))
                 .toArray(File[]::new);
     }
-    
+
     static String getFrameTitle(File workspace)
     {
         String wsprefix = (workspace!=null? workspace.getName().replaceFirst(
@@ -122,7 +122,7 @@ implements Runnable
             
         frame.setVisible(true);
     }
-    
+
     static List<Image> getIcons()
     {
         var icon16 = new ImageIcon(Tabtype.class.getResource("icon16.png"));
@@ -130,7 +130,7 @@ implements Runnable
         var icon = new ImageIcon(Tabtype.class.getResource("icon.png"));
         return List.of(icon16.getImage(),icon32.getImage(),icon.getImage());
     }
-    
+
     private TabSetController ensureFrameConfiguration(
             PropertyHolder propertyHolder)
     {
@@ -160,7 +160,7 @@ implements Runnable
         }
         return null;
     }
-    
+
     private void ensureWorkspace()
     {
         if(workspace==null)
@@ -179,7 +179,7 @@ implements Runnable
         }
         frame.setTitle(Tabtype.getFrameTitle(workspace));
     }
-    
+
     @Override
     public void windowClosing(WindowEvent event)
     {
@@ -218,7 +218,7 @@ implements Runnable
             parametersController.dispose();
         }
     }
-    
+
     public static void main(String[] args)
     {
         Collection<String> propertiesfiles=new ArrayList<>();
@@ -251,7 +251,7 @@ implements Runnable
                 break ARGS;
             }
         }
-        
+
         Tabtype m;
         if(optind<args.length)
         {
@@ -278,5 +278,5 @@ implements Runnable
     {
         showBuffer();
     }
-    
+
 }

@@ -14,7 +14,7 @@ See the README [here](src/main/resources) for usage instructions.
 
 ## Invocation
 
-The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and specify properties and other files on the command line as detailed in the README mentioned above.
+The tool builds as modular JAR and can be started up without arguments. However, to be of any practical use, it is necessary to put JDBC drivers on the module path, and specify properties and other files on the command line.
 
 An example command line is:
 

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -327,7 +328,22 @@ implements KeyListener
                 {
                     for(File f : propertyHolder.propertiesfiles)
                     {
-                        if(!f.exists()) Files.createFile(f.toPath());
+                        if(!f.exists())
+                        {
+                            var templateName = f.getName().endsWith(".xml")?
+                                    "/empty.properties.xml" :
+                                    "/empty.properties";
+                            try(var i = getClass().getResourceAsStream(
+                                    templateName))
+                            {
+                                if(f.getParent() != null)
+                                {
+                                    Files.createDirectories(Paths.get(
+                                            f.getParent()));
+                                }
+                                Files.copy(i,f.toPath());
+                            }
+                        }
                         Desktop.getDesktop().open(f);
                     }
                 }
@@ -460,7 +476,6 @@ implements KeyListener
                     retitle();
                     tabbedPane.setSelectedComponent(c);
                 }
-        
             }
         },
         moveTabRightAction = new AbstractAction("Move Tab Right")
@@ -498,7 +513,20 @@ implements KeyListener
         {
             @Override public void actionPerformed(ActionEvent e)
             {
-                getSelected().commit();
+                var selected = getSelected();
+                var stop = selected.first().connection != null &&
+                        selected.first().connection.info.confirmations &&
+                        JOptionPane.showConfirmDialog(
+                                parent,
+                                "This connection has confirmations enabled. " +
+                                "Continue?\n",
+                                "Confirm execution",
+                                JOptionPane.YES_NO_OPTION) !=
+                                JOptionPane.YES_OPTION;
+                if(!stop)
+                {
+                    selected.commit();
+                }
             }
         },
         rollbackAction = new AbstractAction("Rollback")
